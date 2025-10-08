@@ -9,8 +9,35 @@ class LoginScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(width: 200, height: 200, child: Placeholder()),
-          Text("Nombre de la APP"),
+          // Correo
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Introduce tu correo",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
+              ),
+            ),
+          ),
+          // Contraseña
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Introduce tu contraseña",
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.remove_red_eye),
+              ),
+              obscureText: true,
+            ),
+          ),
+
+          // Botón de login
+          Padding(
+            padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+            child: ElevatedButton(onPressed: () {}, child: Text("Login")),
+          ),
         ],
       ),
     );
