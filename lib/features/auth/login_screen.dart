@@ -5,40 +5,43 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Correo
-          Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Introduce tu correo",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+    return Scaffold(
+      // Scaffold provides the Material ancestor required by TextField
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Correo
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "Introduce tu correo",
+                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.email),
+                ),
               ),
             ),
-          ),
-          // Contraseña
-          Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Introduce tu contraseña",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.remove_red_eye),
+            // Contraseña
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: "Introduce tu contraseña",
+                  border: OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.remove_red_eye),
+                ),
+                obscureText: true,
               ),
-              obscureText: true,
             ),
-          ),
 
-          // Botón de login
-          Padding(
-            padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
-            child: ElevatedButton(onPressed: () {}, child: Text("Login")),
-          ),
-        ],
+            // Botón de login
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
+              child: ElevatedButton(onPressed: () {}, child: const Text("Login")),
+            ),
+          ],
+        ),
       ),
     );
   }
