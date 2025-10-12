@@ -1,8 +1,10 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/features/auth/auth_service.dart';
 import 'package:tfg_frontend/features/auth/signup_screen.dart';
 import 'package:tfg_frontend/core/app_colors.dart';
+import 'package:tfg_frontend/features/home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,6 +15,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -22,33 +26,46 @@ class _LoginScreenState extends State<LoginScreen> {
       // Quitamos el backgroundColor para que se vea el fondo pintado
       body: CustomPaint(
         painter: DiagonalBackgroundPainter(), // Pinta el fondo con la diagonal
-        child: SafeArea( // Evita que el contenido quede detrás de cosas del sistema
-          child: Center( // Centra el contenido
-            child: ConstrainedBox( // Limita el ancho máximo del contenido
+        child: SafeArea(
+          // Evita que el contenido quede detrás de cosas del sistema
+          child: Center(
+            // Centra el contenido
+            child: ConstrainedBox(
+              // Limita el ancho máximo del contenido
               constraints: const BoxConstraints(maxWidth: maxWidth),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Card( // Tarjeta para el formulario
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
+                ),
+                child: Card(
+                  // Tarjeta para el formulario
                   elevation: 4, // Sombra
-                  shape: RoundedRectangleBorder( // Bordes redondeados
+                  shape: RoundedRectangleBorder(
+                    // Bordes redondeados
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Padding( // Padding interno de la tarjeta
+                  child: Padding(
+                    // Padding interno de la tarjeta
                     padding: const EdgeInsets.all(20),
                     // Formulario
                     child: Form(
                       key: _formKey, // Clave del formulario
-                      child: Column( // Columna para los campos y botones
+                      child: Column(
+                        // Columna para los campos y botones
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const Text(
                             'Bienvenido',
-                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 12),
-                          
+
                           // Correo
                           TextFormField(
                             decoration: const InputDecoration(
@@ -56,7 +73,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               hintText: 'tucorreo@ejemplo.com',
                               prefixIcon: Icon(Icons.email),
                             ),
-                            keyboardType: TextInputType.emailAddress, // Que el teclado sea de email
+                            keyboardType: TextInputType
+                                .emailAddress, // Que el teclado sea de email
                           ),
                           const SizedBox(height: 12),
 
@@ -66,18 +84,46 @@ class _LoginScreenState extends State<LoginScreen> {
                               labelText: 'Contraseña',
                               prefixIcon: Icon(Icons.lock),
                             ),
-                            obscureText: true,
-                            validator: (v) =>
-                                (v == null || v.isEmpty) ? 'Introduce tu contraseña' : null,
+                            // obscureText: true,
+                            validator: (v) => (v == null || v.isEmpty)
+                                ? 'Introduce tu contraseña'
+                                : null,
                           ),
                           const SizedBox(height: 16),
 
                           ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState?.validate() ?? false) {
-                                // TODO: login
+                                final authService = AuthService();
+                                final success = await authService.login(
+                                  emailController.text,
+                                  passwordController.text,
+                                );
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Inicio de sesión correcto',
+                                      ),
+                                    ),
+                                  );
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const HomeScreen(),
+                                    ),
+                                  ); // o la pantalla principal
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Credenciales incorrectas'),
+                                    ),
+                                  );
+                                }
                               }
                             },
+
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
@@ -121,8 +167,7 @@ class DiagonalBackgroundPainter extends CustomPainter {
     final paint = Paint();
 
     // Color superior izquierdo
-    // ignore: deprecated_member_use
-    paint.color = AppColors.primary.withOpacity(0.9);
+    paint.color = AppColors.primary;
     final path1 = Path()
       ..moveTo(0, 0)
       ..lineTo(size.width, 0)
@@ -131,7 +176,7 @@ class DiagonalBackgroundPainter extends CustomPainter {
     canvas.drawPath(path1, paint);
 
     // Color inferior derecho
-    paint.color = AppColors.secondary.withOpacity(0.9);
+    paint.color = AppColors.secondary;
     final path2 = Path()
       ..moveTo(size.width, 0)
       ..lineTo(size.width, size.height)

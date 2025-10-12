@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/app_colors.dart';
+import 'package:tfg_frontend/features/auth/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -10,6 +11,10 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+
+  final nameController = TextEditingController();
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +31,9 @@ class _SignupScreenState extends State<SignupScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
                   child: Form(
@@ -37,56 +44,77 @@ class _SignupScreenState extends State<SignupScreen> {
                       children: [
                         const Text(
                           'Crea tu cuenta',
-                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
 
                         TextFormField(
+                          controller: nameController,
                           decoration: const InputDecoration(
                             labelText: 'Nombre completo',
                             hintText: 'Tu nombre',
                           ),
-                          validator: (v) => (v == null || v.isEmpty) ? 'Introduce tu nombre' : null,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Introduce tu nombre'
+                              : null,
                         ),
-                        const SizedBox(height: 12),
 
                         TextFormField(
+                          controller: emailController,
                           decoration: const InputDecoration(
                             labelText: 'Correo',
                             hintText: 'tucorreo@ejemplo.com',
                             prefixIcon: Icon(Icons.email),
                           ),
                           keyboardType: TextInputType.emailAddress,
-                          validator: (v) => (v == null || v.isEmpty) ? 'Introduce tu correo' : null,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Introduce tu correo'
+                              : null,
                         ),
-                        const SizedBox(height: 12),
 
                         TextFormField(
+                          controller: passwordController,
                           decoration: const InputDecoration(
                             labelText: 'Contraseña',
                           ),
                           obscureText: true,
-                          validator: (v) => (v == null || v.isEmpty) ? 'Introduce una contraseña' : null,
-                        ),
-                        const SizedBox(height: 12),
-
-                        TextFormField(
-                          decoration: const InputDecoration(
-                            labelText: 'Repetir contraseña',
-                          ),
-                          obscureText: true,
-                          validator: (v) => (v == null || v.isEmpty) ? 'Repite la contraseña' : null,
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Introduce una contraseña'
+                              : null,
                         ),
 
-                        const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formKey.currentState?.validate() ?? false) {
-                              // TODO: procesar registro
+                              final authService = AuthService();
+                              final success = await authService.signup(
+                                username: nameController.text.trim(),
+                                email: emailController.text.trim(),
+                                password: passwordController.text,
+                              );
+
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Cuenta creada correctamente',
+                                    ),
+                                  ),
+                                );
+                                Navigator.pop(context); // volver al login
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Error al crear cuenta'),
+                                  ),
+                                );
+                              }
                             }
                           },
-                          style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
                           child: const Text('Crear cuenta'),
                         ),
                       ],
