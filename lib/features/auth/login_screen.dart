@@ -68,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Correo
                           TextFormField(
+                            controller: emailController,
                             decoration: const InputDecoration(
                               labelText: 'Correo',
                               hintText: 'tucorreo@ejemplo.com',
@@ -80,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           // Contraseña
                           TextFormField(
+                            controller: passwordController,
                             decoration: const InputDecoration(
                               labelText: 'Contraseña',
                               prefixIcon: Icon(Icons.lock),
