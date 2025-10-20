@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/app_colors.dart';
 
 // Pantalla principal para el cuidador que permite:
 //  - Ingresar el código numérico de un paciente.
-//  - Definir horarios de rutina (ej. cena y baño) para el paciente.
-// Esta pantalla es Stateful porque mantiene estado local (código, horarios, formulario).
+//  - Definir horarios de rutina y de medicación
 class CaregiverHomeScreen extends StatefulWidget {
   const CaregiverHomeScreen({super.key});
 
@@ -15,17 +15,26 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   // Código que escribe el usuario (sin controlador)
   String _inputCode = '';
 
-  // Código confirmado; si es null se muestra la pantalla de ingreso
+  // Código
   String? _patientCode;
 
-  // Horarios simples
+  // Horarios de comida
+  TimeOfDay? _breakfastTime;
+  TimeOfDay? _lunchTime;
   TimeOfDay? _dinnerTime;
   TimeOfDay? _bathTime;
+
+  // Hidratación: activar recordatorios y intervalo en horas
+  bool _enableHydrationReminders = false;
+  int? _hydrationIntervalHours;
 
   // Método para confirmar el código (sin validaciones)
   void _submitPatientCode() {
     setState(() {
       _patientCode = _inputCode.trim();
+      if(_patientCode!.isEmpty) {
+        _patientCode = null; // No aceptar códigos vacíos
+      }
     });
   }
 
@@ -36,103 +45,215 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     });
   }
 
-  // Pequeña ayuda para mostrar la hora con el formato local o '--:--'
+  // Muestra '--:--'
   String _timeText(TimeOfDay? t, BuildContext ctx) => t?.format(ctx) ?? '--:--';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home cuidador')),
+      appBar: AppBar(title: const Text('Home cuidador'), backgroundColor: AppColors.primary,),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _patientCode == null ? _buildPatientCodeInput() : _buildRoutineForm(),
+        child: _patientCode == null
+            ? _buildPatientCodeInput()
+            : _buildRoutineForm(),
       ),
     );
   }
 
-  // UI para ingresar el código
+  // Ingresar el código del paciente
   Widget _buildPatientCodeInput() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text('Ingrese el código del paciente', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+        const Text(
+          'Ingrese el código del paciente',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 12),
         TextField(
           keyboardType: TextInputType.number,
-          onChanged: (v) => _inputCode = v,
+          onChanged: (v) => _inputCode = v, // Actualiza el valor
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            hintText: 'Código numérico del paciente',
+            hintText: 'Código del paciente',
           ),
         ),
         const SizedBox(height: 12),
-        ElevatedButton(onPressed: _submitPatientCode, child: const Text('Aceptar')),
+        ElevatedButton(
+          onPressed: _submitPatientCode,
+          child: const Text('Aceptar'),
+        ),
       ],
     );
   }
 
-  // Formulario mínimo para seleccionar horas
+  // Formulario para ingresar la rutina
   Widget _buildRoutineForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text('Agregue la rutina del paciente (código: $_patientCode)', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+        Text(
+          'Agregue la rutina del paciente Nombre($_patientCode)',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 16),
 
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Cena'),
-          subtitle: Text(_timeText(_dinnerTime, context)),
-          trailing: TextButton(
-            onPressed: () async {
-              final picked = await showTimePicker(
-                context: context,
-                initialTime: _dinnerTime ?? TimeOfDay.now(),
-              );
-              if (picked != null) setState(() => _dinnerTime = picked);
-            },
-            child: const Text('Seleccionar'),
-          ),
+        Text(
+          'Horarios de Comida',
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 16),
+
+        // Llama al método helper para cada horario
+        // Comidas
+        _buildTimePickerTile(
+          title: 'Desayuno',
+          time: _breakfastTime,
+          onChanged: (picked) => setState(() => _breakfastTime = picked),
         ),
 
         const Divider(),
 
-        ListTile(
+        _buildTimePickerTile(
+          title: 'Almuerzo',
+          time: _lunchTime,
+          onChanged: (picked) => setState(() => _lunchTime = picked),
+        ),
+
+        const Divider(),
+
+        _buildTimePickerTile(
+          title: 'Cena',
+          time: _dinnerTime,
+          onChanged: (picked) => setState(() => _dinnerTime = picked),
+        ),
+
+        const Divider(),
+
+        _buildTimePickerTile(
+          title: 'Baño',
+          time: _bathTime,
+          onChanged: (picked) => setState(() => _bathTime = picked),
+        ),
+
+        const Divider(),
+
+        // Recordatorios de hidratación
+        const SizedBox(height: 12),
+        SwitchListTile(
           contentPadding: EdgeInsets.zero,
-          title: const Text('Baño'),
-          subtitle: Text(_timeText(_bathTime, context)),
-          trailing: TextButton(
-            onPressed: () async {
-              final picked = await showTimePicker(
-                context: context,
-                initialTime: _bathTime ?? TimeOfDay.now(),
-              );
-              if (picked != null) setState(() => _bathTime = picked);
-            },
-            child: const Text('Seleccionar'),
+          title: const Text('Desea agregar recordatorios para tomar agua'),
+          value: _enableHydrationReminders,
+          onChanged: (v) => setState(() => _enableHydrationReminders = v),
+        ),
+        if (_enableHydrationReminders)
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+            child: Row(
+              children: [
+                const Text('Intervalo:'),
+                const SizedBox(width: 12),
+                DropdownButton<int>(
+                  value: _hydrationIntervalHours,
+                  hint: const Text('Seleccione intervalo'),
+                  items: <int>[1, 2, 3].map((v) {
+                    return DropdownMenuItem<int>(
+                      value: v,
+                      child: Text('Cada ${v}h'),
+                    );
+                  }).toList(),
+                  onChanged: (v) => setState(() => _hydrationIntervalHours = v),
+                ),
+              ],
+            ),
           ),
+
+        // Alergías
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          decoration: const InputDecoration(
+            labelText: 'Alergías a algún alimento',
+            border: OutlineInputBorder(),
+          ),
+          items: <String>[
+            'Ninguna',
+            'Leche de vaca',
+            'Maní',
+            'Nueces',
+            'Pescado',
+            'Mariscos',
+            'Soya',
+            'Gluten',
+            'Frutas',
+            'Verduras',
+            'Semillas',
+            'Chocolate',
+            'Maíz',
+            'Aditivos',
+            'Levadura',
+          ].map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+          onChanged: (v) {
+            // Manejar el cambio de alergías
+          },
         ),
 
         const SizedBox(height: 24),
-        ElevatedButton(onPressed: _submitRoutine, child: const Text('Guardar rutina')),
+        ElevatedButton(
+          onPressed: _submitRoutine,
+          child: const Text('Guardar rutina'),
+        ),
 
         const SizedBox(height: 16),
-        if (_dinnerTime != null || _bathTime != null)
+        if (_breakfastTime != null || _lunchTime != null || _dinnerTime != null || _bathTime != null)
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Rutina actual', style: TextStyle(fontWeight: FontWeight.w600)),
+                  const Text(
+                    'Rutina actual',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                   const SizedBox(height: 8),
-                  Text('Cena: ${_timeText(_dinnerTime, context)}'),
-                  Text('Baño: ${_timeText(_bathTime, context)}'),
+                  if (_breakfastTime != null) Text('Desayuno: ${_timeText(_breakfastTime, context)}'),
+                  if (_lunchTime != null) Text('Almuerzo: ${_timeText(_lunchTime, context)}'),
+                  if (_dinnerTime != null) Text('Cena: ${_timeText(_dinnerTime, context)}'),
+                  if (_bathTime != null) Text('Baño: ${_timeText(_bathTime, context)}'),
                 ],
               ),
             ),
           ),
       ],
+    );
+  }
+
+  // Nuevo helper para construir el ListTile con selector de hora
+  Widget _buildTimePickerTile({
+    required String title,
+    required TimeOfDay? time,
+    required ValueChanged<TimeOfDay?> onChanged,
+  }) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(title),
+      subtitle: Text(_timeText(time, context)),
+      trailing: TextButton(
+        onPressed: () async {
+          final picked = await showTimePicker(
+            context: context,
+            initialTime: time ?? TimeOfDay.now(),
+          );
+          if (picked != null) onChanged(picked);
+        },
+        child: const Text('Seleccionar'),
+      ),
     );
   }
 }
