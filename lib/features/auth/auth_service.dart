@@ -1,6 +1,6 @@
+// Clase para manejar la autenticación del usuario, lo que hace es comunicarse con el backend y enviar las solicitudes de inicio de sesión y registro
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
 
 class AuthService {
   final String baseUrl = 'http://10.0.2.2:8080/api/auth';
@@ -41,10 +41,8 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print('Login correcto: $data');
       return true;
     } else {
-      print('Error login: ${response.statusCode} - ${response.body}');
       return false;
     }
   }
