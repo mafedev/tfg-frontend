@@ -23,7 +23,7 @@ class PatientHomeScreen extends StatelessWidget {
               SizedBox(height: 20),
               Text(
                 "Este es su ID de paciente: 12345",
-                style: TextStyle(
+                style: TextStyle( 
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,

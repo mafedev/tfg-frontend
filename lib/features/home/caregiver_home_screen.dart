@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/app_colors.dart';
+import 'rutine_service.dart';
 
 // Pantalla principal para el cuidador que permite:
 //  - Ingresar el código numérico de un paciente.
@@ -28,6 +29,9 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   bool _enableHydrationReminders = false;
   int? _hydrationIntervalHours;
 
+  // indicador de guardado
+  bool _isSaving = false;
+
   // Método para confirmar el código (sin validaciones)
   void _submitPatientCode() {
     setState(() {
@@ -39,10 +43,27 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   }
 
   // Guardar rutina
-  void _submitRoutine() {
-    setState(() {
-      // Para luego
-    });
+  Future<void> _submitRoutine() async {
+    if (_isSaving) return; // evitar reentradas
+    setState(() => _isSaving = true);
+
+    final service = RutineService();
+    final success = await service.saveRutine(
+      _breakfastTime,
+      _lunchTime,
+      _dinnerTime,
+      _bathTime,
+      _enableHydrationReminders,
+      _hydrationIntervalHours,
+    );
+
+    setState(() => _isSaving = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success ? 'Rutina guardada correctamente' : 'Error al guardar la rutina'),
+      ),
+    );
   }
 
   // Muestra '--:--'
@@ -179,28 +200,20 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
           items: <String>[
             'Ninguna',
             'Leche de vaca',
-            'Maní',
-            'Nueces',
+            'Huevo',
+            'Cacahuate',
             'Pescado',
             'Mariscos',
-            'Soya',
-            'Gluten',
-            'Frutas',
-            'Verduras',
-            'Semillas',
-            'Chocolate',
-            'Maíz',
-            'Aditivos',
-            'Levadura',
+            'Soja',
+            'Trigo',
+            'Otros',
           ].map((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
             );
           }).toList(),
-          onChanged: (v) {
-            // Manejar el cambio de alergías
-          },
+          onChanged: (v) {},
         ),
 
         const SizedBox(height: 24),
