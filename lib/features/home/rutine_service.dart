@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class RutineService {
-  final String baseUrl = 'http://10.0.2.2:8080/api/';
+  final String baseUrl = 'http://10.0.2.2:8080/api';
 
   String _formatTime(TimeOfDay? t) {
     if (t == null) return '';
@@ -25,17 +25,18 @@ class RutineService {
     });
 
     try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: body,
-      );
+      final response = await http
+          .post(url, headers: {'Content-Type': 'application/json'}, body: body)
+          .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        print('Rutina guardada correctamente');
+      // Log para depuración
+      print('POST $url -> ${response.statusCode}');
+      print('Request body: $body');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
         return true;
       } else {
-        print('Error al guardar rutina: ${response.statusCode}');
         return false;
       }
     } catch (e) {
