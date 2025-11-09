@@ -10,22 +10,23 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>(); // Clave del formulario, para validación
 
-  final nameController = TextEditingController();
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final nameController = TextEditingController(); // Controlador para el campo de nombre
+  final emailController = TextEditingController(); // Controlador para el campo de correo
+  final passwordController = TextEditingController(); // Controlador para el campo de contraseña
+  String selectedValue = 'Cuidador';
 
   @override
   Widget build(BuildContext context) {
-    final double maxWidth = 520;
+    final double maxWidth = 520; // Ancho máximo para pantallas grandes
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Registro')),
+      appBar: AppBar(title: const Text('Registro')), // Barra superior con título
       body: SafeArea(
         child: Center(
-          child: ConstrainedBox(
+          child: ConstrainedBox( // Limita el ancho máximo del contenido
             constraints: BoxConstraints(maxWidth: maxWidth),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -36,8 +37,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
-                  child: Form(
-                    key: _formKey,
+                  child: Form( // Formulario de registro
+                    key: _formKey, // Asocia la clave del formulario
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,30 +53,35 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         const SizedBox(height: 12),
 
+                        /* NOMBRE */
                         TextFormField(
                           controller: nameController,
                           decoration: const InputDecoration(
-                            labelText: 'Nombre completo',
-                            hintText: 'Tu nombre',
+                            labelText: 'Introduzca su nombre',
+                            hintText: 'Ej: Juan Pérez',
                           ),
-                          validator: (v) => (v == null || v.isEmpty)
-                              ? 'Introduce tu nombre'
+                          // Validación del campo de nombre
+                          validator: (v) => (v == null || v.isEmpty) // se asegura que no esté vacío
+                              ? 'Introduzca su nombre' // mensaje de error si está vacío
                               : null,
                         ),
 
+                        /* CORREO */
                         TextFormField(
                           controller: emailController,
                           decoration: const InputDecoration(
-                            labelText: 'Correo',
+                            labelText: 'Introduzca su correo',
                             hintText: 'tucorreo@ejemplo.com',
                             prefixIcon: Icon(Icons.email),
                           ),
-                          keyboardType: TextInputType.emailAddress,
+                          keyboardType: TextInputType.emailAddress, // Teclado específico para email
+                          // Validación del campo de correo
                           validator: (v) => (v == null || v.isEmpty)
                               ? 'Introduce tu correo'
                               : null,
                         ),
 
+                        /* CONTRASEÑA */ 
                         TextFormField(
                           controller: passwordController,
                           decoration: const InputDecoration(
@@ -87,27 +93,51 @@ class _SignupScreenState extends State<SignupScreen> {
                               : null,
                         ),
 
+                        
+                        /* SELECCIÓN DE ROL */
+                        Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 8.0),
+                            child: Text('Selecciona una opción'),
+                          ),
+                          DropdownButton<String>(
+                            value: selectedValue,
+                            underline: const SizedBox.shrink(), // quita la línea
+                            isExpanded: true,
+                            items: ['Cuidador', 'Paciente']
+                                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                                .toList(),
+                            onChanged: (value) => setState(() => selectedValue = value!),
+                          ),
+                        ],
+                      ),
+
+                        /* BOTÓN DE REGISTRO */
                         ElevatedButton(
-                          onPressed: () async {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              final authService = AuthService();
-                              final success = await authService.signup(
+                          onPressed: () async { // Acción al pulsar el botón
+                            if (_formKey.currentState?.validate() ?? false) { // si la clave del formulario es válida y no es nula
+                              final authService = AuthService(); // instancia del servicio de autenticación
+                              final success = await authService.signup( // llama al método de registro
+                                // obtiene los valores de los controladores y los limpia de espacios
                                 username: nameController.text.trim(),
                                 email: emailController.text.trim(),
                                 password: passwordController.text,
+                                role: selectedValue.trim()
                               );
 
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                              if (success) { // si el registro fue exitoso
+                                ScaffoldMessenger.of(context).showSnackBar( // muestra un mensaje de éxito
                                   const SnackBar(
                                     content: Text(
                                       'Cuenta creada correctamente',
                                     ),
                                   ),
                                 );
-                                Navigator.pop(context); // volver al login
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                Navigator.pop(context); // vuelve a la pantalla anterior (login)
+                              } else { // si hubo un error en el registro, muestra un mensaje de error
+                                ScaffoldMessenger.of(context).showSnackBar( 
                                   const SnackBar(
                                     content: Text('Error al crear cuenta'),
                                   ),

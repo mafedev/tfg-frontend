@@ -9,11 +9,12 @@ class AuthService {
     required String username,
     required String email,
     required String password,
+    required String role
   }) async {
     final url = Uri.parse('$baseUrl/signup');
 
     // Validación local básica antes de enviar
-    if (username.isEmpty || email.isEmpty || password.isEmpty) {
+    if (username.isEmpty || email.isEmpty || password.isEmpty || role.isEmpty) {
       return false;
     }
 
@@ -24,6 +25,7 @@ class AuthService {
         'username': username,
         'email': email,
         'password': password,
+        'role': role
       }),
     );
 
