@@ -32,7 +32,7 @@ class AuthService {
     return response.statusCode == 200 || response.statusCode == 201;
   }
 
-  Future<bool> login(String email, String password) async {
+  Future<Map<String, dynamic>?> login(String email, String password) async {
     final url = Uri.parse('$baseUrl/login');
 
     final response = await http.post(
@@ -43,9 +43,9 @@ class AuthService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return true;
+      return data;
     } else {
-      return false;
+      return null;
     }
   }
 }

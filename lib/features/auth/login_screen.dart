@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/features/auth/auth_service.dart';
 import 'package:tfg_frontend/features/auth/signup_screen.dart';
-import 'package:tfg_frontend/features/home/home_screen.dart';
+import 'package:tfg_frontend/features/caregiver/caregiver_home_screen.dart';
+import 'package:tfg_frontend/features/patient/patient_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Padding(
                     // Padding interno de la tarjeta
                     padding: const EdgeInsets.all(20),
-                    
+
                     // ----------- Formulario -----------
                     child: Form(
                       key: _formKey, // Clave del formulario
@@ -100,13 +101,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               if (_formKey.currentState?.validate() ?? false) { 
                                 final authService = AuthService(); // instancia
                                 // llama al método de login del AuthService
-                                final success = await authService.login(
+                                final userData = await authService.login(
                                   emailController.text,
                                   passwordController.text,
                                 );
 
                                 // si el login fue exitoso
-                                if (success) {
+                                if (userData != null) {
                                   // muestra un snackbar de éxito
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -115,14 +116,21 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                                   );
-                                  // navega a la pantalla de inicio, reemplazando la actual
+                                  // navega a la pantalla del rol especifico
                                   // "pushReplacement" reemplaza la pantalla actual (ya no se puede volver atrás)
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const HomeScreen(),
-                                    ),
-                                  ); // o la pantalla principal
+                                  String role = userData['role'];
+
+                                  if(role == 'Cuidador'){ // si es cuidador, muestra el home de cuidador
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(builder: (_) => const CaregiverHomeScreen())
+                                    );
+                                  } else if(role == 'Paciente'){ // si es paciente muestra el home de paciente
+                                    Navigator.pushReplacement(
+                                      context, 
+                                      MaterialPageRoute(builder: (_) => const PatientHomeScreen())
+                                      );
+                                  }
                                 } else {
                                   // si el login falló, muestra un snackbar de error
                                   ScaffoldMessenger.of(context).showSnackBar(
