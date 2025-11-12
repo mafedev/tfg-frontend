@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/features/auth/auth_service.dart';
 import 'package:tfg_frontend/features/auth/signup_screen.dart';
-import 'package:tfg_frontend/core/app_colors.dart';
 import 'package:tfg_frontend/features/home/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -12,26 +11,27 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _formKey = GlobalKey<FormState>(); // Clave del formulario
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>(); // clave para acceder al estado del Form (validación, save, reset)
+  final emailController = TextEditingController(); // controlador para el campo de correo (leer/limpiar/escuchar texto)
+  final passwordController = TextEditingController(); // controlador para el campo de contraseña
 
   @override
   Widget build(BuildContext context) {
-    const double maxWidth = 420;
+    const double maxWidth = 420; // límite de ancho para centrar en pantallas grandes
 
     return Scaffold(
       // Quitamos el backgroundColor para que se vea el fondo pintado
       body: CustomPaint(
-        painter: DiagonalBackgroundPainter(), // Pinta el fondo con la diagonal
+        // painter: DiagonalBackgroundPainter(), // Pinta el fondo con la diagonal
         child: SafeArea(
           // Evita que el contenido quede detrás de cosas del sistema
           child: Center(
             // Centra el contenido
             child: ConstrainedBox(
-              // Limita el ancho máximo del contenido
+              // Limita el ancho máximo del contenido a maxWidth
               constraints: const BoxConstraints(maxWidth: maxWidth),
               child: Padding(
+                // Espacio alrededor de la tarjeta
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 24,
@@ -46,27 +46,28 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Padding(
                     // Padding interno de la tarjeta
                     padding: const EdgeInsets.all(20),
-                    // Formulario
+                    
+                    // ----------- Formulario -----------
                     child: Form(
                       key: _formKey, // Clave del formulario
                       child: Column(
                         // Columna para los campos y botones
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min, // ocupa solo lo necesario
+                        crossAxisAlignment: CrossAxisAlignment.stretch, // estira hijos horizontalmente
                         children: [
                           const Text(
-                            'Bienvenido',
+                            'Bienvenido', // título del formulario
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 12), // separación vertical
 
-                          // Correo
+                          // ----------- Correo -----------
                           TextFormField(
-                            controller: emailController,
+                            controller: emailController, // conecta el TextFormField con emailController
                             decoration: const InputDecoration(
                               labelText: 'Correo',
                               hintText: 'tucorreo@ejemplo.com',
@@ -75,9 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             keyboardType: TextInputType
                                 .emailAddress, // Que el teclado sea de email
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 12), // separación
 
-                          // Contraseña
+                          // ----------- Contraseña -----------
                           TextFormField(
                             controller: passwordController,
                             decoration: const InputDecoration(
@@ -85,22 +86,28 @@ class _LoginScreenState extends State<LoginScreen> {
                               prefixIcon: Icon(Icons.lock),
                             ),
                             // obscureText: true,
-                            validator: (v) => (v == null || v.isEmpty)
+                            validator: (v) => (v == null || v.isEmpty)  // validación simple, si está vacío devuelve el mensaje, si no, nulo (válido)
                                 ? 'Introduce tu contraseña'
                                 : null,
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 16), // separación
 
+                          // ----------- Botón de login -----------
                           ElevatedButton(
-                            onPressed: () async {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                final authService = AuthService();
+                            onPressed: () async { // cuando se pulsa, valida el formulario
+                            // si el estado del formulario no es null, y todos los campos son válidos
+                            // el ?? es como un else, pone false en caso de que currentState sea null
+                              if (_formKey.currentState?.validate() ?? false) { 
+                                final authService = AuthService(); // instancia
+                                // llama al método de login del AuthService
                                 final success = await authService.login(
                                   emailController.text,
                                   passwordController.text,
                                 );
 
+                                // si el login fue exitoso
                                 if (success) {
+                                  // muestra un snackbar de éxito
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text(
@@ -108,6 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                                   );
+                                  // navega a la pantalla de inicio, reemplazando la actual
+                                  // "pushReplacement" reemplaza la pantalla actual (ya no se puede volver atrás)
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -115,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                                   ); // o la pantalla principal
                                 } else {
+                                  // si el login falló, muestra un snackbar de error
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Credenciales incorrectas'),
@@ -123,27 +133,27 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                               }
                             },
-
-                            style: ElevatedButton.styleFrom(
+                            style: ElevatedButton.styleFrom( // estilo del botón
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
-                            child: const Text('Iniciar sesión'),
+                            child: const Text('Iniciar sesión'), // texto del botón
                           ),
 
-                          const SizedBox(height: 8),
+                          // ----------- Enlace a Signup -----------
+                          const SizedBox(height: 8), // separación
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center, // centra horizontalmente
                             children: [
                               const Text('¿No tienes una cuenta?'),
                               TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).push(
+                                onPressed: () { // si se presiona el botón, navega a la pantalla de Signup
+                                  Navigator.of(context).push( // "push" añade una nueva pantalla a la pila de navegación
                                     MaterialPageRoute(
                                       builder: (_) => const SignupScreen(),
                                     ),
                                   );
                                 },
-                                child: const Text('Regístrate'),
+                                child: const Text('Regístrate'), // texto del botón
                               ),
                             ],
                           ),
@@ -161,30 +171,30 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 }
 
-class DiagonalBackgroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
+// class DiagonalBackgroundPainter extends CustomPainter {
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final paint = Paint();
 
-    // Color superior izquierdo
-    paint.color = AppColors.primary;
-    final path1 = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(path1, paint);
+//     // Color superior izquierdo
+//     paint.color = AppColors.primary;
+//     final path1 = Path()
+//       ..moveTo(0, 0)
+//       ..lineTo(size.width, 0)
+//       ..lineTo(0, size.height)
+//       ..close();
+//     canvas.drawPath(path1, paint);
 
-    // Color inferior derecho
-    paint.color = AppColors.secondary;
-    final path2 = Path()
-      ..moveTo(size.width, 0)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(path2, paint);
-  }
+//     // Color inferior derecho
+//     paint.color = AppColors.secondary;
+//     final path2 = Path()
+//       ..moveTo(size.width, 0)
+//       ..lineTo(size.width, size.height)
+//       ..lineTo(0, size.height)
+//       ..close();
+//     canvas.drawPath(path2, paint);
+//   }
 
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+// }
