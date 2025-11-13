@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/app_colors.dart';
-import 'rutine_service.dart';
+import 'service/rutine_service.dart';
 
-// Pantalla principal para el cuidador que permite:
-//  - Ingresar el código numérico de un paciente.
-//  - Definir horarios de rutina y de medicación
+// Home del cuidador
 class CaregiverHomeScreen extends StatefulWidget {
   const CaregiverHomeScreen({super.key});
 
@@ -12,12 +10,10 @@ class CaregiverHomeScreen extends StatefulWidget {
   State<CaregiverHomeScreen> createState() => _CaregiverHomeScreenState();
 }
 
+// Estado de la pantalla principal del cuidador
 class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
-  // Código que escribe el usuario (sin controlador)
-  String _inputCode = '';
-
-  // Código
-  String? _patientCode;
+  // // Código
+  // String? _patientCode;
 
   // Horarios de comida
   TimeOfDay? _breakfastTime;
@@ -25,26 +21,16 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   TimeOfDay? _dinnerTime;
   TimeOfDay? _bathTime;
 
-  // Hidratación: activar recordatorios y intervalo en horas
+  // Hidratación: activar recordatorios e intervalo en horas
   bool _enableHydrationReminders = false;
   int? _hydrationIntervalHours;
 
   // indicador de guardado
   bool _isSaving = false;
 
-  // Método para confirmar el código (sin validaciones)
-  void _submitPatientCode() {
-    setState(() {
-      _patientCode = _inputCode.trim();
-      if(_patientCode!.isEmpty) {
-        _patientCode = null; // No aceptar códigos vacíos
-      }
-    });
-  }
-
   // Guardar rutina
   Future<void> _submitRoutine() async {
-    if (_isSaving) return; // evitar reentradas
+    if (_isSaving) return; // evita reentradas
     setState(() => _isSaving = true);
 
     final service = RutineService();
@@ -57,8 +43,9 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
       _hydrationIntervalHours,
     );
 
-    setState(() => _isSaving = false);
+    setState(() => _isSaving = false); // hace disponible de nuevo el guardado
 
+    // Mostrar mensaje de éxito o error
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(success ? 'Rutina guardada correctamente' : 'Error al guardar la rutina'),
@@ -72,50 +59,38 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Home cuidador'), backgroundColor: AppColors.primary,),
+      appBar: AppBar(title: const Text('Cuidador'), backgroundColor: AppColors.primary,),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: _patientCode == null
-            ? _buildPatientCodeInput()
-            : _buildRoutineForm(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _selectPatient(),
+            const SizedBox(height: 16),
+            _buildRoutineForm(),
+          ],
+        ),
       ),
     );
   }
 
-  // Ingresar el código del paciente
-  Widget _buildPatientCodeInput() {
+  Widget _selectPatient(){
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.stretch, // Alinea al inicio
       children: [
         const Text(
-          'Ingrese el código del paciente',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          keyboardType: TextInputType.number,
-          onChanged: (v) => _inputCode = v, // Actualiza el valor
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: 'Código del paciente',
-          ),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: _submitPatientCode,
-          child: const Text('Aceptar'),
-        ),
+          'Seleccione el paciente:'
+        )
       ],
     );
   }
-
   // Formulario para ingresar la rutina
   Widget _buildRoutineForm() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          'Agregue la rutina del paciente Nombre($_patientCode)',
+          'Agregue la rutina del paciente Nombre()',
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 16),
