@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/features/auth/auth_service.dart';
 import 'package:tfg_frontend/features/auth/signup_screen.dart';
 import 'package:tfg_frontend/features/caregiver/caregiver_home_screen.dart';
+import 'package:tfg_frontend/features/navigation/navbar.dart';
 import 'package:tfg_frontend/features/patient/patient_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -123,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   if(role == 'Cuidador'){ // si es cuidador, muestra el home de cuidador
                                     Navigator.pushReplacement(
                                       context,
-                                      MaterialPageRoute(builder: (_) => const CaregiverHomeScreen())
+                                      MaterialPageRoute(builder: (_) => Navbar())
                                     );
                                   } else if(role == 'Paciente'){ // si es paciente muestra el home de paciente
                                     Navigator.pushReplacement(
