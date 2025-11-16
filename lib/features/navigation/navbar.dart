@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/features/caregiver/caregiver_follow_up_screen.dart';
 import 'package:tfg_frontend/features/caregiver/caregiver_home_screen.dart';
+import 'package:tfg_frontend/features/caregiver/caregiver_patients_screen.dart';
+import 'package:tfg_frontend/features/caregiver/caregivers_routines_screen.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({super.key});
@@ -13,7 +16,10 @@ class _NavbarState extends State<Navbar> {
 
   final List<Widget> _pages = [
     CaregiverHomeScreen(),
-    Center(child: Text('Segunda pestaña')),
+    CaregiverPatientsScreen(),
+    CaregiversRoutinesScreen(),
+    CaregiverFollowUpScreen(),
+    Center(child: Text('Menú')),
   ];
   // páginas / screens
 
@@ -29,10 +35,12 @@ class _NavbarState extends State<Navbar> {
           });
         },
         items: const [
-  BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-  BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Opciones'),
-],
-
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.people_alt),label: 'Pacientes'),
+          BottomNavigationBarItem(icon: Icon(Icons.edit_calendar), label: 'Rutinas'),
+          BottomNavigationBarItem(icon: Icon(Icons.handshake_sharp), label: 'Seguimiento'),
+          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu')
+        ],
       ),
     );
   }
