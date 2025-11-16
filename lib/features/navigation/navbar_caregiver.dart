@@ -5,14 +5,14 @@ import 'package:tfg_frontend/features/caregiver/caregiver_home_screen.dart';
 import 'package:tfg_frontend/features/caregiver/caregiver_patients_screen.dart';
 import 'package:tfg_frontend/features/caregiver/caregivers_routines_screen.dart';
 
-class Navbar extends StatefulWidget {
-  const Navbar({super.key});
+class NavbarCaregiver extends StatefulWidget {
+  const NavbarCaregiver({super.key});
 
   @override
-  State<Navbar> createState() => _NavbarState();
+  State<NavbarCaregiver> createState() => _NavbarCaregiverState();
 }
 
-class _NavbarState extends State<Navbar> {
+class _NavbarCaregiverState extends State<NavbarCaregiver> {
   int _currentPage = 0; // saber la página actual
 
   final List<Widget> _pages = [
