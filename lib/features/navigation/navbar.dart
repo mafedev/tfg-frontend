@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/app_colors.dart'; // añadimos colores de la app
 import 'package:tfg_frontend/features/caregiver/caregiver_follow_up_screen.dart';
 import 'package:tfg_frontend/features/caregiver/caregiver_home_screen.dart';
 import 'package:tfg_frontend/features/caregiver/caregiver_patients_screen.dart';
@@ -28,6 +29,10 @@ class _NavbarState extends State<Navbar> {
     return Scaffold(
       body: _pages[_currentPage],
       bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed, // asegura que los colores se apliquen correctamente
+        selectedItemColor: AppColors.primary, // color para cuando está seleccionado
+        unselectedItemColor: Colors.grey[600], // si no está seleccionado
+        showUnselectedLabels: true,
         currentIndex: _currentPage,
         onTap: (index) {
           setState(() {
