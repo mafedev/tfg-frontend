@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/features/auth/auth_service.dart';
 import 'package:tfg_frontend/features/auth/signup_screen.dart';
-import 'package:tfg_frontend/features/caregiver/caregiver_home_screen.dart';
 import 'package:tfg_frontend/features/navigation/navbar_caregiver.dart';
 import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
-import 'package:tfg_frontend/features/patient/patient_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -122,12 +120,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                   // "pushReplacement" reemplaza la pantalla actual (ya no se puede volver atrás)
                                   String role = userData['role'];
 
-                                  if(role == 'Cuidador'){ // si es cuidador, muestra el home de cuidador
+                                  if(role == 'CUIDADOR'){ // si es cuidador, muestra el home de cuidador
                                     Navigator.pushReplacement(
                                       context,
                                       MaterialPageRoute(builder: (_) => NavbarCaregiver())
                                     );
-                                  } else if(role == 'Paciente'){ // si es paciente muestra el home de paciente
+                                  } else if(role == 'PACIENTE'){ // si es paciente muestra el home de paciente
                                     Navigator.pushReplacement(
                                       context, 
                                       MaterialPageRoute(builder: (_) => NavbarPatient())
