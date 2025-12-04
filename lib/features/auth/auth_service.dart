@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class AuthService {
-  final String baseUrl = 'http://10.0.2.2:8080/api/auth';
+  final String baseUrl = 'http://127.0.0.1:8080/api/auth';
 
   Future<bool> signup({
     required String username,
