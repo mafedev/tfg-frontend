@@ -9,27 +9,36 @@ class AuthService {
     required String username,
     required String email,
     required String password,
-    required String role
+    required String role,
+    required String phone,
   }) async {
     final url = Uri.parse('$baseUrl/signup');
 
     // Validación local básica antes de enviar
-    if (username.isEmpty || email.isEmpty || password.isEmpty || role.isEmpty) {
+    if (username.isEmpty || email.isEmpty || password.isEmpty || role.isEmpty || phone.isEmpty) {
+      print('Signup local validation failed: missing fields');
       return false;
     }
 
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': username,
-        'email': email,
-        'password': password,
-        'role': role
-      }),
-    );
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': username,
+          'email': email,
+          'password': password,
+          'role': role,
+          'phone': phone
+        }),
+      );
 
-    return response.statusCode == 200 || response.statusCode == 201;
+      print('SIGNUP ${response.statusCode} ${response.body}');
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print('Signup error: $e');
+      return false;
+    }
   }
 
   Future<Map<String, dynamic>?> login(String email, String password) async {

@@ -15,6 +15,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final nameController = TextEditingController(); // Controlador para el campo de nombre
   final emailController = TextEditingController(); // Controlador para el campo de correo
   final passwordController = TextEditingController(); // Controlador para el campo de contraseña
+  final phoneController = TextEditingController(); // Controlador para el campo teléfono
   String selectedValue = 'Cuidador';
 
   @override
@@ -93,6 +94,17 @@ class _SignupScreenState extends State<SignupScreen> {
                               : null,
                         ),
 
+                        TextFormField(
+                            controller: phoneController,
+                            decoration: const InputDecoration(
+                              labelText: 'Teléfono',
+                            ),
+                            validator: (v) => (v == null || v.isEmpty)
+                              ? 'Introduzca su teléfono'
+                              : null,
+                        ),
+                        
+                        const SizedBox(height: 25),
                         
                         /* SELECCIÓN DE ROL */
                         Column(
@@ -114,6 +126,8 @@ class _SignupScreenState extends State<SignupScreen> {
                         ],
                       ),
 
+                      const SizedBox(height: 20),
+
                         /* BOTÓN DE REGISTRO */
                         ElevatedButton(
                           onPressed: () async { // Acción al pulsar el botón
@@ -124,7 +138,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                 username: nameController.text.trim(),
                                 email: emailController.text.trim(),
                                 password: passwordController.text,
-                                role: selectedValue.trim()
+                                role: selectedValue.trim(),
+                                phone: phoneController.text
                               );
 
                               if (success) { // si el registro fue exitoso
