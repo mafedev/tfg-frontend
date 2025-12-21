@@ -29,4 +29,30 @@ class RelationService {
       return null;
     }
   }
+
+  Future<String?> linkPatient(String code) async {
+    final token = await _storage.getToken();
+
+    if(token == null) {
+      return null;
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/link'),
+      headers: {
+        'Content-Type' : 'application/json',
+        'Authorization' : 'Bearer $token'
+      },
+      body: jsonEncode({
+        'code': code,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['relationCode'];
+    } else {
+      return null;
+    }
+  }
 }
