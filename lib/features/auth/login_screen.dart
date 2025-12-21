@@ -3,6 +3,7 @@ import 'package:tfg_frontend/features/auth/auth_service.dart';
 import 'package:tfg_frontend/features/auth/signup_screen.dart';
 import 'package:tfg_frontend/features/navigation/navbar_caregiver.dart';
 import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
+import 'package:tfg_frontend/core/secure_storage_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -108,6 +109,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                                 // si el login fue exitoso
                                 if (userData != null) {
+                                  final storage = SecureStorageService();
+                                  final token = userData['token'];
+                                  await storage.saveToken(token);
+
                                   // muestra un snackbar de éxito
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -178,31 +183,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-
-// class DiagonalBackgroundPainter extends CustomPainter {
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final paint = Paint();
-
-//     // Color superior izquierdo
-//     paint.color = AppColors.primary;
-//     final path1 = Path()
-//       ..moveTo(0, 0)
-//       ..lineTo(size.width, 0)
-//       ..lineTo(0, size.height)
-//       ..close();
-//     canvas.drawPath(path1, paint);
-
-//     // Color inferior derecho
-//     paint.color = AppColors.secondary;
-//     final path2 = Path()
-//       ..moveTo(size.width, 0)
-//       ..lineTo(size.width, size.height)
-//       ..lineTo(0, size.height)
-//       ..close();
-//     canvas.drawPath(path2, paint);
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-// }
