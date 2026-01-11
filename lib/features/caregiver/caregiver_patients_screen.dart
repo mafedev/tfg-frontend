@@ -73,8 +73,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              PatientDetailsScreen(patient: patient),
+                          builder: (_) => PatientDetailsScreen(patientId: patient.id),
                         ),
                       );
                     },
