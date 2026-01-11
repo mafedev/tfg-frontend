@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/features/caregiver/patient_details_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/relation/relation_service.dart';
 
@@ -67,6 +68,16 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                     leading: const Icon(Icons.person),
                     title: Text(patient.username),
                     subtitle: Text('ID: ${patient.id}'),
+                    // Al hacer click sobre el paciente, redirige a la pantalla de detalle
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              PatientDetailsScreen(patient: patient),
+                        ),
+                      );
+                    },
                   );
                 },
                 separatorBuilder: (context, index) => const Divider(), // divide cada paciente
