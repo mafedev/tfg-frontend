@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/secure_storage_service.dart';
+import 'models/patient.dart';
 
 class RelationService {
   final String baseUrl = 'http://10.0.2.2:8080/api/relations';
   final SecureStorageService _storage = SecureStorageService();
 
-  // Botón de generar
+  // ------------------- Botón de generar ------------------- 
   Future<String?> generateRelationCode() async {
     final token = await _storage.getToken();
 
@@ -30,6 +31,7 @@ class RelationService {
     }
   }
 
+  // ------------------- Enlaza al paciente con el cuidador ------------------- 
   Future<String?> linkPatient(String code) async {
     final token = await _storage.getToken();
 
@@ -53,6 +55,29 @@ class RelationService {
       return data['relationCode'];
     } else {
       return null;
+    }
+  }
+
+  // ------------------- Obtiene la lista de pacientes por cuidador ------------------- 
+  Future<List<Patient>> getPatients() async {
+    final token = await _storage.getToken();
+
+    if (token == null) {
+      return [];
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/pacients'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+      return data.map((e) => Patient.fromJson(e)).toList();
+    } else {
+      return [];
     }
   }
 }
