@@ -2,13 +2,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:tfg_frontend/core/secure_storage_service.dart';
+import 'package:tfg_frontend/features/relation/models/patient.dart';
 
 class PatientService {
   final String baseUrl = 'http://10.0.2.2:8080/api'; // url base
   final SecureStorageService _storage = SecureStorageService(); // es para obtener el token guardado
 
   // ------------------- Obtener los detalles por paciente -------------------
-  Future<Map<String, dynamic>?> getPatientDetails(int patientId) async { // recibe el id del paciente para poder hacer la petición
+  Future<Patient?> getPatientDetails(int patientId) async { // recibe el id del paciente para poder hacer la petición
     final token = await _storage.getToken(); // se obtiene el token desde el secure storage
 
 // hace la petición
@@ -21,7 +22,7 @@ class PatientService {
     );
 
     if(response.statusCode == 200){ // si todo salió bien
-      return json.decode(response.body); // pasa el String a Map y lo devuelve
+      return Patient.fromJson(json.decode(response.body));
     } else { // sino devuelve null
       return null;
     }
