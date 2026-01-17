@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/app_colors.dart';
-import 'service/rutine_service.dart';
 
 // Home del cuidador
 class CaregiverHomeScreen extends StatefulWidget {
@@ -47,15 +46,4 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
       ),
     );
   }
-}
-
-Widget _buildGridItem(String text) {
-  return Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-    ),
-    alignment: Alignment.center,
-    child: Text(text, style: const TextStyle(fontSize: 18)),
-  );
 }
