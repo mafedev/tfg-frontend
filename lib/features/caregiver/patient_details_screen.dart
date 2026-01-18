@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/relation/patient_service.dart';
-import 'package:tfg_frontend/features/relation/relation_service.dart';
 
 class PatientDetailsScreen extends StatefulWidget {
   final int patientId;
 
+  // Recibe el id del paciente
   const PatientDetailsScreen({super.key, required this.patientId});
 
   @override
@@ -12,9 +13,12 @@ class PatientDetailsScreen extends StatefulWidget {
 }
 
 class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
+  // Servicio encargado de obtener los datos del paciente desde el backend
   final PatientService _patientService = PatientService();
 
-  Map<String, dynamic>? patient;
+  // Contiene el paciente una vez se obtenga la respuesta
+  // Es nullable porque al inicio aún no se ha cargado la información
+  Patient? patient;
 
   @override
   void initState(){
@@ -22,6 +26,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     _loadPatient();
   }
 
+  // Obtiene los datos del paciente
   void _loadPatient() async {
     final result = await _patientService.getPatientDetails(widget.patientId);
     setState(() {
@@ -31,7 +36,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Si patient es null, mostramos un texto simple
+    // Si patient es null, mostramos un mensaje de carga
     if (patient == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Detalle del paciente')),
@@ -39,6 +44,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
       );
     }
 
+    // Cuando el paciente ya cargo, muestra los datos
     return Scaffold(
       appBar: AppBar(title: const Text('Detalle del paciente')),
       body: Padding(
@@ -51,18 +57,19 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                // obtiene los datos guardados para mostrarlos
                 children: [
                   Text(
-                    '${patient!['username']}',
+                    patient!.username,
                     style: const TextStyle(fontSize: 30),
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'ID: ${patient!['id']}',
+                    'ID: ${patient!.id}',
                     style: const TextStyle(fontSize: 16),
                   ),
                   Text(
-                    'Teléfono: ${patient!['phone']}',
+                    'Teléfono: ${patient!.phone}',
                       style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 20),
