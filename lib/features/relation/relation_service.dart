@@ -67,7 +67,7 @@ class RelationService {
     }
 
     final response = await http.get(
-      Uri.parse('$baseUrl/pacients'),
+      Uri.parse('$baseUrl/patients'),
       headers: {
         'Authorization': 'Bearer $token',
       },
@@ -79,5 +79,23 @@ class RelationService {
     } else {
       return [];
     }
+  }
+
+  // ------------------- Elimina la relación entre cuidador y paciente ------------------- 
+  Future<bool> deleteRelation(int patientId) async {
+    final token = await _storage.getToken();
+
+    if (token == null) {
+      return false;
+    }
+
+    final response = await http.delete(
+      Uri.parse('$baseUrl/$patientId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    return response.statusCode == 200;
   }
 }
