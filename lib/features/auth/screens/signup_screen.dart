@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/app_colors.dart';
-import 'package:tfg_frontend/features/auth/auth_service.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/auth/services/auth_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});

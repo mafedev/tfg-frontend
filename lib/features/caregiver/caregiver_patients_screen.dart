@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/app_colors.dart';
-import 'package:tfg_frontend/features/caregiver/patient_details_screen.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/caregiver/screens/patient_details_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
-import 'package:tfg_frontend/features/relation/relation_service.dart';
+import 'package:tfg_frontend/features/relation/services/relation_service.dart';
 
 class CaregiverPatientsScreen extends StatefulWidget {
   const CaregiverPatientsScreen({super.key});

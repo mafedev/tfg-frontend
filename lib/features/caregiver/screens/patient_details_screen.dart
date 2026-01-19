@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
-import 'package:tfg_frontend/features/relation/patient_service.dart';
+import 'package:tfg_frontend/features/patient/services/patient_service.dart';
 
 class PatientDetailsScreen extends StatefulWidget {
   final int patientId;

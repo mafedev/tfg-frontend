@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/features/relation/relation_service.dart';
+import 'package:tfg_frontend/features/relation/services/relation_service.dart';
 
 // Esta pantalla es para el paciente. Permite vincularse con un cuidador usando el código de vinculación
 class PatientHomeScreen extends StatefulWidget {
