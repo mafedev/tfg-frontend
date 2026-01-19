@@ -15,7 +15,6 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   String? relationCode;
   final RelationService _relationService = RelationService();
   List<Patient> patients = []; // lista de pacientes por cuidador
-  bool deleteMode = false; // activa/desactiva el modo eliminar
 
   @override
   void initState() {
@@ -99,16 +98,6 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pacientes vinculados'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              setState(() {
-                deleteMode = !deleteMode; // activa/desactiva modo eliminar
-              });
-            },
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
@@ -124,22 +113,29 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                     leading: const Icon(Icons.person),
                     title: Text(patient.username),
                     subtitle: Text('ID: ${patient.id}'),
-                    trailing: deleteMode
-                        ? IconButton(
-                            icon: const Icon(Icons.close, color: Colors.red),
-                            onPressed: () => _confirmDelete(patient.id),
-                          )
-                        : null,
+                    trailing: PopupMenuButton(
+                      itemBuilder: (ctx) => [
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: const Row(
+                            children: [
+                              Icon(Icons.delete, color: Colors.red),
+                              SizedBox(width: 8),
+                              Text('Eliminar', style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                          onTap: () => _confirmDelete(patient.id),
+                        ),
+                      ],
+                    ),
                     // Al hacer click sobre el paciente, redirige a la pantalla de detalle
                     onTap: () {
-                      if (!deleteMode) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PatientDetailsScreen(patientId: patient.id),
-                          ),
-                        );
-                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PatientDetailsScreen(patientId: patient.id),
+                        ),
+                      );
                     },
                   );
                 },
