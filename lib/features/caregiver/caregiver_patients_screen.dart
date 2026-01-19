@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/app_colors.dart';
 import 'package:tfg_frontend/features/caregiver/patient_details_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/relation/relation_service.dart';
@@ -96,8 +97,11 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
-      appBar: AppBar(title: const Text('Pacientes vinculados')),
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.caregiverMedium,
+        title: const Text('Pacientes vinculados',style: TextStyle(color: Colors.white)),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
         child: Column(
@@ -115,7 +119,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                     
                     // Estilo del contenedor
                     decoration: BoxDecoration(
-                      color: const Color.fromARGB(255, 255, 255, 255),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                     ),
 
@@ -127,9 +131,14 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
                       ),
-                      subtitle: Text('ID: ${patient.id}'), // id del paciente, (momentáneo)
+                      // id del paciente, (momentáneo)
+                      subtitle: Text(
+                        'ID: ${patient.id}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ), 
                       // -------------------- Menú de opciones --------------------
                       trailing: PopupMenuButton(
                         itemBuilder: (ctx) => [
@@ -139,11 +148,11 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                             value: 'delete', // valor asociado a la opción
                             child: const Row(
                               children: [
-                                Icon(Icons.delete, color: Colors.red),
+                                Icon(Icons.delete, color: AppColors.delete),
                                 SizedBox(width: 8),
                                 Text(
                                   'Eliminar',
-                                  style: TextStyle(color: Colors.red),
+                                  style: TextStyle(color: AppColors.delete),
                                 ),
                               ],
                             ),
@@ -172,6 +181,10 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
 
             // -------------------- Botón para generar el código de vinculación --------------------
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.caregiverMedium,
+                foregroundColor: Colors.white,
+              ),
               onPressed: _generateCode,
               child: const Text('Agregar paciente'),
             ),
