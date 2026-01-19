@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/app_colors.dart';
-import 'package:tfg_frontend/features/auth/login_screen.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/auth/screens/login_screen.dart';
 
 void main() {
   runApp(const MainApp());

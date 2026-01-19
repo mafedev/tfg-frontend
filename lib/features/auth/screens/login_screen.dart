@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/features/auth/auth_service.dart';
-import 'package:tfg_frontend/features/auth/signup_screen.dart';
+import 'package:tfg_frontend/features/auth/services/auth_service.dart';
+import 'package:tfg_frontend/features/auth/screens/signup_screen.dart';
 import 'package:tfg_frontend/features/navigation/navbar_caregiver.dart';
 import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
 import 'package:tfg_frontend/core/secure_storage_service.dart';

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/secure_storage_service.dart';
-import 'models/patient.dart';
+import '../models/patient.dart';
 
 class RelationService {
   final String baseUrl = 'http://10.0.2.2:8080/api/relations';

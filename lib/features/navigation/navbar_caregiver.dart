@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/app_colors.dart'; // añadimos colores de la app
-import 'package:tfg_frontend/features/caregiver/caregiver_follow_up_screen.dart';
-import 'package:tfg_frontend/features/caregiver/caregiver_home_screen.dart';
-import 'package:tfg_frontend/features/caregiver/caregiver_patients_screen.dart';
-import 'package:tfg_frontend/features/caregiver/caregivers_routines_screen.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart'; // añadimos colores de la app
+import 'package:tfg_frontend/features/caregiver/screens/caregiver_follow_up_screen.dart';
+import 'package:tfg_frontend/features/caregiver/screens/caregiver_home_screen.dart';
+import 'package:tfg_frontend/features/caregiver/screens/caregiver_patients_screen.dart';
+import 'package:tfg_frontend/features/caregiver/screens/caregivers_routines_screen.dart';
 
 class NavbarCaregiver extends StatefulWidget {
   const NavbarCaregiver({super.key});
