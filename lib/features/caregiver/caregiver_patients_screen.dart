@@ -75,7 +75,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Eliminar paciente'),
-        content: const Text('¿Está seguro de que quiere eliminar esta relación?'),
+        content: const Text('¿Está seguro de que quiere eliminar este paciente?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
@@ -96,52 +96,81 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Pacientes vinculados'),
-      ),
+      backgroundColor: Colors.grey[200],
+      appBar: AppBar(title: const Text('Pacientes vinculados')),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
         child: Column(
           children: [
             // Ocupa todo el espacio disponible para la lista
             Expanded(
-              child: ListView.separated(
-                itemCount: patients.length,
-                itemBuilder: (context, index) {
-                  final patient = patients[index];
-                  return ListTile(
-                    leading: const Icon(Icons.person),
-                    title: Text(patient.username),
-                    subtitle: Text('ID: ${patient.id}'),
-                    trailing: PopupMenuButton(
-                      itemBuilder: (ctx) => [
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: const Row(
-                            children: [
-                              Icon(Icons.delete, color: Colors.red),
-                              SizedBox(width: 8),
-                              Text('Eliminar', style: TextStyle(color: Colors.red)),
-                            ],
-                          ),
-                          onTap: () => _confirmDelete(patient.id),
-                        ),
-                      ],
+              // -------------------- Lista de pacientes --------------------
+              child: ListView.builder(
+                itemCount: patients.length, // número de pacientes
+                itemBuilder: (context, index) { // cómo construir cada ítem
+                  final patient = patients[index]; // paciente actual
+
+                  // Cada paciente se muestra en un contenedor
+                  return Container(margin: const EdgeInsets.symmetric(vertical: 7), // espacio entre items
+                    
+                    // Estilo del contenedor
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    // Al hacer click sobre el paciente, redirige a la pantalla de detalle
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PatientDetailsScreen(patientId: patient.id),
+
+                    // -------------------- Datos del paciente --------------------
+                    child: ListTile(
+                      leading: const Icon(Icons.person),
+                      title: Text(
+                        '${patient.username[0].toUpperCase()}${patient.username.substring(1)}', // Para que el nombre tenga la primera en mayúscula
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-                      );
-                    },
+                      ),
+                      subtitle: Text('ID: ${patient.id}'), // id del paciente, (momentáneo)
+                      // -------------------- Menú de opciones --------------------
+                      trailing: PopupMenuButton(
+                        itemBuilder: (ctx) => [
+                          // al hacer click, muestra las opciones
+                          // Opción de eliminar paciente
+                          PopupMenuItem(
+                            value: 'delete', // valor asociado a la opción
+                            child: const Row(
+                              children: [
+                                Icon(Icons.delete, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Eliminar',
+                                  style: TextStyle(color: Colors.red),
+                                ),
+                              ],
+                            ),
+                            // -------------------- Eliminar paciente --------------------
+                            // al seleccionar la opción, llama a la función de confirmación
+                            onTap: () => _confirmDelete(patient.id),
+                          ),
+                        ],
+                      ),
+
+                      // -------------------- Detalles del paciente --------------------
+                      // Al hacer click en el paciente, navega a la pantalla de detalles
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PatientDetailsScreen(patientId: patient.id),
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
-                separatorBuilder: (context, index) => const Divider(), // divide cada paciente
               ),
             ),
+
+            // -------------------- Botón para generar el código de vinculación --------------------
             ElevatedButton(
               onPressed: _generateCode,
               child: const Text('Agregar paciente'),
