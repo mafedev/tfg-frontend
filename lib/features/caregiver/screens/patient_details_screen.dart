@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/features/caregiver/screens/create_routine_screen.dart';
+import 'package:tfg_frontend/features/caregiver/screens/routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
 
@@ -81,7 +81,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => CreateRoutineScreen(),
+                          builder: (_) => CreateRoutineScreen(patientId: patient!.id),
                         ),
                       );
                     },
