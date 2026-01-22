@@ -96,7 +96,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.caregiverMedium,
         title: const Text('Crear rutina', style: TextStyle(color: Colors.white))),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           // Filas con los horarios y el botón para guardar
