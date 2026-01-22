@@ -15,6 +15,8 @@ class RoutineService {
     required String lunchTime,
     required String dinnerTime,
     required String bathTime,
+    required bool enableHydration,
+    required int waterReminder
   }) async {
     // Obtener el token del almacenamiento seguro
     String? token = await _secureStorageService.getToken();
@@ -37,8 +39,8 @@ class RoutineService {
         'lunchTime': lunchTime,
         'dinnerTime': dinnerTime,
         'bathTime': bathTime,
-        'enableHydration': false, // aún no se usa
-        'hydrationIntervalHours': 0, // aún no se usa
+        'enableHydration': enableHydration,
+        'waterReminder': waterReminder,
       }),
     );
 

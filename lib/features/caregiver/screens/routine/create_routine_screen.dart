@@ -19,6 +19,9 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   TimeOfDay? dinner;
   TimeOfDay? bath;
 
+  bool enableHydration = false; // si quiere activar recordatorios de hidratación
+  int waterReminder = 3; // cada cuánto quiere el recordatorio, valor por defecto 3 horas
+
   final RoutineService _routineService = RoutineService();
 
   // Muestra el time picker y devuelve la hora que seleccione
@@ -56,6 +59,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
         lunchTime: _format(lunch),
         dinnerTime: _format(dinner),
         bathTime: _format(bath),
+        enableHydration: enableHydration,
+        waterReminder: waterReminder,
       );
 
       // si todo sale bien, muestra un mensaje
@@ -98,6 +103,43 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             _timeRow('Baño', bath, (t) => setState(() => bath = t)),
             const SizedBox(height: 20), // espacio antes del botón
             // botón para guardar la rutina
+
+            const Divider(),
+
+            SwitchListTile(
+              title: const Text('Recordatorios de hidratación'),
+              value: enableHydration,
+              onChanged: (v) {
+                setState(() {
+                  enableHydration = v;
+                  if (!v) waterReminder = 0;
+                });
+              },
+            ),
+
+            if (enableHydration)
+              Row(
+                children: [
+                  const Text('Cada'),
+                  const SizedBox(width: 12),
+                  DropdownButton<int>(
+                    value: waterReminder,
+                    items: const [
+                      DropdownMenuItem(value: 1, child: Text('1 hora')),
+                      DropdownMenuItem(value: 2, child: Text('2 horas')),
+                      DropdownMenuItem(value: 3, child: Text('3 horas')),
+                      DropdownMenuItem(value: 4, child: Text('4 horas')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) {
+                        setState(() => waterReminder = v);
+                      }
+                    },
+                  ),
+                ],
+              ),
+
+            // Botón
             ElevatedButton(
               onPressed: _saveRoutine, // al presionarlo, llama a la función para guardarla
               child: const Text('Guardar rutina'),
