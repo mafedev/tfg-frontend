@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'dart:developer';
 import 'package:tfg_frontend/features/caregiver/screens/services/routine_service.dart';
-import 'package:tfg_frontend/features/relation/models/patient.dart';
 
 class CreateRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente, para crear la rutina
@@ -104,15 +103,19 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             sectionTitle('Rutina'),
+            const SizedBox(height: 6),
             const Text('Horarios de comida'),
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
 
             _timeRow('Desayuno',breakfast,(t) => setState(() => breakfast = t),),
             _timeRow('Comida', lunch, (t) => setState(() => lunch = t)),
             _timeRow('Cena', dinner, (t) => setState(() => dinner = t)),
+
+            const SizedBox(height: 12),
             const Divider(),
+
             sectionTitle('Aseo'),
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
             _timeRow('Baño', bath, (t) => setState(() => bath = t)),
             const SizedBox(height: 20), // espacio antes del botón
             // botón para guardar la rutina
