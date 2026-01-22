@@ -102,59 +102,74 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           // Filas con los horarios y el botón para guardar
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            sectionTitle('Rutina'),
-            const SizedBox(height: 6),
-            const Text('Horarios de comida'),
-            const SizedBox(height: 12),
 
-            _timeRow('Desayuno',breakfast,(t) => setState(() => breakfast = t),),
-            _timeRow('Comida', lunch, (t) => setState(() => lunch = t)),
-            _timeRow('Cena', dinner, (t) => setState(() => dinner = t)),
+            // ----------- Rutina -----------
+            sectionContainer(
+              children: [
+                sectionTitle('Rutina'),
+                const SizedBox(height: 6),
+                const Text('Horarios de comida'),
+                const SizedBox(height: 12),
 
-            const SizedBox(height: 12),
-            const Divider(),
-
-            sectionTitle('Aseo'),
-            const SizedBox(height: 12),
-            _timeRow('Baño', bath, (t) => setState(() => bath = t)),
-            const SizedBox(height: 20), // espacio antes del botón
-            // botón para guardar la rutina
-
-            const Divider(),
-            sectionTitle('Hidratación'),
-
-            SwitchListTile(
-              title: const Text('Recordatorios de hidratación'),
-              value: enableHydration,
-              onChanged: (v) {
-                setState(() {
-                  enableHydration = v;
-                  if (!v) waterReminder = 0;
-                });
-              },
+                _timeRow('Desayuno', breakfast, (t) => setState(() => breakfast = t)),
+                _timeRow('Comida', lunch, (t) => setState(() => lunch = t)),
+                _timeRow('Cena', dinner, (t) => setState(() => dinner = t)),
+              ],
             ),
 
-            if (enableHydration)
-              Row(
-                children: [
-                  const Text('Cada'),
-                  const SizedBox(width: 12),
-                  DropdownButton<int>(
-                    value: waterReminder,
-                    items: const [
-                      DropdownMenuItem(value: 1, child: Text('1 hora')),
-                      DropdownMenuItem(value: 2, child: Text('2 horas')),
-                      DropdownMenuItem(value: 3, child: Text('3 horas')),
-                      DropdownMenuItem(value: 4, child: Text('4 horas')),
+            const SizedBox(height: 12),
+            const Divider(),
+
+            // ----------- Aseo -----------
+            sectionContainer(
+              children: [
+                sectionTitle('Aseo'),
+                const SizedBox(height: 12),
+                _timeRow('Baño', bath, (t) => setState(() => bath = t)),
+              ],
+            ),
+
+            const Divider(),
+
+            // ----------- Hidratación -----------
+            sectionContainer(
+              children: [
+                sectionTitle('Hidratación'),
+
+                SwitchListTile(
+                  title: const Text('Recordatorios de hidratación'),
+                  value: enableHydration,
+                  onChanged: (v) {
+                    setState(() {
+                      enableHydration = v;
+                      if (!v) waterReminder = 0;
+                    });
+                  },
+                ),
+
+                if (enableHydration)
+                  Row(
+                    children: [
+                      const Text('Cada'),
+                      const SizedBox(width: 12),
+                      DropdownButton<int>(
+                        value: waterReminder,
+                        items: const [
+                          DropdownMenuItem(value: 1, child: Text('1 hora')),
+                          DropdownMenuItem(value: 2, child: Text('2 horas')),
+                          DropdownMenuItem(value: 3, child: Text('3 horas')),
+                          DropdownMenuItem(value: 4, child: Text('4 horas')),
+                        ],
+                        onChanged: (v) {
+                          if (v != null) {
+                            setState(() => waterReminder = v);
+                          }
+                        },
+                      ),
                     ],
-                    onChanged: (v) {
-                      if (v != null) {
-                        setState(() => waterReminder = v);
-                      }
-                    },
                   ),
-                ],
-              ),
+              ],
+            ),
 
             // Botón
             ElevatedButton(
@@ -187,7 +202,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   }
 }
 
-
+// -------------------- Widget para los títulos de cada sección --------------------
 Widget sectionTitle(String text) {
   return Align(
     alignment: Alignment.centerLeft,
@@ -198,6 +213,17 @@ Widget sectionTitle(String text) {
         fontWeight: FontWeight.bold,
         color: Colors.black87,
       ),
+    ),
+  );
+}
+
+// -------------------- Widget para agrupar secciones --------------------
+Widget sectionContainer({required List<Widget> children}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
     ),
   );
 }
