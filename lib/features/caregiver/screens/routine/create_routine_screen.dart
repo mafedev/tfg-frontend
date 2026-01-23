@@ -102,13 +102,17 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           // Filas con los horarios y el botón para guardar
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
+            Text('Rutina', style: const TextStyle(
+              fontSize: 30,
+              color: Colors.black,
+              fontWeight: FontWeight.bold
+            ),),
+            
+            const SizedBox(height: 6),
             // ----------- Rutina -----------
-            sectionContainer(
+            sectionCard(
               children: [
-                sectionTitle('Rutina'),
-                const SizedBox(height: 6),
-                const Text('Horarios de comida'),
+                sectionTitle('Horarios de comida'),
                 const SizedBox(height: 12),
 
                 _timeRow('Desayuno', breakfast, (t) => setState(() => breakfast = t)),
@@ -121,7 +125,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             const Divider(),
 
             // ----------- Aseo -----------
-            sectionContainer(
+            sectionCard(
               children: [
                 sectionTitle('Aseo'),
                 const SizedBox(height: 12),
@@ -132,7 +136,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             const Divider(),
 
             // ----------- Hidratación -----------
-            sectionContainer(
+            sectionCard(
               children: [
                 sectionTitle('Hidratación'),
 
@@ -217,13 +221,19 @@ Widget sectionTitle(String text) {
   );
 }
 
-// -------------------- Widget para agrupar secciones --------------------
-Widget sectionContainer({required List<Widget> children}) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: children,
+// --------------------- Widget de tarjeta para cada sección --------------------
+Widget sectionCard({required List<Widget> children}) {
+  return Card(
+    margin: const EdgeInsets.only(bottom: 12),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(14), // padding interno
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
     ),
   );
 }
