@@ -188,20 +188,49 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
 
   // -------------------- Widget para cada fila con la hora --------------------
   Widget _timeRow(String label, TimeOfDay? value, Function(TimeOfDay) onPick) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label), // nombre que se le pasa
-        Text(_format(value).isEmpty ? '--:--' : _format(value)), // muestra la hora o --:-- si no hay
-        // Botón para elegir la hora
-        TextButton(
-          onPressed: () async { // cuando se presiona, muestra el time picker
-            final picked = await _pickTime(value); // espera a que el usuario elija
-            if (picked != null) onPick(picked); // si eligió algo, llama a la función para actualizar el estado
-          },
-          child: const Text('Elegir'), // texto del botón
+    // InkWell para que toda la fila sea clickeable
+    return InkWell(
+      // cuando se toca la fila, abre el time picker
+      onTap: () async { 
+        final picked = await _pickTime(value); // guarda la hora seleccionada
+        if (picked != null) onPick(picked); // si se seleccionó una hora, llama a la función onPick
+      },
+
+      // Estilo de la fila
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        // Fila con el label, la hora y el botón
+        child: Row(
+          children: [
+            const SizedBox(width: 12),
+            // ------------------- Texto del label -------------------
+            // pone el label que se le pasa como parámetro, y ocupa todo el espacio disponible
+            Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
+            const SizedBox(width: 8),
+
+            // ------------------- Muestra la hora seleccionada -------------------
+            Chip(
+              // Texto dentro del chip, muestra la hora o --:-- si no hay
+              label: Text(
+                _format(value).isEmpty ? '--:--' : _format(value),
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              backgroundColor: Colors.grey[100],
+            ),
+            const SizedBox(width: 8),
+
+            // ------------------- Botón para elegir la hora -------------------
+            TextButton(
+              onPressed: () async { // cuando se presiona, muestra el time picker
+                final picked = await _pickTime(value); // espera a que el usuario elija
+                if (picked != null) onPick(picked); // si eligió algo, llama a la función para actualizar el estado
+              },
+              child: const Text('Elegir'), // texto del botón
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
