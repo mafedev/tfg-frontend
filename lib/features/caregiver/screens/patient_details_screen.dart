@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/features/caregiver/screens/routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
 
@@ -21,7 +22,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   Patient? patient;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _loadPatient();
   }
@@ -70,10 +71,21 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                   ),
                   Text(
                     'Teléfono: ${patient!.phone}',
-                      style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16),
                   ),
                   const SizedBox(height: 20),
                   const Icon(Icons.person, size: 80),
+                  IconButton(
+                    icon: const Icon(Icons.schedule),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => CreateRoutineScreen(patientId: patient!.id),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
