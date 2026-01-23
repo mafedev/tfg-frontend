@@ -95,12 +95,12 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.caregiverMedium,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Crear rutina', style: TextStyle(color: Colors.white))),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           // Filas con los horarios y el botón para guardar
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Rutina', style: const TextStyle(
               fontSize: 30,
@@ -108,7 +108,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
               fontWeight: FontWeight.bold
             ),),
             
-            const SizedBox(height: 6),
+            const SizedBox(height: 16),
             // ----------- Rutina -----------
             sectionCard(
               children: [
@@ -122,7 +122,6 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             ),
 
             const SizedBox(height: 12),
-            const Divider(),
 
             // ----------- Aseo -----------
             sectionCard(
@@ -133,7 +132,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
               ],
             ),
 
-            const Divider(),
+            const SizedBox(height: 12),
 
             // ----------- Hidratación -----------
             sectionCard(
