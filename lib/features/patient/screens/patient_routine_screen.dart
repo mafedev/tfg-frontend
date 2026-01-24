@@ -43,25 +43,40 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
   Widget build(BuildContext context) {
     // si está cargando
     if (isLoading) {
-      return Scaffold(body: Center(child: Text('Cargando rutina...')));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Mi Rutina')),
+        body: const Center(
+          child: CircularProgressIndicator(), // un indicador en lugar de solo texto
+        ),
+      );
     }
 
     // si no hay rutina
     if (routine == null) {
-      return const Center(child: Text('No hay rutina'));
+      return Scaffold(
+        appBar: AppBar(title: const Text('Mi Rutina')),
+        body: const Center(child: Text('No hay rutina')),
+      );
     }
 
     // si hay rutina, la muestra
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Desayuno: ${routine!.breakfastTime}'),
-        Text('Almuerzo: ${routine!.lunchTime}'),
-        Text('Cena: ${routine!.dinnerTime}'),
-        Text('Baño: ${routine!.bathTime}'),
-        Text('Hidratación: ${routine!.enableHydration}'),
-        Text('Cada ${routine!.waterReminder} h'),
-      ],
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mi Rutina')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Desayuno: ${routine!.breakfastTime}', style: const TextStyle(fontSize: 18)),
+            Text('Almuerzo: ${routine!.lunchTime}', style: const TextStyle(fontSize: 18)),
+            Text('Cena: ${routine!.dinnerTime}', style: const TextStyle(fontSize: 18)),
+            Text('Baño: ${routine!.bathTime}', style: const TextStyle(fontSize: 18)),
+            Text('Hidratación: ${routine!.enableHydration}', style: const TextStyle(fontSize: 18)),
+            Text('Cada ${routine!.waterReminder} h', style: const TextStyle(fontSize: 18)),
+          ],
+        ),
+      ),
     );
   }
+
 }
