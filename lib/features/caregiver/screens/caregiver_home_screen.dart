@@ -14,9 +14,12 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Home Cuidador')),
-      body: Container(
-        color: AppColors.primary,
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.caregiverMedium,
+        title: Text('Inicio', style: TextStyle(color: Colors.white))),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -24,6 +27,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
               fontWeight: FontWeight.bold,
               fontSize: 30
             )),
+            const SizedBox(height: 20),
             Expanded(
               child: GridView.count(
                 crossAxisCount: 2, // 2 columnas
@@ -33,9 +37,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
                   return Container( // cada elemento es un contenedor
                     color: Colors.white,
                     child: const Center(
-                      child: Text(
-                        'Placeholder',
-                      ),
+                      child: Placeholder()
                     ),
                   );
                 }),
