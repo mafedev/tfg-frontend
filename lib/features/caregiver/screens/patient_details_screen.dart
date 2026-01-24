@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/caregiver/screens/routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
@@ -46,8 +47,13 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     }
 
     // Cuando el paciente ya cargo, muestra los datos
-    return Scaffold(
-      appBar: AppBar(title: const Text('Detalle del paciente')),
+     return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.caregiverMedium,
+        iconTheme: const IconThemeData(color: Colors.white),
+        title: const Text('Detalle del paciente',style: TextStyle(color: Colors.white)),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(60),
         child: Card(
