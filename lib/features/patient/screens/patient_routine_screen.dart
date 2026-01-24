@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/secure_storage_service.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/routine/models/routine.dart';
 import 'package:tfg_frontend/features/routine/services/patient_routine_service.dart';
 
@@ -44,7 +45,13 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     // si está cargando
     if (isLoading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Mi Rutina')),
+        appBar: AppBar(
+          backgroundColor: AppColors.patientMedium, // color de pacientes
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+          ), // flecha de volver atrás
+          title: const Text('Mi Rutina', style: TextStyle(color: Colors.white)),
+        ),
         body: const Center(
           child: CircularProgressIndicator(), // un indicador en lugar de solo texto
         ),
@@ -54,14 +61,26 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     // si no hay rutina
     if (routine == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Mi Rutina')),
+        appBar: AppBar(
+          backgroundColor: AppColors.patientMedium, // color de pacientes
+          iconTheme: const IconThemeData(
+            color: Colors.white,
+          ), // flecha de volver atrás
+          title: const Text('Mi Rutina', style: TextStyle(color: Colors.white)),
+        ),
         body: const Center(child: Text('No hay rutina')),
       );
     }
 
     // si hay rutina, la muestra
     return Scaffold(
-      appBar: AppBar(title: const Text('Mi Rutina')),
+      appBar: AppBar(
+        backgroundColor: AppColors.patientMedium, // color de pacientes
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ), // flecha de volver atrás
+        title: const Text('Mi Rutina', style: TextStyle(color: Colors.white)),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -78,5 +97,4 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
       ),
     );
   }
-
 }
