@@ -24,8 +24,10 @@ class _SignupScreenState extends State<SignupScreen> {
     final double maxWidth = 520; // Ancho máximo para pantallas grandes
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Registro')), // Barra superior con título
+      backgroundColor: AppColors.caregiverBackground,
+      appBar: AppBar(
+        backgroundColor: AppColors.caregiverAppBar,
+        iconTheme: const IconThemeData(color: Colors.white), title: const Text('Registro', style: const TextStyle(color: Colors.white))), // Barra superior con título
       body: SafeArea(
         child: Center(
           child: ConstrainedBox( // Limita el ancho máximo del contenido

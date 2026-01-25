@@ -29,7 +29,7 @@ class _NavbarPatientState extends State<NavbarPatient> {
       body: _pages[_currentPage],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed, // asegura que los colores se apliquen correctamente
-        selectedItemColor: AppColors.primary, // color para cuando está seleccionado
+        selectedItemColor: AppColors.patientAccent, // color para cuando está seleccionado
         unselectedItemColor: Colors.grey[600], // si no está seleccionado
         showUnselectedLabels: true,
         currentIndex: _currentPage,

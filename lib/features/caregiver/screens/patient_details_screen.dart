@@ -43,7 +43,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     if (patient == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverMedium),
+        appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverAppBar),
         body: const Center(child: Text('Cargando paciente...')),
       );
     }
@@ -51,7 +51,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     // Cuando el paciente ya cargo, muestra los datos
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverMedium),
+      appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverAppBar),
 
       // SingleChildScrollView para que se pueda scrollear en pantallas pequeñas
       body: SingleChildScrollView(
@@ -120,7 +120,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                         icon: const Icon(Icons.schedule),
                         label: const Text('Crear rutina'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.caregiverMedium,
+                          backgroundColor: AppColors.caregiverAppBar,
                         ),
                         // Cuando se presiona, navega a la pantalla de creación de rutina
                         onPressed: () {

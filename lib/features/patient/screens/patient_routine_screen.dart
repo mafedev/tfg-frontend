@@ -46,7 +46,7 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     // si está cargando
     if (isLoading) {
       return Scaffold(
-        appBar: const AppLogoAppBar(title: 'Mi Rutina', backgroundColor: AppColors.patientMedium),
+        appBar: const AppLogoAppBar(title: 'Mi Rutina', backgroundColor: AppColors.patientAppBar),
         body: const Center(
           child: CircularProgressIndicator(), // un indicador en lugar de solo texto
         ),
@@ -56,14 +56,14 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     // si no hay rutina
     if (routine == null) {
       return Scaffold(
-        appBar: const AppLogoAppBar(title: 'Mi Rutina',backgroundColor: AppColors.patientMedium),
+        appBar: const AppLogoAppBar(title: 'Mi Rutina',backgroundColor: AppColors.patientAppBar),
         body: const Center(child: Text('No hay rutina')),
       );
     }
 
     // si hay rutina, la muestra
     return Scaffold(
-      appBar: const AppLogoAppBar(title: 'Mi Rutina',backgroundColor: AppColors.patientMedium),
+      appBar: const AppLogoAppBar(title: 'Mi Rutina',backgroundColor: AppColors.patientAppBar),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

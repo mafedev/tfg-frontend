@@ -99,7 +99,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppLogoAppBar(title: 'Pacientes vinculados', backgroundColor: AppColors.caregiverMedium),
+      appBar: const AppLogoAppBar(title: 'Pacientes vinculados', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
         child: Column(
@@ -180,7 +180,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
             // -------------------- Botón para generar el código de vinculación --------------------
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.caregiverMedium,
+                backgroundColor: AppColors.caregiverAppBar,
                 foregroundColor: Colors.white,
               ),
               onPressed: _generateCode,

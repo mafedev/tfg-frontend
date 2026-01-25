@@ -15,7 +15,7 @@ class _CaregiverFollowUpScreenState extends State<CaregiverFollowUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppLogoAppBar(title: 'Seguimiento', backgroundColor: AppColors.caregiverMedium),
+      appBar: const AppLogoAppBar(title: 'Seguimiento', backgroundColor: AppColors.caregiverAppBar),
     );
   }
 }

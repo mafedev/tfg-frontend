@@ -94,7 +94,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: AppColors.caregiverMedium,
+        backgroundColor: AppColors.caregiverAppBar,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Crear rutina', style: TextStyle(color: Colors.white))),
       body: SingleChildScrollView(

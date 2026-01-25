@@ -15,7 +15,7 @@ class _CaregiversRoutinesScreenState extends State<CaregiversRoutinesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppLogoAppBar(title: 'Rutinas', backgroundColor: AppColors.caregiverMedium),
+      appBar: const AppLogoAppBar(title: 'Rutinas', backgroundColor: AppColors.caregiverAppBar),
     );
   }
 }

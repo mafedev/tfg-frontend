@@ -8,7 +8,7 @@ class PatientEmergencyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppLogoAppBar(title: 'Emergencia', backgroundColor: AppColors.patientMedium,
+      appBar: const AppLogoAppBar(title: 'Emergencia', backgroundColor: AppColors.patientAppBar,
       ),
     );
   }
