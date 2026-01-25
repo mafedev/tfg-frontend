@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>(); // clave para acceder al estado del Form (validación, save, reset)
   final emailController = TextEditingController(); // controlador para el campo de correo (leer/limpiar/escuchar texto)
   final passwordController = TextEditingController(); // controlador para el campo de contraseña
+  bool _obscurePassword = false;
 
   @override
   Widget build(BuildContext context) {
@@ -67,13 +68,23 @@ class _LoginScreenState extends State<LoginScreen> {
                       // ----------- Contraseña -----------
                       TextFormField(
                         controller: passwordController,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Contraseña',
-                          prefixIcon: Icon(Icons.lock),
+                          prefixIcon: const Icon(Icons.lock),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                         ),
                         validator: (v) =>
                             (v == null || v.isEmpty) ? 'Introduce tu contraseña' : null,  // validación simple, si está vacío devuelve el mensaje, si no, nulo (válido)
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
