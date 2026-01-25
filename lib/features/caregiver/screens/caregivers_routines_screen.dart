@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 
 class CaregiversRoutinesScreen extends StatefulWidget {
   const CaregiversRoutinesScreen({super.key});
@@ -14,10 +15,7 @@ class _CaregiversRoutinesScreenState extends State<CaregiversRoutinesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.caregiverMedium,
-        title: const Text('Rutinas', style: TextStyle(color: Colors.white)),
-      ),
+      appBar: const AppLogoAppBar(title: 'Rutinas', backgroundColor: AppColors.caregiverMedium),
     );
   }
 }

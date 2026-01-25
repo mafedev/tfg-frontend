@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/relation/services/relation_service.dart';
 
 // Esta pantalla es para el paciente. Permite vincularse con un cuidador usando el código de vinculación
@@ -38,7 +40,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Barra superior con el título
-      appBar: AppBar(title: const Text("Inicio del Paciente")),
+      appBar: const AppLogoAppBar(title: 'Inicio', backgroundColor: AppColors.patientMedium),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40.0),

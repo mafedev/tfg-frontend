@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/screens/routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
@@ -42,13 +43,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     if (patient == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.caregiverMedium,
-          iconTheme: const IconThemeData(color: Colors.white),
-          title: const Text('Detalle del paciente',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
+        appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverMedium),
         body: const Center(child: Text('Cargando paciente...')),
       );
     }
@@ -56,12 +51,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     // Cuando el paciente ya cargo, muestra los datos
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.caregiverMedium,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Detalle del paciente',style: TextStyle(color: Colors.white),
-        ),
-      ),
+      appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverMedium),
 
       // SingleChildScrollView para que se pueda scrollear en pantallas pequeñas
       body: SingleChildScrollView(
@@ -85,22 +75,26 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                     Row(
                       children: [
                         const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                patient!.username,
-                                style: const TextStyle(fontSize: 22,fontWeight: FontWeight.w700),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              patient!.username,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
                               ),
+                            ),
 
-                              const SizedBox(height: 10),
-                              Text(
-                                'ID: ${patient!.id}',
-                                style: const TextStyle(color: Colors.black54),
-                              ),
-                            ],
-                          ),
-                      const Icon(Icons.person, size: 80),                      ],
+                            const SizedBox(height: 10),
+                            Text(
+                              'ID: ${patient!.id}',
+                              style: const TextStyle(color: Colors.black54),
+                            ),
+                          ],
+                        ),
+                        const Icon(Icons.person, size: 80),
+                      ],
                     ),
 
                     const SizedBox(height: 16),
