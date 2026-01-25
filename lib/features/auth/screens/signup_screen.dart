@@ -24,7 +24,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final double maxWidth = 520; // Ancho máximo para pantallas grandes
 
     return Scaffold(
-      backgroundColor: AppColors.caregiverBackground,
+      backgroundColor: AppColors.caregiverSecondary,
       appBar: AppBar(
         backgroundColor: AppColors.caregiverAppBar,
         iconTheme: const IconThemeData(color: Colors.white), title: const Text('Registro', style: const TextStyle(color: Colors.white))), // Barra superior con título
@@ -35,6 +35,7 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Card(
+                color: AppColors.caregiverBackground,
                 elevation: 4,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
