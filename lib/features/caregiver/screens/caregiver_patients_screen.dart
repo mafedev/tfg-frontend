@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/screens/patient_details_screen.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/relation/services/relation_service.dart';
@@ -98,10 +99,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.caregiverMedium,
-        title: const Text('Pacientes vinculados',style: TextStyle(color: Colors.white)),
-      ),
+      appBar: const AppLogoAppBar(title: 'Pacientes vinculados', backgroundColor: AppColors.caregiverMedium),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
         child: Column(

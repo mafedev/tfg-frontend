@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 
 // Home del cuidador
 class CaregiverHomeScreen extends StatefulWidget {
@@ -15,9 +16,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.caregiverMedium,
-        title: Text('Inicio', style: TextStyle(color: Colors.white))),
+      appBar: const AppLogoAppBar(title: 'Inicio', backgroundColor: AppColors.caregiverMedium),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
