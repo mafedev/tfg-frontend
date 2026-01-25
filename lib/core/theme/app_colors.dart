@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Fondo
-  static const Color background = Color(0xFFE7F0F7); // gris azulado muy suave
+  // Background general
+  static const Color background = Color(0xFFF4F2F8);
+  static const Color caregiverAccent = Color(0xFFD675FF);
+  static const Color patientAccent = Color(0xFFFF8C42);
 
-  // Colores principales
-  static const Color primary = Color(0xFF6BA4FF); // azul brillante, acción principal
-  static const Color secondary = Color(0xFFFF9EC4); // rosa suave, secundario
-  static const Color accent = Color(0xFF8E44AD); // morado cuidadores
+  // ------------------- CUIDADOR -------------------
+  static const Color caregiverPrimary = Color(0xFF8E44AD);
+  static const Color caregiverSecondary = Color(0xFFC39BD3);
+  static const Color caregiverAppBar = Color(0xFF8E44AD);
+  static const Color caregiverBackground = Color(0xFFF1E6F7);
 
-  // Para pacientes
-  static const Color patientLight = Color(0xFF80D8FF); // azul celeste claro
-  static const Color patientMedium = Color(0xFF4DA6FF); // azul más intenso
+  // ------------------- PACIENTE -------------------
+// Pacientes (colores vivos pero suaves, Alzheimer-friendly)
+static const Color patientPrimary = Color(0xFF5AA8FF);
+static const Color patientSecondary = Color(0xFFFFD65A); 
+static const Color patientAppBar = Color(0xFF3399CC); 
+static const Color patientBackground = Color(0xFFFFF9F0); 
+static const Color patientCard = Color(0xFFFFFFFF);
+static const Color patientAccentGreen = Color(0xFF5AC18E); 
 
-  // Para cuidadores
-  static const Color caregiverLight = Color(0xFFC39BD3); // lila suave
-  static const Color caregiverMedium = Color(0xFF8E44AD); // morado
 
-  // Acciones
-  static const Color delete = Color(0xFFE74C3C); // rojo para eliminar
-  static const Color confirm = Color(0xFF27AE60); // verde para confirmar
+
+  // ------------------- ACCIONES -------------------
+  static const Color delete = Color(0xFFE74C3C);
+  static const Color confirm = Color(0xFF27AE60);
 }

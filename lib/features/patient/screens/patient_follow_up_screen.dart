@@ -13,7 +13,7 @@ class _PatientFollowUpScreenState extends State<PatientFollowUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: const AppLogoAppBar(title: 'Seguimiento',backgroundColor: AppColors.patientMedium)
+        appBar: const AppLogoAppBar(title: 'Seguimiento',backgroundColor: AppColors.patientAppBar)
       );
   }
 }

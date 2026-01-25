@@ -40,7 +40,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Barra superior con el título
-      appBar: const AppLogoAppBar(title: 'Inicio', backgroundColor: AppColors.patientMedium),
+      appBar: const AppLogoAppBar(title: 'Inicio', backgroundColor: AppColors.patientAppBar),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40.0),

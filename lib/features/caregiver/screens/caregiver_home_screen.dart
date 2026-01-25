@@ -16,7 +16,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppLogoAppBar(title: 'Inicio', backgroundColor: AppColors.caregiverMedium),
+      appBar: const AppLogoAppBar(title: 'Inicio', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

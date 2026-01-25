@@ -17,14 +17,17 @@ class _SignupScreenState extends State<SignupScreen> {
   final passwordController = TextEditingController(); // Controlador para el campo de contraseña
   final phoneController = TextEditingController(); // Controlador para el campo teléfono
   String selectedValue = 'Cuidador';
+  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
     final double maxWidth = 520; // Ancho máximo para pantallas grandes
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Registro')), // Barra superior con título
+      backgroundColor: AppColors.caregiverSecondary,
+      appBar: AppBar(
+        backgroundColor: AppColors.caregiverAppBar,
+        iconTheme: const IconThemeData(color: Colors.white), title: const Text('Registro', style: const TextStyle(color: Colors.white))), // Barra superior con título
       body: SafeArea(
         child: Center(
           child: ConstrainedBox( // Limita el ancho máximo del contenido
@@ -32,6 +35,7 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Card(
+                color: AppColors.caregiverBackground,
                 elevation: 4,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -54,12 +58,13 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        /* NOMBRE */
+                        // ------------------- NOMBRE -------------------
                         TextFormField(
                           controller: nameController,
                           decoration: const InputDecoration(
-                            labelText: 'Introduzca su nombre',
-                            hintText: 'Ej: Juan Pérez',
+                            labelText: 'Nombre',
+                            hintText: 'Ej: Juan',
+                            prefixIcon: Icon(Icons.person)
                           ),
                           // Validación del campo de nombre
                           validator: (v) => (v == null || v.isEmpty) // se asegura que no esté vacío
@@ -67,11 +72,13 @@ class _SignupScreenState extends State<SignupScreen> {
                               : null,
                         ),
 
-                        /* CORREO */
+                        const SizedBox(height: 13),
+
+                        // ------------------- CORREO -------------------
                         TextFormField(
                           controller: emailController,
                           decoration: const InputDecoration(
-                            labelText: 'Introduzca su correo',
+                            labelText: 'Correo',
                             hintText: 'tucorreo@ejemplo.com',
                             prefixIcon: Icon(Icons.email),
                           ),
@@ -82,21 +89,40 @@ class _SignupScreenState extends State<SignupScreen> {
                               : null,
                         ),
 
-                        /* CONTRASEÑA */ 
+                        const SizedBox(height: 13),
+
+                        // ------------------- CONTRASEÑA -------------------
                         TextFormField(
                           controller: passwordController,
-                          decoration: const InputDecoration(
+                          obscureText: _obscurePassword,
+                          decoration: InputDecoration(
                             labelText: 'Contraseña',
+                            prefixIcon: Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
                           ),
-                          obscureText: true,
                           validator: (v) => (v == null || v.isEmpty)
-                              ? 'Introduce una contraseña'
+                              ? 'Introduzca una contraseña'
                               : null,
                         ),
+                        
+                        const SizedBox(height: 13),
 
+                        // ------------------- TELÉFONO -------------------
                         TextFormField(
                             controller: phoneController,
                             decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.phone),
                               labelText: 'Teléfono',
                             ),
                             validator: (v) => (v == null || v.isEmpty)
@@ -106,29 +132,32 @@ class _SignupScreenState extends State<SignupScreen> {
                         
                         const SizedBox(height: 25),
                         
-                        /* SELECCIÓN DE ROL */
+                        // ------------------- SELECCIÓN DE ROL -------------------
                         Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 8.0),
-                            child: Text('Selecciona una opción'),
-                          ),
-                          DropdownButton<String>(
-                            value: selectedValue,
-                            underline: const SizedBox.shrink(), // quita la línea
-                            isExpanded: true,
-                            items: ['Cuidador', 'Paciente']
-                                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                                .toList(),
-                            onChanged: (value) => setState(() => selectedValue = value!),
-                          ),
-                        ],
-                      ),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(bottom: 8.0),
+                              child: Text('Selecciona una opción'),
+                            ),
 
-                      const SizedBox(height: 20),
+                            const SizedBox(height: 8),
 
-                        /* BOTÓN DE REGISTRO */
+                            DropdownButton<String>(
+                              value: selectedValue,
+                              underline: const SizedBox.shrink(), // quita la línea
+                              isExpanded: true,
+                              items: ['Cuidador', 'Paciente']
+                                  .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+                                  .toList(),
+                              onChanged: (value) => setState(() => selectedValue = value!),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // ------------------- BOTÓN DE REGISTRO -------------------
                         ElevatedButton(
                           onPressed: () async { // Acción al pulsar el botón
                             if (_formKey.currentState?.validate() ?? false) { // si la clave del formulario es válida y no es nula
@@ -152,7 +181,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                 );
                                 Navigator.pop(context); // vuelve a la pantalla anterior (login)
                               } else { // si hubo un error en el registro, muestra un mensaje de error
-                                ScaffoldMessenger.of(context).showSnackBar( 
+                                ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Error al crear cuenta'),
                                   ),
