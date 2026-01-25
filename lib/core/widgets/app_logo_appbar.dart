@@ -17,8 +17,8 @@ class AppLogoAppBar extends StatelessWidget implements PreferredSizeWidget {
       title: Row(
         children: [
           Image.asset(
-            'assets/images/logo.png', // ruta
-            height: 45, // tamaño
+            'assets/logo/logo_blanco.png', // ruta
+            height: 40, // tamaño
             fit: BoxFit.contain, 
           ),
           const SizedBox(width: 8),
