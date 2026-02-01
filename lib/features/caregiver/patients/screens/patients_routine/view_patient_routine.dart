@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
 
@@ -63,7 +65,27 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
   }
 
-  // -------------------- Construye la pantalla --------------------
+  // --------------------- Widget para mostrar un ítem de la rutina --------------------
+  Widget _routineItem(String label, String value, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.caregiverPrimary),
+          const SizedBox(width: 12),
+          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
@@ -73,57 +95,66 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       );
     }
 
-    // si no hay rutina, muestra un mensaje
-    if (routine == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Rutina')),
-        body: const Center(child: Text('No hay rutina')),
-      );
-    }
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Rutina')),
+      backgroundColor: AppColors.background,
+      appBar: const AppLogoAppBar(title: 'Rutina', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          // ---------- Muestra los horarios de la rutina ----------
-          children: [
-            Text('Desayuno: ${routine!['breakfastTime']}'),
-            Text('Comida: ${routine!['lunchTime']}'),
-            Text('Cena: ${routine!['dinnerTime']}'),
-            Text('Baño: ${routine!['bathTime']}'),
-            const SizedBox(height: 20),
+        padding: const EdgeInsets.all(18),
+        child: routine == null
+            ? const Center(child: Text('No hay rutina asignada'))
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                // ---------- Muestra los horarios de la rutina ----------
+                children: [
+                  _routineItem('Desayuno', routine!['breakfastTime'], Icons.free_breakfast),
+                  _routineItem('Comida', routine!['lunchTime'], Icons.lunch_dining),
+                  _routineItem('Cena', routine!['dinnerTime'], Icons.dinner_dining),
+                  _routineItem('Baño', routine!['bathTime'], Icons.bathtub),
 
-            // ---------- Botón para editar la rutina ----------
-            ElevatedButton(
-              onPressed: () async {
-                // Navega a la pantalla de edición
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => CreateRoutineScreen(
-                      patientId: widget.patientId,
-                      isEdit: true,
+                  const SizedBox(height: 30),
+
+                  // ---------- Botón para editar la rutina ----------
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.caregiverPrimary,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        // Navega a la pantalla de edición
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CreateRoutineScreen(
+                              patientId: widget.patientId,
+                              isEdit: true,
+                            ),
+                          ),
+                        );
+                        // Recarga la rutina después de editar
+                        _loadRoutine();
+                      },
+                      child: const Text('Editar rutina'),
                     ),
                   ),
-                );
-                // Recarga la rutina después de editar
-                _loadRoutine();
-              },
-              child: const Text('Editar rutina'),
-            ),
 
-            const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-            // ---------- Botón para eliminar la rutina ----------
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              onPressed: _deleteRoutine,
-              child: const Text('Eliminar rutina'),
-            ),
-          ],
-        ),
+                  // ---------- Botón para eliminar la rutina ----------
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.delete,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: _deleteRoutine,
+                      child: const Text('Eliminar rutina'),
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
