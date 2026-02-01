@@ -13,15 +13,12 @@ class AppColors {
   static const Color caregiverBackground = Color(0xFFF1E6F7);
 
   // ------------------- PACIENTE -------------------
-// Pacientes (colores vivos pero suaves, Alzheimer-friendly)
-static const Color patientPrimary = Color(0xFF5AA8FF);
-static const Color patientSecondary = Color(0xFFFFD65A); 
-static const Color patientAppBar = Color(0xFF3399CC); 
-static const Color patientBackground = Color(0xFFFFF9F0); 
-static const Color patientCard = Color(0xFFFFFFFF);
-static const Color patientAccentGreen = Color(0xFF5AC18E); 
-
-
+  static const Color patientPrimary = Color(0xFF5AA8FF);
+  static const Color patientSecondary = Color(0xFFFFD65A);
+  static const Color patientAppBar = Color(0xFF3399CC);
+  static const Color patientBackground = Color(0xFFFFF9F0);
+  static const Color patientCard = Color(0xFFFFFFFF);
+  static const Color patientAccentGreen = Color(0xFF5AC18E);
 
   // ------------------- ACCIONES -------------------
   static const Color delete = Color(0xFFE74C3C);
