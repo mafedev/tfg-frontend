@@ -64,19 +64,50 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     // si hay rutina, la muestra
     return Scaffold(
       appBar: const AppLogoAppBar(title: 'Mi Rutina',backgroundColor: AppColors.patientAppBar),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Container(
+        color: AppColors.patientBackground,
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Desayuno: ${routine!.breakfastTime}', style: const TextStyle(fontSize: 18)),
-            Text('Almuerzo: ${routine!.lunchTime}', style: const TextStyle(fontSize: 18)),
-            Text('Cena: ${routine!.dinnerTime}', style: const TextStyle(fontSize: 18)),
-            Text('Baño: ${routine!.bathTime}', style: const TextStyle(fontSize: 18)),
-            Text('Hidratación: ${routine!.enableHydration}', style: const TextStyle(fontSize: 18)),
-            Text('Cada ${routine!.waterReminder} h', style: const TextStyle(fontSize: 18)),
+            // Muestra cada elemento de la rutina en una card
+            _routineCard('Desayuno', routine!.breakfastTime),
+            _routineCard('Almuerzo', routine!.lunchTime),
+            _routineCard('Cena', routine!.dinnerTime),
+            _routineCard('Baño', routine!.bathTime),
+            _routineCard('Hidratación', routine!.enableHydration ? 'Sí' : 'No'),
+            _routineCard(
+              'Recordatorio de agua',
+              'Cada ${routine!.waterReminder} h',
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  // Widget para cada card
+  Widget _routineCard(String title, String value) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.patientCard,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(value),
+        ],
       ),
     );
   }
