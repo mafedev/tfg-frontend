@@ -110,6 +110,15 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     );
   }
 
+  // -------------------- Formatea hh:mm:ss -> hh:mm --------------------
+  String formatTime(String? time) {
+    if (time == null || time.isEmpty) return '--:--';
+    // divide por ":" y toma solo hora y minuto
+    final parts = time.split(':');
+    return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+  }
+
+
   // -------------------- Construye la pantalla --------------------
   @override
   Widget build(BuildContext context) {
@@ -136,9 +145,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                     children: [
                       _sectionTitle('Comidas', Icons.restaurant),
                       const SizedBox(height: 12),
-                      _routineItem('Desayuno', routine!['breakfastTime']),
-                      _routineItem('Comida', routine!['lunchTime']),
-                      _routineItem('Cena', routine!['dinnerTime']),
+                      _routineItem('Desayuno', formatTime(routine!['breakfastTime'])),
+                      _routineItem('Comida', formatTime(routine!['lunchTime'])),
+                      _routineItem('Cena', formatTime(routine!['dinnerTime'])),
                     ],
                   ),
 
@@ -164,7 +173,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                     children: [
                       _sectionTitle('Aseo', Icons.bathtub),
                       const SizedBox(height: 12),
-                      _routineItem('Baño', routine!['bathTime']),
+                      _routineItem('Baño', formatTime(routine!['bathTime'])),
                     ],
                   ),
 
