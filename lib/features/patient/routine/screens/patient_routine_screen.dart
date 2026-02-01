@@ -71,14 +71,11 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Muestra cada elemento de la rutina en una card
-            _routineCard('Desayuno', routine!.breakfastTime),
-            _routineCard('Almuerzo', routine!.lunchTime),
-            _routineCard('Cena', routine!.dinnerTime),
-            _routineCard('Baño', routine!.bathTime),
-            _routineCard('Hidratación', routine!.enableHydration ? 'Sí' : 'No'),
-            _routineCard(
-              'Recordatorio de agua',
-              'Cada ${routine!.waterReminder} h',
+            _routineCard('Desayuno', formatTime(routine!.breakfastTime)),
+            _routineCard('Almuerzo', formatTime(routine!.lunchTime)),
+            _routineCard('Cena', formatTime(routine!.dinnerTime)),
+            _routineCard('Baño', formatTime(routine!.bathTime)),
+            _routineCard('Hidratación','Cada ${routine!.waterReminder} h',
             ),
           ],
         ),
@@ -91,23 +88,18 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     IconData icon;
     Color accentColor;
 
-    // El color e ícono cambia según el item
+    // El color e ícono cambia según el tipo de item
     switch (title) {
       case 'Desayuno':
-        icon = Icons.free_breakfast;
-        accentColor = AppColors.patientAccentGreen;
-        break;
       case 'Almuerzo':
-        icon = Icons.lunch_dining;
-        accentColor = AppColors.patientAccentGreen;
-        break;
       case 'Cena':
-        icon = Icons.dinner_dining;
-        accentColor = AppColors.patientAccentGreen;
-        break;
       case 'Baño':
-        icon = Icons.bathtub;
-        accentColor = AppColors.patientSecondary;
+        icon = title == 'Baño' ? Icons.bathtub : Icons.free_breakfast;
+        accentColor = title == 'Baño'
+            ? AppColors.patientSecondary
+            : AppColors.patientAccentGreen;
+        // formatear la hora
+        value = formatTime(value);
         break;
       case 'Hidratación':
       case 'Recordatorio de agua':
@@ -148,4 +140,11 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
       ),
     );
   }
+}
+
+// -------------------- Formatea hh:mm:ss -> hh:mm --------------------
+String formatTime(String? time) {
+  if (time == null || time.isEmpty) return '--:--';
+  final parts = time.split(':');
+  return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
 }
