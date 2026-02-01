@@ -5,9 +5,10 @@ import 'package:tfg_frontend/features/caregiver/screens/services/caregiver_routi
 
 class CreateRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente, para crear la rutina
+  final bool isEdit; // indica si se está editando una rutina existente
 
   // Constructor
-  const CreateRoutineScreen({super.key, required this.patientId});
+  const CreateRoutineScreen({super.key,required this.patientId,required this.isEdit,});
 
   @override
   State<CreateRoutineScreen> createState() => _CreateRoutineScreenState();
@@ -24,6 +25,51 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   int waterReminder = 3; // cada cuánto quiere el recordatorio, valor por defecto 3 horas
 
   final RoutineService _routineService = RoutineService();
+  bool loading = true; // indica si está cargando
+
+
+  // -------------------- Carga la rutina si se está editando --------------------
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.isEdit) {
+      _loadRoutine();
+    } else {
+      loading = false;
+    }
+  }
+
+  // -------------------- Carga la rutina existente --------------------
+  Future<void> _loadRoutine() async {
+    try {
+      final routine = await _routineService.getRoutine(widget.patientId); // obtiene la rutina del paciente
+      if (routine != null) { // si existe, llena los campos con los datos
+        setState(() {
+          breakfast = _parseTime(routine['breakfastTime']);
+          lunch = _parseTime(routine['lunchTime']);
+          dinner = _parseTime(routine['dinnerTime']);
+          bath = _parseTime(routine['bathTime']);
+          enableHydration = routine['enableHydration'] ?? false;
+          waterReminder = routine['waterReminder'] ?? 3;
+        });
+      }
+    } catch (e) {
+      log('Error cargando rutina: $e');
+    } finally {
+      // actualiza el estado para indicar que ya no está cargando
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+  // Convierte una cadena "hh:mm" a TimeOfDay
+  TimeOfDay? _parseTime(String? time) {
+    if (time == null || time.isEmpty) return null;
+    final parts = time.split(':');
+    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+  }
 
   // Muestra el time picker y devuelve la hora que seleccione
   Future<TimeOfDay?> _pickTime(TimeOfDay? initial) {
@@ -44,53 +90,46 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
 
   // -------------------- Guarda la rutina usando el RoutineService --------------------
   void _saveRoutine() async {
-    // si falta algún horario, muestra el mensaje
-    if ([breakfast, lunch, dinner, bath].contains(null)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Completa todos los horarios')),
-      );
-      return;
-    }
-
+    // intenta guardar la rutina
     try {
-      // Le pasa los datos al servicio para crear la rutina
-      await _routineService.createRoutine(
-        patientId: widget.patientId,
-        breakfastTime: _format(breakfast),
-        lunchTime: _format(lunch),
-        dinnerTime: _format(dinner),
-        bathTime: _format(bath),
-        enableHydration: enableHydration,
-        waterReminder: waterReminder,
-      );
-
-      // si todo sale bien, muestra un mensaje
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Rutina guardada exitosamente'),
-            duration: Duration(seconds: 2),
-          ),
+      if (widget.isEdit) { // si se está editando, llama a la función de actualizar
+        await _routineService.updateRoutine(
+          patientId: widget.patientId,
+          breakfastTime: _format(breakfast),
+          lunchTime: _format(lunch),
+          dinnerTime: _format(dinner),
+          bathTime: _format(bath),
+          enableHydration: enableHydration,
+          waterReminder: waterReminder,
         );
-        // Limpiar los campos después de guardar
-        setState(() {
-          breakfast = null;
-          lunch = null;
-          dinner = null;
-          bath = null;
-        });
-      }
-    } catch (e) { // si hay un error, lo muestra
-      log('Error: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      } else { // si no, crea una nueva rutina
+        await _routineService.createRoutine(
+          patientId: widget.patientId,
+          breakfastTime: _format(breakfast),
+          lunchTime: _format(lunch),
+          dinnerTime: _format(dinner),
+          bathTime: _format(bath),
+          enableHydration: enableHydration,
+          waterReminder: waterReminder,
+        );
     }
+
+    // si todo va bien, muestra un mensaje y vuelve atrás
+    if (mounted) Navigator.pop(context);
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
   }
+}
 
   // -------------------- Construye la pantalla --------------------
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(

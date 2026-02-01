@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/screens/routine/create_routine_screen.dart';
+import 'package:tfg_frontend/features/caregiver/screens/routine/view_patient_routine.dart';
+import 'package:tfg_frontend/features/caregiver/screens/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
 
@@ -23,10 +25,17 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   // Es nullable porque al inicio aún no se ha cargado la información
   Patient? patient;
 
+  // Servicio para obtener la rutina
+  final RoutineService _routineService = RoutineService();
+  bool loadingRoutine = true; // indica si se está cargando la rutina
+  bool hasRoutine = false; // indica si el paciente tiene rutina creada
+
+  // Cuando se inicia la pantalla, carga los datos del paciente
   @override
   void initState() {
     super.initState();
     _loadPatient();
+    _checkRoutine();
   }
 
   // Obtiene los datos del paciente
@@ -36,6 +45,20 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
       patient = result; // guardamos lo que venga del backend
     });
   }
+
+  // Verifica si el paciente tiene rutina creada
+  void _checkRoutine() async {
+    try {
+      final routine = await _routineService.getRoutine(widget.patientId); // intenta obtener la rutina con el id del paciente
+      setState(() {
+        hasRoutine = routine != null; // si la rutina no es nula, entonces tiene rutina
+        loadingRoutine = false; // ya no está cargando
+      });
+    } catch (_) {
+      setState(() => loadingRoutine = false); // en caso de error, solo indica que ya no está cargando
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -115,22 +138,29 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                     // ---------- Botón para crear rutina ----------
                     SizedBox(
-                      width: double.infinity, // El botón ocupa todo el ancho disponible
+                      width: double.infinity,
                       child: ElevatedButton.icon(
-                        icon: const Icon(Icons.schedule),
-                        label: const Text('Crear rutina'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.caregiverAppBar,
-                        ),
-                        // Cuando se presiona, navega a la pantalla de creación de rutina
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CreateRoutineScreen(patientId: patient!.id),
-                            ),
-                          );
-                        },
+
+                        // Si tiene rutina, muestra el ícono de ver rutina, si no, el de crear rutina
+                        icon: Icon(hasRoutine ? Icons.visibility : Icons.schedule, color: Colors.white),
+
+                        // Si tiene rutina, muestra "Ver rutina", si no, "Crear rutina"
+                        label: Text(hasRoutine ? 'Ver rutina' : 'Crear rutina', style: const TextStyle(color: Colors.white),),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.caregiverAppBar,),
+                        
+                        // Si está cargando, deshabilita el botón
+                        onPressed: loadingRoutine
+                            ? null
+                            : () { // al presionar, navega a la pantalla correspondiente
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => hasRoutine // si tiene rutina
+                                        ? ViewRoutineScreen(patientId: patient!.id) // muestra la rutina
+                                        : CreateRoutineScreen(patientId: patient!.id,isEdit: false), // si no, permite crearla
+                                  ),
+                                );
+                              },
                       ),
                     ),
                   ],
