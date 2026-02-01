@@ -65,27 +65,52 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
   }
 
-  // --------------------- Widget para mostrar un ítem de la rutina --------------------
-  Widget _routineItem(String label, String value, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+  // -------------------- Widget para el título de cada sección --------------------
+  Widget _sectionTitle(String text, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.caregiverPrimary),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ],
+    );
+  }
+
+  // -------------------- Card --------------------
+  Widget _sectionCard({required List<Widget> children}) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: children,
+        ),
       ),
+    );
+  }
+
+  // -------------------- Ítem de texto de la rutina (sin icono) --------------------
+  Widget _routineItem(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          Icon(icon, color: AppColors.caregiverPrimary),
-          const SizedBox(width: 12),
-          Text('$label: ', style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          Text(
+            '$label: ',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          Text(value, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );
   }
 
-  
+  // -------------------- Construye la pantalla --------------------
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
@@ -106,12 +131,44 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 // ---------- Muestra los horarios de la rutina ----------
                 children: [
-                  _routineItem('Desayuno', routine!['breakfastTime'], Icons.free_breakfast),
-                  _routineItem('Comida', routine!['lunchTime'], Icons.lunch_dining),
-                  _routineItem('Cena', routine!['dinnerTime'], Icons.dinner_dining),
-                  _routineItem('Baño', routine!['bathTime'], Icons.bathtub),
+                  // ----------- COMIDAS -----------
+                  _sectionCard(
+                    children: [
+                      _sectionTitle('Comidas', Icons.restaurant),
+                      const SizedBox(height: 12),
+                      _routineItem('Desayuno', routine!['breakfastTime']),
+                      _routineItem('Comida', routine!['lunchTime']),
+                      _routineItem('Cena', routine!['dinnerTime']),
+                    ],
+                  ),
 
-                  const SizedBox(height: 30),
+                  // ----------- HIDRATACIÓN -----------
+                  _sectionCard(
+                    children: [
+                      _sectionTitle('Hidratación', Icons.water_drop),
+                      const SizedBox(height: 12),
+                      routine!['enableHydration'] == true
+                          ? Text(
+                              'Recordatorio cada ${routine!['waterReminder']} horas',
+                              style: const TextStyle(fontSize: 16),
+                            )
+                          : const Text(
+                              'Recordatorios desactivados',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                    ],
+                  ),
+
+                  // ----------- ASEO -----------
+                  _sectionCard(
+                    children: [
+                      _sectionTitle('Aseo', Icons.bathtub),
+                      const SizedBox(height: 12),
+                      _routineItem('Baño', routine!['bathTime']),
+                    ],
+                  ),
+
+                  const SizedBox(height: 50),
 
                   // ---------- Botón para editar la rutina ----------
                   SizedBox(

@@ -8,7 +8,7 @@ class CreateRoutineScreen extends StatefulWidget {
   final bool isEdit; // indica si se está editando una rutina existente
 
   // Constructor
-  const CreateRoutineScreen({super.key,required this.patientId,required this.isEdit,});
+  const CreateRoutineScreen({super.key, required this.patientId, required this.isEdit,});
 
   @override
   State<CreateRoutineScreen> createState() => _CreateRoutineScreenState();
@@ -112,14 +112,14 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           enableHydration: enableHydration,
           waterReminder: waterReminder,
         );
-    }
+      }
 
-    // si todo va bien, muestra un mensaje y vuelve atrás
-    if (mounted) Navigator.pop(context);
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      // si todo va bien, muestra un mensaje y vuelve atrás
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
   }
-}
 
   // -------------------- Construye la pantalla --------------------
   @override
@@ -136,6 +136,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
         backgroundColor: AppColors.caregiverAppBar,
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text('Crear rutina', style: TextStyle(color: Colors.white))),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -148,7 +149,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             ),),
             
             const SizedBox(height: 16),
-            // ----------- Rutina -----------
+
+            // ----------- Horarios de comida -----------
             sectionCard(
               children: [
                 sectionTitle('Horarios de comida'),
@@ -157,6 +159,65 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                 _timeRow('Desayuno', breakfast, (t) => setState(() => breakfast = t)),
                 _timeRow('Comida', lunch, (t) => setState(() => lunch = t)),
                 _timeRow('Cena', dinner, (t) => setState(() => dinner = t)),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // ----------- Hidratación: colocar entre comidas y aseo -----------
+            sectionCard(
+              children: [
+                sectionTitle('Hidratación'),
+
+                SwitchListTile(
+                  title: const Text('Recordatorios de hidratación'),
+                  value: enableHydration,
+                  onChanged: (v) {
+                    setState(() {
+                      enableHydration = v;
+                      if (!v) waterReminder = 0; // si se desactiva, poner 0 (sin recordatorio)
+                      else if (waterReminder == 0) waterReminder = 3; // si se activa y estaba en 0, poner 3h por defecto
+                    });
+                  },
+                ),
+
+                // Mostrar selector solo si está activado
+                if (enableHydration)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 20),
+                        const Text('Cada'),
+                        const SizedBox(width: 12),
+                        // Selector de horas
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: DropdownButton<int>(
+                              value: waterReminder,
+                              underline: const SizedBox.shrink(), // quita la línea de abajo
+                              items: const [
+                                DropdownMenuItem(value: 1, child: Text('1 hora')),
+                                DropdownMenuItem(value: 2, child: Text('2 horas')),
+                                DropdownMenuItem(value: 3, child: Text('3 horas')),
+                                DropdownMenuItem(value: 4, child: Text('4 horas')),
+                              ],
+                              onChanged: (v) {
+                                if (v != null) setState(() => waterReminder = v);
+                              },
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ),
+                  ),
               ],
             ),
 
@@ -171,52 +232,22 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
               ],
             ),
 
-            const SizedBox(height: 12),
-
-            // ----------- Hidratación -----------
-            sectionCard(
-              children: [
-                sectionTitle('Hidratación'),
-
-                SwitchListTile(
-                  title: const Text('Recordatorios de hidratación'),
-                  value: enableHydration,
-                  onChanged: (v) {
-                    setState(() {
-                      enableHydration = v;
-                      if (!v) waterReminder = 0;
-                    });
-                  },
-                ),
-
-                if (enableHydration)
-                  Row(
-                    children: [
-                      const Text('Cada'),
-                      const SizedBox(width: 12),
-                      DropdownButton<int>(
-                        value: waterReminder,
-                        items: const [
-                          DropdownMenuItem(value: 1, child: Text('1 hora')),
-                          DropdownMenuItem(value: 2, child: Text('2 horas')),
-                          DropdownMenuItem(value: 3, child: Text('3 horas')),
-                          DropdownMenuItem(value: 4, child: Text('4 horas')),
-                        ],
-                        onChanged: (v) {
-                          if (v != null) {
-                            setState(() => waterReminder = v);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-              ],
-            ),
+            const SizedBox(height: 16),
 
             // Botón
-            ElevatedButton(
-              onPressed: _saveRoutine, // al presionarlo, llama a la función para guardarla
-              child: const Text('Guardar rutina'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.caregiverPrimary,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: _saveRoutine, // al presionarlo, llama a la función para guardarla
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 14),
+                  child: Text('Guardar rutina'),
+                ),
+              ),
             ),
           ],
         ),
@@ -229,7 +260,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
     // InkWell para que toda la fila sea clickeable
     return InkWell(
       // cuando se toca la fila, abre el time picker
-      onTap: () async { 
+      onTap: () async {
         final picked = await _pickTime(value); // guarda la hora seleccionada
         if (picked != null) onPick(picked); // si se seleccionó una hora, llama a la función onPick
       },
