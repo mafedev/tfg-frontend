@@ -88,6 +88,37 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
 
   // Widget para cada card
   Widget _routineCard(String title, String value) {
+    IconData icon;
+    Color accentColor;
+
+    // El color e ícono cambia según el item
+    switch (title) {
+      case 'Desayuno':
+        icon = Icons.free_breakfast;
+        accentColor = AppColors.patientAccentGreen;
+        break;
+      case 'Almuerzo':
+        icon = Icons.lunch_dining;
+        accentColor = AppColors.patientAccentGreen;
+        break;
+      case 'Cena':
+        icon = Icons.dinner_dining;
+        accentColor = AppColors.patientAccentGreen;
+        break;
+      case 'Baño':
+        icon = Icons.bathtub;
+        accentColor = AppColors.patientSecondary;
+        break;
+      case 'Hidratación':
+      case 'Recordatorio de agua':
+        icon = Icons.local_drink;
+        accentColor = AppColors.patientPrimary;
+        break;
+      default:
+        icon = Icons.check_circle_outline;
+        accentColor = AppColors.patientPrimary;
+    }
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(14),
@@ -103,10 +134,16 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
         ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          CircleAvatar(
+            backgroundColor: accentColor.withOpacity(0.2),
+            child: Icon(icon, color: accentColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          ),
+          Text(value, style: const TextStyle(fontSize: 16)),
         ],
       ),
     );
