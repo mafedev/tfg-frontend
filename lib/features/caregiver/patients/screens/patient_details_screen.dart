@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/caregiver/screens/routine/create_routine_screen.dart';
-import 'package:tfg_frontend/features/caregiver/screens/routine/view_patient_routine.dart';
-import 'package:tfg_frontend/features/caregiver/screens/services/caregiver_routine_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/create_routine_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/view_patient_routine.dart';
+import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
 

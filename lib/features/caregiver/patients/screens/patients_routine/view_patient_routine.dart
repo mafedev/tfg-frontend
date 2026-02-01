@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/features/caregiver/screens/routine/create_routine_screen.dart';
-import 'package:tfg_frontend/features/caregiver/screens/services/caregiver_routine_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/create_routine_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente cuya rutina se va a ver
