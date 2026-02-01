@@ -108,4 +108,21 @@ class RoutineService {
       throw Exception('Error: ${response.statusCode} - ${response.body}');
     }
   }
+
+  // ------------- Eliminar rutina -------------
+  Future<void> deleteRoutine(int patientId) async {
+    final token = await _secureStorageService.getToken();
+    if (token == null) throw Exception('Token no disponible');
+
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/routine/$patientId'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      log('Error response status: ${response.statusCode}');
+      log('Error body: ${response.body}');
+      throw Exception('Error: ${response.statusCode} - ${response.body}');
+    }
+  }
 }
