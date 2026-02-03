@@ -27,6 +27,17 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
 
   bool loading = true;
 
+  // Días de la semana
+  final Map<int, String> weekDays = {
+    1: 'Lunes',
+    2: 'Martes',
+    3: 'Miércoles',
+    4: 'Jueves',
+    5: 'Viernes',
+    6: 'Sábado',
+    7: 'Domingo',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -86,7 +97,7 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
       appBar: AppBar(title: const Text('Rutina de medicamentos')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
+          child: Column(
           children: [
             // ---------- Selector de medicamento ----------
             DropdownButtonFormField(
@@ -164,7 +175,33 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
               keyboardType: TextInputType.number,
               decoration: const InputDecoration(labelText: 'Frecuencia (horas)'),
             ),
+            const SizedBox(height: 12),
 
+            // ---------- Días de la semana ----------
+            Text('Selecciona los días:', style: const TextStyle(fontWeight: FontWeight.bold),),
+            Wrap( // para que los chips se ajusten al ancho disponible
+              spacing: 8, // espacio entre chips
+              // genera un FilterChip por cada día de la semana, usando weekDays
+              children: weekDays.entries.map((entry) {
+                final dayNumber = entry.key;
+                final dayName = entry.value;
+                final isSelected = selectedDays.contains(dayNumber);
+                return FilterChip(
+                  label: Text(dayName),
+                  selected: isSelected,
+                  // al cambiar el estado del chip, actualiza la lista de días seleccionados
+                  onSelected: (selected) {
+                    setState(() {
+                      if (selected) {
+                        selectedDays.add(dayNumber);
+                      } else {
+                        selectedDays.remove(dayNumber);
+                      }
+                    });
+                  },
+                );
+              }).toList(),
+            ),
             const SizedBox(height: 20),
 
             // ---------- Botón Guardar ----------
