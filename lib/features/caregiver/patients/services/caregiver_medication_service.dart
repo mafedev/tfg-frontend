@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:tfg_frontend/core/secure_storage_service.dart'; // tu servicio de almacenamiento seguro
+import 'package:tfg_frontend/core/secure_storage_service.dart';
 
 class CaregiverMedicationService {
   static const String _baseUrl = 'http://10.0.2.2:8080/api/medications';

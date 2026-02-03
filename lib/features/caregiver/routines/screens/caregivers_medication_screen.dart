@@ -3,15 +3,15 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
 
-class CaregiversRoutinesScreen extends StatefulWidget {
-  const CaregiversRoutinesScreen({super.key});
+class CaregiversMedicationScreen extends StatefulWidget {
+  const CaregiversMedicationScreen({super.key});
 
   @override
-  State<CaregiversRoutinesScreen> createState() =>
-      _CaregiversRoutinesScreenState();
+  State<CaregiversMedicationScreen> createState() =>
+      _CaregiversMedicationScreenState();
 }
 
-class _CaregiversRoutinesScreenState extends State<CaregiversRoutinesScreen> {
+class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen> {
   // Controladores para los TextField
   final _name = TextEditingController();
   final _description = TextEditingController();
@@ -20,7 +20,7 @@ class _CaregiversRoutinesScreenState extends State<CaregiversRoutinesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const AppLogoAppBar(title: 'Rutinas', backgroundColor: AppColors.caregiverAppBar),
+      appBar: const AppLogoAppBar(title: 'Medicamentos', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
