@@ -33,4 +33,75 @@ class CaregiverMedicationService {
       throw Exception('Error al crear medicamento: ${response.statusCode} - ${response.body}');
     }
   }
+
+  // ---------- Crear rutina de medicamentos ----------
+  Future<void> createMedicationSchedule({
+    required int patientId,
+    required int medicationId,
+    required int dose,
+    String? startDate,
+    String? endDate,
+    int? frequencyHours,
+    String? firstDoseTime,
+    List<int>? daysOfWeek,
+  }) async {
+    final token = await _secureStorageService.getToken();
+    
+    // si el token es nulo, lanza una excepción
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final body = {
+      'patientId': patientId,
+      'medicationId': medicationId,
+      'dose': dose,
+      'startDate': startDate,
+      'endDate': endDate,
+      'frequencyHours': frequencyHours,
+      'firstDoseTime': firstDoseTime,
+      'daysOfWeek': daysOfWeek,
+    };
+
+    final response = await http.post(
+      Uri.parse('$_baseUrl/schedule'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(body), // le pasa el body con los datos
+    );
+
+    // si hay algñun problema muestra el error
+    if (response.statusCode != 200) {
+      throw Exception('Error al crear rutina: ${response.body}');
+    }
+  }
+
+
+  // ---------- Obtener medicamentos ----------
+  Future<List<dynamic>> getMedications() async {
+    final token = await _secureStorageService.getToken();
+    
+    // si el token es nulo, lanza una excepción
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    // si hay token, hace la petición
+    final response = await http.get(
+      Uri.parse(_baseUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    // si algo sale mal muestra el error
+    if (response.statusCode != 200) {
+      throw Exception('Error al obtener medicamentos: ${response.body}');
+    }
+
+    return jsonDecode(response.body); // devuelve la lista de medicamentos
+  }
 }

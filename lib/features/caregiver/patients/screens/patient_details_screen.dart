@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/create_medication_schedule_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/view_patient_routine.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
@@ -161,6 +162,28 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                                   ),
                                 );
                               },
+                      ),
+                    ),
+
+                    const SizedBox(width: 20,),
+
+                    // ---------- Botón rutina de medicamentos ----------
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.medication, color: Colors.white),
+                        label: const Text('Crear rutina de medicamentos', style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CreateMedicationScheduleScreen(patientId: patient!.id),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
