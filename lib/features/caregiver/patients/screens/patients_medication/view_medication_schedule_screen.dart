@@ -67,7 +67,37 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
           return ListTile(
             title: Text('Medicamento ID: ${med['id']}'),
             subtitle: Text('Dosis: ${med['dose']}'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // ---------- Botón para editar rutina de medicación ----------
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CreateMedicationScheduleScreen(
+                          patientId: widget.patientId,
+                          existingSchedule: med, // pasamos la rutina para editar
+                        ),
+                      ),
+                    ).then( (_) => _loadMedication()); // cuando volvemos de editar, se actualiza la lista
+                  },
+                ),
+                
+                // ---------- Botón para borrar rutina de medicación ----------
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () async {
+                    await CaregiverMedicationService().deleteMedicationSchedule(med['id']); // borra la rutina
+                    _loadMedication(); // recarga la lista
+                  },
+                ),
+              ],
+            ),
           );
+
         },
       ),
 

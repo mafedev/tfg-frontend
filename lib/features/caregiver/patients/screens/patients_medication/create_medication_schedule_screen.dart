@@ -3,8 +3,9 @@ import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medi
 
 class CreateMedicationScheduleScreen extends StatefulWidget {
   final int patientId; // id del paciente
+  final Map<String, dynamic>? existingSchedule; // para editar
 
-  const CreateMedicationScheduleScreen({super.key, required this.patientId});
+  const CreateMedicationScheduleScreen({super.key, required this.patientId,this.existingSchedule});
 
   @override
   State<CreateMedicationScheduleScreen> createState() => _CreateMedicationScheduleScreenState();
@@ -48,7 +49,31 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
   // obtiene la lista de medicamentos desde el servicio
   Future<void> _loadMedications() async {
     try {
-      medications = await CaregiverMedicationService().getMedications();
+      medications = await CaregiverMedicationService().getMedications(); // obtiene la lista de medicamentos
+
+      // si se está editando una rutina existente, carga sus datos
+      if (widget.existingSchedule != null) { // si hay una rutina existente
+        final sched = widget.existingSchedule!; // obtiene la rutina
+        
+        // llena los campos con los datos
+        _dose.text = sched['dose'].toString(); // guarda la dosis
+        _frequency.text = sched['frequencyHours']?.toString() ?? ''; // guarda la frecuencia
+        startDate = sched['startDate'] != null ? DateTime.parse(sched['startDate']) : null;
+        endDate = sched['endDate'] != null ? DateTime.parse(sched['endDate']) : null;
+        selectedDays = sched['daysOfWeek'] != null ? List<int>.from(sched['daysOfWeek']) : [];
+
+        // guarda la hora del primer dosis
+        if (sched['firstDoseTime'] != null) {
+          final parts = sched['firstDoseTime'].split(':');
+          selectedHour = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+        }
+        
+        // busca el medicamento seleccionado en la lista de medicamentos
+        selectedMedication = medications.firstWhere(
+          (m) => m['id'] == sched['medication']['id'], // compara por id
+          orElse: () => null, // si no lo encuentra, devuelve null
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error cargando medicamentos: $e')));
     } finally {
@@ -68,23 +93,42 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
         ? '${selectedHour!.hour.toString().padLeft(2, '0')}:${selectedHour!.minute.toString().padLeft(2, '0')}'
         : null;
 
-    // Llamar al servicio para crear la rutina
-    await CaregiverMedicationService().createMedicationSchedule(
-      patientId: widget.patientId,
-      medicationId: selectedMedication['id'],
-      dose: int.parse(_dose.text),
-      startDate: startDate != null
-          ? startDate!.toIso8601String().split('T')[0] // toma la fecha en formato yyyy-MM-dd
-          : null,
-      endDate: endDate != null
-          ? endDate!.toIso8601String().split('T')[0]
-          : null,
-      frequencyHours: _frequency.text.isNotEmpty
-          ? int.parse(_frequency.text)
-          : null,
-      firstDoseTime: hour,
-      daysOfWeek: selectedDays.isNotEmpty ? selectedDays : null,
-    );
+    final service = CaregiverMedicationService();
+
+    // si no hay rutina existente, crea una nueva
+    if (widget.existingSchedule == null) {
+      
+      // Crea una nueva rutina
+      await service.createMedicationSchedule(
+        // llena los datos
+        patientId: widget.patientId,
+        medicationId: selectedMedication['id'],
+        dose: int.parse(_dose.text),
+        startDate: startDate?.toIso8601String().split('T')[0], // lo pasa en formato YYYY-MM-DD
+        endDate: endDate?.toIso8601String().split('T')[0],
+        frequencyHours: _frequency.text.isNotEmpty
+            ? int.parse(_frequency.text)
+            : null,
+        firstDoseTime: hour,
+        daysOfWeek: selectedDays.isNotEmpty ? selectedDays : null,
+      );
+    } else {
+
+      // Si hay una rutina existente, la actualiza
+      await service.updateMedicationSchedule(
+        scheduleId: widget.existingSchedule!['id'],
+        patientId: widget.patientId,
+        medicationId: selectedMedication['id'],
+        dose: int.parse(_dose.text),
+        startDate: startDate?.toIso8601String().split('T')[0],
+        endDate: endDate?.toIso8601String().split('T')[0],
+        frequencyHours: _frequency.text.isNotEmpty
+            ? int.parse(_frequency.text)
+            : null,
+        firstDoseTime: hour,
+        daysOfWeek: selectedDays.isNotEmpty ? selectedDays : null,
+      );
+    }
 
     Navigator.pop(context); // vuelve a la pantalla anterior
   }
@@ -94,7 +138,11 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
     if (loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Rutina de medicamentos')),
+      appBar: AppBar(
+        title: Text(
+          widget.existingSchedule == null ? 'Nueva rutina' : 'Editar rutina',
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
           child: Column(

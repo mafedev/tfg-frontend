@@ -120,4 +120,53 @@ class CaregiverMedicationService {
 
     return jsonDecode(response.body);
   }
+
+  // ---------- Borrar rutina de medicamentos ----------
+  Future<void> deleteMedicationSchedule(int scheduleId) async {
+    final token = await _secureStorageService.getToken();
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/schedule/$scheduleId'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode != 204) {
+      throw Exception('Error al eliminar medicación');
+    }
+  }
+
+
+  // ---------- Actualizar rutina de medicamentos ----------
+  Future<void> updateMedicationSchedule({
+    required int scheduleId,
+    required int patientId,
+    required int medicationId,
+    required int dose,
+    String? startDate,
+    String? endDate,
+    int? frequencyHours,
+    String? firstDoseTime,
+    List<int>? daysOfWeek,
+  }) async {
+    final token = await _secureStorageService.getToken();
+    final body = {
+      'patientId': patientId,
+      'medicationId': medicationId,
+      'dose': dose,
+      'startDate': startDate,
+      'endDate': endDate,
+      'frequencyHours': frequencyHours,
+      'firstDoseTime': firstDoseTime,
+      'daysOfWeek': daysOfWeek,
+    };
+    final response = await http.put(
+      Uri.parse('$_baseUrl/schedule/$scheduleId'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Error al actualizar medicación');
+    }
+  }
 }
