@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/create_medication_schedule_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
 
 class ViewMedicationScheduleScreen extends StatefulWidget {
@@ -73,7 +74,13 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
       // ---------- Botón para agregar nueva rutina de medicación ----------
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // navegar
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                CreateMedicationScheduleScreen(patientId: widget.patientId)
+              )
+          );
         },
         child: const Icon(Icons.add),
       ),
