@@ -83,6 +83,56 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
                 alignment: Alignment.centerLeft,
                 child: Text('ID: ${med['id']}'),
               ),
+
+              // -------------- Tres puntos superiores --------------
+              trailing: PopupMenuButton<String>(
+                // Ícono de editar la medicación
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CreateMedicationScheduleScreen(
+                          patientId: widget.patientId,
+                          existingSchedule: med,
+                        ),
+                      ),
+                    ).then((_) => _loadMedication());
+                  }
+
+                  // Ícono de borrar la medicación
+                  if (value == 'delete') {
+                    await CaregiverMedicationService().deleteMedicationSchedule(
+                      med['id'],
+                    );
+                    _loadMedication();
+                  }
+                },
+
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(Icons.edit, size: 18),
+                        SizedBox(width: 8),
+                        Text('Editar'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, color: Colors.red, size: 18),
+                        SizedBox(width: 8),
+                        Text('Eliminar'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
               childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 
@@ -104,39 +154,7 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                      'Frecuencia: ${med['frequencyHours'] ?? 'Ninguna'} h'),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    
-                    // ---------- Botón para editar rutina de medicación ----------
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => CreateMedicationScheduleScreen(
-                              patientId: widget.patientId,
-                              existingSchedule: med,
-                            ),
-                          ),
-                        ).then( (_) => _loadMedication()); // cuando volvemos de editar, se actualiza la lista
-                      },
-                    ),
-                    
-                    // ---------- Botón para borrar rutina de medicación ----------
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () async {
-                        await CaregiverMedicationService().deleteMedicationSchedule(med['id']);
-                        _loadMedication(); // recarga la lista
-                      },
-                    ),
-                  ],
+                  child: Text('Frecuencia: ${med['frequencyHours'] ?? 'Ninguna'} h'),
                 ),
               ],
             ),
