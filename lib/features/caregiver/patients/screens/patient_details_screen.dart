@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/create_medication_schedule_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/view_medication_schedule_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/view_patient_routine.dart';
+import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
@@ -28,15 +30,22 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
   // Servicio para obtener la rutina
   final RoutineService _routineService = RoutineService();
+
+  // Para saber si el paciente tiene rutina creada
   bool loadingRoutine = true; // indica si se está cargando la rutina
   bool hasRoutine = false; // indica si el paciente tiene rutina creada
+
+  // Para saber si el paciente tiene medicación asignada
+  bool loadingMedication = true;
+  bool hasMedication = false;
 
   // Cuando se inicia la pantalla, carga los datos del paciente
   @override
   void initState() {
     super.initState();
     _loadPatient();
-    _checkRoutine();
+    _checkRoutine(); // verifica si tiene rutina creada
+    _checkMedication(); // verifica si tiene medicación asignada
   }
 
   // Obtiene los datos del paciente
@@ -55,11 +64,25 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
         hasRoutine = routine != null; // si la rutina no es nula, entonces tiene rutina
         loadingRoutine = false; // ya no está cargando
       });
-    } catch (_) {
+    } catch (e) {
       setState(() => loadingRoutine = false); // en caso de error, solo indica que ya no está cargando
     }
   }
 
+  // Verifica si el paciente tiene medicación asignada
+  void _checkMedication() async {
+    try {
+      final meds = await CaregiverMedicationService().getMedicationSchedulesPatient(widget.patientId); // obtiene la rutina de medicamentos usando el id del paciente
+
+      // si la lista no está vacía, entonces tiene medicación asignada
+      setState(() {
+        hasMedication = meds.isNotEmpty; // si la lista no está vacía, entonces tiene medicación asignada
+        loadingMedication = false; // ya no está cargando
+      });
+    } catch (e) {
+      setState(() => loadingMedication = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -171,19 +194,28 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        icon: const Icon(Icons.medication, color: Colors.white),
-                        label: const Text('Crear rutina de medicamentos', style: TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.teal,
+                        // Si tiene medicación, muestra el ícono de ver medicación, si no, el de agregar medicación
+                        icon: Icon(hasMedication ? Icons.visibility : Icons.medication,color: Colors.white),
+
+                        // Lo mismo, pero con el texto
+                        label: Text(hasMedication ? 'Ver medicación': 'Agregar medicación',
+                          style: const TextStyle(color: Colors.white),
                         ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CreateMedicationScheduleScreen(patientId: patient!.id),
-                            ),
-                          );
-                        },
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+                        
+                        // Si está cargando, deshabilita el botón
+                        onPressed: loadingMedication
+                            ? null
+                            : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => hasMedication
+                                        ? ViewMedicationScheduleScreen(patientId: patient!.id) // si tiene medicación asignada, navega a verlas
+                                        : CreateMedicationScheduleScreen(patientId: patient!.id), // si no, navega a crear nueva medicación
+                                  ),
+                                );
+                              },
                       ),
                     ),
                   ],

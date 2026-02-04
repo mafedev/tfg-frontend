@@ -104,4 +104,20 @@ class CaregiverMedicationService {
 
     return jsonDecode(response.body); // devuelve la lista de medicamentos
   }
+
+  // ---------- Obtener rutina de medicamentos de un paciente ----------
+  Future<List<dynamic>> getMedicationSchedulesPatient(int patientId) async {
+    final token = await _secureStorageService.getToken();
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/schedule/patient/$patientId'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error cargando medicación');
+    }
+
+    return jsonDecode(response.body);
+  }
 }
