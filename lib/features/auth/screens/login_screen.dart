@@ -22,14 +22,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.caregiverBackground,
+      backgroundColor: AppColors.caregiverSecondary,
       body: SafeArea( // Evita que el contenido quede detrás de cosas del sistema
         child: Center(
           child: Padding(
             // Espacio alrededor de la tarjeta
             padding: const EdgeInsets.all(20),
             child: Card(
-              color: Colors.white,
+              color: AppColors.caregiverBackground,
               shadowColor: AppColors.caregiverPrimary.withOpacity(0.15),
 
               // Tarjeta para el formulario
