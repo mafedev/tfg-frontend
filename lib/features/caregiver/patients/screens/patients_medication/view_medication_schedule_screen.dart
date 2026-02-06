@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/create_medication_schedule_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
 
@@ -46,7 +48,7 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
     // si no hay medicación, muestra un mensaje
     if (medications.isEmpty) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Medicación')),
+        appBar: const AppLogoAppBar(title: 'Medicación', backgroundColor: AppColors.caregiverAppBar),
         body: const Center(
           child: Text('Este paciente no tiene medicación asignada'),
         ),
@@ -55,44 +57,127 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
 
     // si hay medicación, la muestra en una lista
     return Scaffold(
-      appBar: AppBar(title: const Text('Medicación')),
-      
+      backgroundColor: AppColors.caregiverBackground,
+      appBar: const AppLogoAppBar(title: 'Medicación', backgroundColor: AppColors.caregiverAppBar),
+
       // ----------- Lista de medicación ----------
       body: ListView.builder(
         itemCount: medications.length, // número de elementos en la lista
         itemBuilder: (context, index) { // cómo construir cada elemento
           final med = medications[index];
-          
-          // muestra la información del medicamento
-          return ListTile(
-            title: Text('Medicamento ID: ${med['id']}'),
-            subtitle: Text('Dosis: ${med['dose']}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // ---------- Botón para editar rutina de medicación ----------
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
+
+          // Cada medicamento se muestra en una card desplegable, con su información
+          return Card(
+            color: Colors.white,
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            elevation: 4,
+            shadowColor: AppColors.caregiverPrimary.withOpacity(0.15),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+
+            // Cada card es un ExpansionTile que muestra más detalles al expandir
+            child: ExpansionTile(
+              title: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  med['medication']['name'] ?? 'Medicamento sin nombre',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              subtitle: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'ID: ${med['id']}',
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+
+              // -------------- Tres puntos superiores --------------
+              trailing: PopupMenuButton<String>(
+                icon: const Icon(
+                  Icons.more_vert,
+                  color: AppColors.textSecondary,
+                ),
+
+                // Ícono de editar la medicación
+                onSelected: (value) async {
+                  if (value == 'edit') {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => CreateMedicationScheduleScreen(
                           patientId: widget.patientId,
-                          existingSchedule: med, // pasamos la rutina para editar
+                          existingSchedule: med,
                         ),
                       ),
-                    ).then( (_) => _loadMedication()); // cuando volvemos de editar, se actualiza la lista
-                  },
-                ),
+                    ).then((_) => _loadMedication());
+                  }
+
+                  // Ícono de borrar la medicación
+                  if (value == 'delete') {
+                    await CaregiverMedicationService().deleteMedicationSchedule(
+                      med['id'],
+                    );
+                    _loadMedication();
+                  }
+                },
+
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.edit,
+                          size: 18,
+                          color: AppColors.caregiverPrimary,
+                        ),
+                        SizedBox(width: 8),
+                        Text('Editar'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete, size: 18, color: AppColors.delete),
+                        SizedBox(width: 8),
+                        Text('Eliminar'),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              children: [
                 
-                // ---------- Botón para borrar rutina de medicación ----------
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    await CaregiverMedicationService().deleteMedicationSchedule(med['id']); // borra la rutina
-                    _loadMedication(); // recarga la lista
-                  },
+                // Si tiene desciprción
+                if (med['medication']['description'] != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        med['medication']['description'],
+                        style: const TextStyle(color: Colors.black87),
+                      ),
+                    ),
+                  ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Dosis: ${med['dose']}'),
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('Frecuencia: ${med['frequencyHours'] ?? 'Ninguna'} h'),
                 ),
               ],
             ),
@@ -103,13 +188,15 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
 
       // ---------- Botón para agregar nueva rutina de medicación ----------
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.caregiverButtonPrimary,
+        foregroundColor: AppColors.textOnDark,
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (_) =>
-                CreateMedicationScheduleScreen(patientId: widget.patientId)
-              )
+                  CreateMedicationScheduleScreen(patientId: widget.patientId),
+            ),
           );
         },
         child: const Icon(Icons.add),
