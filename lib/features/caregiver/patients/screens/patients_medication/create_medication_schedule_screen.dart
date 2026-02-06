@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
 
 class CreateMedicationScheduleScreen extends StatefulWidget {
@@ -138,11 +140,7 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
     if (loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.existingSchedule == null ? 'Nueva rutina' : 'Editar rutina',
-        ),
-      ),
+      appBar: AppLogoAppBar(title: widget.existingSchedule == null ? 'Nueva rutina' : 'Editar rutina', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
         padding: const EdgeInsets.all(16),
           child: Column(
