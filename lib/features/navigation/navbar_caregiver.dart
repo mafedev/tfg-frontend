@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/theme/app_colors.dart'; // añadimos colores de la app
+import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/caregiver/follow_up/screens/caregiver_follow_up_screen.dart';
 import 'package:tfg_frontend/features/caregiver/home/screens/caregiver_home_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/caregiver_patients_screen.dart';
-import 'package:tfg_frontend/features/caregiver/routines/screens/caregivers_routines_screen.dart';
+import 'package:tfg_frontend/features/caregiver/routines/screens/caregivers_medication_screen.dart';
 
 class NavbarCaregiver extends StatefulWidget {
   const NavbarCaregiver({super.key});
@@ -18,7 +18,7 @@ class _NavbarCaregiverState extends State<NavbarCaregiver> {
   final List<Widget> _pages = [
     CaregiverHomeScreen(),
     CaregiverPatientsScreen(),
-    CaregiversRoutinesScreen(),
+    CaregiversMedicationScreen(),
     CaregiverFollowUpScreen(),
     Center(child: Text('Menú')),
   ];
@@ -42,7 +42,7 @@ class _NavbarCaregiverState extends State<NavbarCaregiver> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.people_alt),label: 'Pacientes'),
-          BottomNavigationBarItem(icon: Icon(Icons.edit_calendar), label: 'Rutinas'),
+          BottomNavigationBarItem(icon: Icon(Icons.medical_services), label: 'Medicación'),
           BottomNavigationBarItem(icon: Icon(Icons.handshake_sharp), label: 'Seguimiento'),
           BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu')
         ],
