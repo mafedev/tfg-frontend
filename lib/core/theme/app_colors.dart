@@ -9,7 +9,7 @@ class AppColors {
   // ------------------- CUIDADOR -------------------
   static const Color caregiverPrimary = Color(0xFF8E44AD);
   static const Color caregiverSecondary = Color(0xFFC39BD3);
-  static const Color caregiverAppBar = Color(0xFF8E44AD);
+  static const Color caregiverAppBar = Color(0xFF691E8A);
   static const Color caregiverBackground = Color(0xFFF1E6F7);
 
   // ------------------- PACIENTE -------------------
