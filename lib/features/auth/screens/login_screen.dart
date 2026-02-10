@@ -30,6 +30,8 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.all(20),
             child: Card(
               color: AppColors.caregiverBackground,
+              shadowColor: AppColors.caregiverPrimary.withOpacity(0.15),
+
               // Tarjeta para el formulario
               elevation: 4, // Sombra
               shape: RoundedRectangleBorder(
@@ -39,81 +41,138 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 // ----------- Formulario -----------
-                child: Form(
-                  key: _formKey, // Clave del formulario
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min, // ocupa solo lo necesario
-                    crossAxisAlignment: CrossAxisAlignment.stretch, // estira hijos horizontalmente
-                    children: [
-                      const Text(
-                        'Bienvenido', // título del formulario
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: InputDecorationTheme(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
                       ),
-                      const SizedBox(height: 12),
-                      // ----------- Correo -----------
-                      TextFormField(
-                        controller: emailController, // conecta el TextFormField con emailController
-                        decoration: const InputDecoration(
-                          labelText: 'Correo',
-                          hintText: 'tucorreo@ejemplo.com',
-                          prefixIcon: Icon(Icons.email),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: AppColors.caregiverSecondary,
                         ),
-                        keyboardType: TextInputType.emailAddress, // Que el teclado sea de email
                       ),
-                      const SizedBox(height: 12),
-                      // ----------- Contraseña -----------
-                      TextFormField(
-                        controller: passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'Contraseña',
-                          prefixIcon: const Icon(Icons.lock),
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: AppColors.caregiverSecondary,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: AppColors.caregiverPrimary,
+                          width: 2,
+                        ),
+                      ),
+                      labelStyle: const TextStyle(color: Colors.black87),
+                    ),
+                  ),
+                  child: Form(
+                    key: _formKey, // Clave del formulario
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min, // ocupa solo lo necesario
+                      crossAxisAlignment: CrossAxisAlignment.stretch, // estira hijos horizontalmente
+                      children: [
+                        const Text(
+                          'Bienvenido', // título del formulario
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.caregiverPrimary,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Introduce tu contraseña' : null,  // validación simple, si está vacío devuelve el mensaje, si no, nulo (válido)
-                        obscureText: _obscurePassword,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _login,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('Iniciar sesión'),
-                      ),
-                      const SizedBox(height: 8),
 
-                      // ----------- Enlace a Signup -----------
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center, // centra horizontalmente
-                        children: [
-                          const Text('¿No tienes una cuenta?'),
-                          TextButton(
-                            onPressed: () { // si se presiona el botón, navega a la pantalla de Signup
-                              Navigator.of(context).push( // "push" añade una nueva pantalla a la pila de navegación
-                                MaterialPageRoute(
-                                  builder: (_) => const SignupScreen(),
-                                ),
-                              );
-                            },
-                            child: const Text('Regístrate'), // texto del botón
+                        const SizedBox(height: 12),
+                        // ----------- Correo -----------
+                        TextFormField(
+                          controller:
+                              emailController, // conecta el TextFormField con emailController
+                          decoration: const InputDecoration(
+                            labelText: 'Correo',
+                            hintText: 'tucorreo@ejemplo.com',
+                            prefixIcon: Icon(Icons.email),
                           ),
-                        ],
-                      ),
-                    ],
+                          keyboardType: TextInputType.emailAddress, // Que el teclado sea de email
+                        ),
+                        const SizedBox(height: 12),
+                        // ----------- Contraseña -----------
+                        TextFormField(
+                          controller: passwordController,
+                          decoration: InputDecoration(
+                            labelText: 'Contraseña',
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                            ),
+                          ),
+                          validator: (v) => (v == null || v.isEmpty)
+                              ? 'Introduce tu contraseña'
+                              : null, // validación simple, si está vacío devuelve el mensaje, si no, nulo (válido)
+                          obscureText: _obscurePassword,
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _login,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.caregiverPrimary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: const Text(
+                            'Iniciar sesión',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        // ----------- Enlace a Signup -----------
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center, // centra horizontalmente
+                          children: [
+                            const Text('¿No tienes una cuenta?'),
+                            TextButton(
+                              onPressed: () { // si se presiona el botón, navega a la pantalla de Signup
+                                Navigator.of(context).push( // "push" añade una nueva pantalla a la pila de navegación
+                                  MaterialPageRoute(
+                                    builder: (_) => const SignupScreen(),
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                'Regístrate',
+                                style: TextStyle(
+                                  color: AppColors.caregiverPrimary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

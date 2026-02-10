@@ -83,7 +83,6 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
                   ),
                 ),
               ),
@@ -91,10 +90,6 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'ID: ${med['id']}',
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
                 ),
               ),
 
@@ -102,7 +97,7 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
               trailing: PopupMenuButton<String>(
                 icon: const Icon(
                   Icons.more_vert,
-                  color: AppColors.textSecondary,
+                  color: Colors.black,
                 ),
 
                 // Ícono de editar la medicación
@@ -188,8 +183,7 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
 
       // ---------- Botón para agregar nueva rutina de medicación ----------
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.caregiverButtonPrimary,
-        foregroundColor: AppColors.textOnDark,
+        backgroundColor: AppColors.caregiverAccent,
         onPressed: () {
           Navigator.push(
             context,
