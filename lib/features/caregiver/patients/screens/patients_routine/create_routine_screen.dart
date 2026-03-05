@@ -21,8 +21,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   TimeOfDay? dinner;
   TimeOfDay? bath;
 
-  bool enableHydration = false; // si quiere activar recordatorios de hidratación
-  int waterReminder = 3; // cada cuánto quiere el recordatorio, valor por defecto 3 horas
+  bool hydrationEnabled = false; // si quiere activar recordatorios de hidratación
+  int hydrationReminderHours = 3; // cada cuánto quiere el recordatorio, valor por defecto 3 horas
 
   final RoutineService _routineService = RoutineService();
   bool loading = true; // indica si está cargando
@@ -50,8 +50,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           lunch = _parseTime(routine['lunchTime']);
           dinner = _parseTime(routine['dinnerTime']);
           bath = _parseTime(routine['bathTime']);
-          enableHydration = routine['enableHydration'] ?? false;
-          waterReminder = routine['waterReminder'] ?? 3;
+          hydrationEnabled = routine['hydrationEnabled'] ?? false;
+          hydrationReminderHours = routine['hydrationReminderHours'] ?? 3;
         });
       }
     } catch (e) {
@@ -99,8 +99,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           lunchTime: _format(lunch),
           dinnerTime: _format(dinner),
           bathTime: _format(bath),
-          enableHydration: enableHydration,
-          waterReminder: waterReminder,
+          hydrationEnabled: hydrationEnabled,
+          hydrationReminderHours: hydrationReminderHours,
         );
       } else { // si no, crea una nueva rutina
         await _routineService.createRoutine(
@@ -109,8 +109,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
           lunchTime: _format(lunch),
           dinnerTime: _format(dinner),
           bathTime: _format(bath),
-          enableHydration: enableHydration,
-          waterReminder: waterReminder,
+          hydrationEnabled: hydrationEnabled,
+          hydrationReminderHours: hydrationReminderHours,
         );
       }
 
@@ -171,18 +171,18 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
 
                 SwitchListTile(
                   title: const Text('Recordatorios de hidratación'),
-                  value: enableHydration,
+                  value: hydrationEnabled,
                   onChanged: (v) {
                     setState(() {
-                      enableHydration = v;
-                      if (!v) waterReminder = 0; // si se desactiva, poner 0 (sin recordatorio)
-                      else if (waterReminder == 0) waterReminder = 3; // si se activa y estaba en 0, poner 3h por defecto
+                      hydrationEnabled = v;
+                      if (!v) hydrationReminderHours = 0; // si se desactiva, poner 0 (sin recordatorio)
+                      else if (hydrationReminderHours == 0) hydrationReminderHours = 3; // si se activa y estaba en 0, poner 3h por defecto
                     });
                   },
                 ),
 
                 // Mostrar selector solo si está activado
-                if (enableHydration)
+                if (hydrationEnabled)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
@@ -200,7 +200,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                           child: Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: DropdownButton<int>(
-                              value: waterReminder,
+                              value: hydrationReminderHours,
                               underline: const SizedBox.shrink(), // quita la línea de abajo
                               items: const [
                                 DropdownMenuItem(value: 1, child: Text('1 hora')),
@@ -209,7 +209,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                                 DropdownMenuItem(value: 4, child: Text('4 horas')),
                               ],
                               onChanged: (v) {
-                                if (v != null) setState(() => waterReminder = v);
+                                if (v != null) setState(() => hydrationReminderHours = v);
                               },
                             ),
                           ),
