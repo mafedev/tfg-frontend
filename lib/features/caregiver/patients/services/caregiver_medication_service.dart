@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/enums/medication_type.dart';
 import 'package:tfg_frontend/core/secure_storage_service.dart';
 
 class CaregiverMedicationService {
@@ -7,7 +8,7 @@ class CaregiverMedicationService {
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ------------- Crear medicamento -------------
-  Future<void> createMedication(String name, String description) async {
+  Future<void> createMedication(String name, String description, MedicationType type) async {
     final token = await _secureStorageService.getToken(); // se obtiene el token del secure storage
 
     // si el token es nulo, lanza una excepción
@@ -25,6 +26,8 @@ class CaregiverMedicationService {
       body: jsonEncode({ // convierte el cuerpo a JSON
         'name': name,
         'description': description,
+        // enviamos el nombre del enum para que el backend reciba un string válido
+        'type': type.name,
       }),
     );
 
