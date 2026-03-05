@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/auth/services/auth_service.dart';
+import 'package:tfg_frontend/core/enums/user_role.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -16,7 +17,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final phoneController = TextEditingController();
-  String selectedValue = 'Cuidador';
+  UserRole selectedRole = UserRole.CAREGIVER;
   bool _obscurePassword = true;
 
   @override
@@ -161,18 +162,18 @@ class _SignupScreenState extends State<SignupScreen> {
                                 padding: EdgeInsets.only(bottom: 8.0),
                                 child: Text('Selecciona una opción'),
                               ),
-                              DropdownButton<String>(
-                                value: selectedValue,
+                              DropdownButton<UserRole>(
+                                value: selectedRole,
                                 isExpanded: true,
                                 underline: const SizedBox.shrink(),
-                                items: ['Cuidador', 'Paciente']
+                                items: UserRole.values
                                     .map(
-                                      (item) =>
-                                          DropdownMenuItem(value: item, child: Text(item)),
+                                      (role) =>
+                                          DropdownMenuItem(value: role, child: Text(role.name)),
                                     )
                                     .toList(),
-                                onChanged: (value) =>
-                                    setState(() => selectedValue = value!),
+                                onChanged: (role) =>
+                                    setState(() => selectedRole = role!),
                               ),
                             ],
                           ),
@@ -219,7 +220,7 @@ class _SignupScreenState extends State<SignupScreen> {
         username: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text,
-        role: selectedValue.trim(),
+        role: selectedRole.name,
         phone: phoneController.text,
       );
 

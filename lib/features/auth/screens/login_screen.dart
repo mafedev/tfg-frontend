@@ -5,6 +5,7 @@ import 'package:tfg_frontend/features/auth/screens/signup_screen.dart';
 import 'package:tfg_frontend/features/navigation/navbar_caregiver.dart';
 import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
 import 'package:tfg_frontend/core/secure_storage_service.dart';
+import 'package:tfg_frontend/core/enums/user_role.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -205,13 +206,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
 
         // Navega a la pantalla según el rol del usuario        
-        String role = userData['role'];
-        if (role == 'CUIDADOR') {
+        String roleString = userData['role'];
+        UserRole userRole = UserRole.values.firstWhere(
+          (role) => role.name == roleString,
+          orElse: () => UserRole.PATIENT,
+        );
+        
+        if (userRole == UserRole.CAREGIVER) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => NavbarCaregiver()),
           );
-        } else if (role == 'PACIENTE') {
+        } else if (userRole == UserRole.PATIENT) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => NavbarPatient()),
