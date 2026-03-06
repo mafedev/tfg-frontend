@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/create_medication_schedule_screen.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_prescription_service.dart';
 
 class ViewMedicationScheduleScreen extends StatefulWidget {
   final int patientId;
@@ -27,7 +27,7 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
   // ------------- Carga la medicación del paciente -------------
   void _loadMedication() async {
     try {
-      final result = await CaregiverMedicationService().getMedicationSchedulesPatient(widget.patientId); // obtiene la medicación usando el id del paciente
+      final result = await CaregiverPrescriptionService().getByPatient(widget.patientId);
 
       setState(() {
         medications = result; // guarda la medicación obtenida
@@ -116,7 +116,7 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
 
                   // Ícono de borrar la medicación
                   if (value == 'delete') {
-                    await CaregiverMedicationService().deleteMedicationSchedule(
+                    await CaregiverPrescriptionService().deletePrescription(
                       med['id'],
                     );
                     _loadMedication();
@@ -168,11 +168,41 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
                   ),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Dosis: ${med['dose']}'),
+                  child: Text('Dosis: ${med['dose']} ${med['doseUnit'] ?? 'mg'}'),
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Frecuencia: ${med['frequencyHours'] ?? 'Ninguna'} h'),
+                  child: Text('Frecuencia: ${med['frequencyHours'] ?? 'N/A'} h'),
+                ),
+                if (med['firstDoseTime'] != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Primera dosis: ${med['firstDoseTime']}'),
+                  ),
+                if (med['startDate'] != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Inicio: ${med['startDate']}'),
+                  ),
+                if (med['endDate'] != null)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('Fin: ${med['endDate']}'),
+                  ),
+                if (med['notes'] != null && med['notes'].toString().isNotEmpty)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text('Notas: ${med['notes']}'),
+                    ),
+                  ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text('Estado: ${med['status'] ?? 'ACTIVE'}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
                 ),
               ],
             ),

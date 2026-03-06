@@ -156,9 +156,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                     children: [
                       _sectionTitle('Hidratación', Icons.water_drop),
                       const SizedBox(height: 12),
-                      routine!['enableHydration'] == true
+                      routine!['hydrationEnabled'] == true
                           ? Text(
-                              'Recordatorio cada ${routine!['waterReminder']} horas',
+                              'Recordatorio cada ${routine!['hydrationReminderHours']} horas',
                               style: const TextStyle(fontSize: 16),
                             )
                           : const Text(

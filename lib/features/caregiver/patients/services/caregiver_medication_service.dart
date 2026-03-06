@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/enums/medication_type.dart';
 import 'package:tfg_frontend/core/secure_storage_service.dart';
 
 class CaregiverMedicationService {
@@ -7,7 +8,11 @@ class CaregiverMedicationService {
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ------------- Crear medicamento -------------
-  Future<void> createMedication(String name, String description) async {
+  Future<void> createMedication(
+    String name,
+    String description,
+    MedicationType type,
+  ) async {
     final token = await _secureStorageService.getToken(); // se obtiene el token del secure storage
 
     // si el token es nulo, lanza una excepción
@@ -25,6 +30,8 @@ class CaregiverMedicationService {
       body: jsonEncode({ // convierte el cuerpo a JSON
         'name': name,
         'description': description,
+        // enviamos el nombre del enum para que el backend reciba un string válido
+        'type': type.name,
       }),
     );
 
@@ -33,51 +40,6 @@ class CaregiverMedicationService {
       throw Exception('Error al crear medicamento: ${response.statusCode} - ${response.body}');
     }
   }
-
-  // ---------- Crear rutina de medicamentos ----------
-  Future<void> createMedicationSchedule({
-    required int patientId,
-    required int medicationId,
-    required int dose,
-    String? startDate,
-    String? endDate,
-    int? frequencyHours,
-    String? firstDoseTime,
-    List<int>? daysOfWeek,
-  }) async {
-    final token = await _secureStorageService.getToken();
-    
-    // si el token es nulo, lanza una excepción
-    if (token == null) {
-      throw Exception('Token no disponible');
-    }
-
-    final body = {
-      'patientId': patientId,
-      'medicationId': medicationId,
-      'dose': dose,
-      'startDate': startDate,
-      'endDate': endDate,
-      'frequencyHours': frequencyHours,
-      'firstDoseTime': firstDoseTime,
-      'daysOfWeek': daysOfWeek,
-    };
-
-    final response = await http.post(
-      Uri.parse('$_baseUrl/schedule'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(body), // le pasa el body con los datos
-    );
-
-    // si hay algñun problema muestra el error
-    if (response.statusCode != 200) {
-      throw Exception('Error al crear rutina: ${response.body}');
-    }
-  }
-
 
   // ---------- Obtener medicamentos ----------
   Future<List<dynamic>> getMedications() async {
@@ -103,70 +65,5 @@ class CaregiverMedicationService {
     }
 
     return jsonDecode(response.body); // devuelve la lista de medicamentos
-  }
-
-  // ---------- Obtener rutina de medicamentos de un paciente ----------
-  Future<List<dynamic>> getMedicationSchedulesPatient(int patientId) async {
-    final token = await _secureStorageService.getToken();
-
-    final response = await http.get(
-      Uri.parse('$_baseUrl/schedule/patient/$patientId'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Error cargando medicación');
-    }
-
-    return jsonDecode(response.body);
-  }
-
-  // ---------- Borrar rutina de medicamentos ----------
-  Future<void> deleteMedicationSchedule(int scheduleId) async {
-    final token = await _secureStorageService.getToken();
-    final response = await http.delete(
-      Uri.parse('$_baseUrl/schedule/$scheduleId'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-    if (response.statusCode != 204) {
-      throw Exception('Error al eliminar medicación');
-    }
-  }
-
-
-  // ---------- Actualizar rutina de medicamentos ----------
-  Future<void> updateMedicationSchedule({
-    required int scheduleId,
-    required int patientId,
-    required int medicationId,
-    required int dose,
-    String? startDate,
-    String? endDate,
-    int? frequencyHours,
-    String? firstDoseTime,
-    List<int>? daysOfWeek,
-  }) async {
-    final token = await _secureStorageService.getToken();
-    final body = {
-      'patientId': patientId,
-      'medicationId': medicationId,
-      'dose': dose,
-      'startDate': startDate,
-      'endDate': endDate,
-      'frequencyHours': frequencyHours,
-      'firstDoseTime': firstDoseTime,
-      'daysOfWeek': daysOfWeek,
-    };
-    final response = await http.put(
-      Uri.parse('$_baseUrl/schedule/$scheduleId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(body),
-    );
-    if (response.statusCode != 200) {
-      throw Exception('Error al actualizar medicación');
-    }
   }
 }

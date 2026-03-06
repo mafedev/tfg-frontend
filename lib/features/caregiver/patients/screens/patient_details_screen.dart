@@ -5,7 +5,7 @@ import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medica
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/view_medication_schedule_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/view_patient_routine.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_prescription_service.dart';
 import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/features/relation/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
@@ -72,7 +72,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   // Verifica si el paciente tiene medicación asignada
   void _checkMedication() async {
     try {
-      final meds = await CaregiverMedicationService().getMedicationSchedulesPatient(widget.patientId); // obtiene la rutina de medicamentos usando el id del paciente
+      final meds = await CaregiverPrescriptionService().getByPatient(widget.patientId); // obtiene la medicación del paciente con su id
 
       // si la lista no está vacía, entonces tiene medicación asignada
       setState(() {

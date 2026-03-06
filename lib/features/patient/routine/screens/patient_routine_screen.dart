@@ -75,7 +75,7 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
             _routineCard('Almuerzo', formatTime(routine!.lunchTime)),
             _routineCard('Cena', formatTime(routine!.dinnerTime)),
             _routineCard('Baño', formatTime(routine!.bathTime)),
-            _routineCard('Hidratación','Cada ${routine!.waterReminder} h',
+            _routineCard('Hidratación','Cada ${routine!.hydrationReminderHours} h',
             ),
           ],
         ),

@@ -3,8 +3,8 @@ class Routine {
   final String lunchTime;
   final String dinnerTime;
   final String bathTime;
-  final bool enableHydration;
-  final int? waterReminder; // puede ser nulo
+  final bool hydrationEnabled;
+  final int? hydrationReminderHours; // puede ser nulo
 
   // Constructor
   Routine({
@@ -12,8 +12,8 @@ class Routine {
     required this.lunchTime,
     required this.dinnerTime,
     required this.bathTime,
-    required this.enableHydration,
-    this.waterReminder,
+    required this.hydrationEnabled,
+    this.hydrationReminderHours,
   });
 
   // ----------- Crea un objeto Routine a partir de un JSON -----------
@@ -23,8 +23,8 @@ class Routine {
       lunchTime: json['lunchTime'],
       dinnerTime: json['dinnerTime'],
       bathTime: json['bathTime'],
-      enableHydration: json['enableHydration'],
-      waterReminder: json['waterReminder'],
+      hydrationEnabled: json['hydrationEnabled'],
+      hydrationReminderHours: json['hydrationReminderHours'],
     );
   }
 }
