@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
+import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_medication_service.dart';
 import 'package:tfg_frontend/core/enums/medication_type.dart';
 
 class CaregiversMedicationScreen extends StatefulWidget {

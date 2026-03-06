@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/create_medication_schedule_screen.dart';
-import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/view_medication_schedule_screen.dart';
-import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/create_routine_screen.dart';
-import 'package:tfg_frontend/features/caregiver/patients/screens/patients_routine/view_patient_routine.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_prescription_service.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
-import 'package:tfg_frontend/features/relation/models/patient.dart';
+import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/create_prescription_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/view_prescription_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/create_routine_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/view_patient_routine.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_prescription_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
+import 'package:tfg_frontend/models/patient.dart';
 import 'package:tfg_frontend/features/patient/services/patient_service.dart';
 
 class PatientDetailsScreen extends StatefulWidget {
@@ -211,8 +211,8 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (_) => hasMedication
-                                        ? ViewMedicationScheduleScreen(patientId: patient!.id) // si tiene medicación asignada, navega a verlas
-                                        : CreateMedicationScheduleScreen(patientId: patient!.id), // si no, navega a crear nueva medicación
+                                        ? ViewPrescriptionScreen(patientId: patient!.id) // si tiene medicación asignada, navega a verlas
+                                        : CreatePrescriptionScreen(patientId: patient!.id), // si no, navega a crear nueva medicación
                                   ),
                                 );
                               },

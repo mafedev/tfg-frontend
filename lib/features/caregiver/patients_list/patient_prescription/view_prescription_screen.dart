@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/caregiver/patients/screens/patients_medication/create_medication_schedule_screen.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_prescription_service.dart';
+import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/create_prescription_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_prescription_service.dart';
 
-class ViewMedicationScheduleScreen extends StatefulWidget {
+class ViewPrescriptionScreen extends StatefulWidget {
   final int patientId;
 
-  const ViewMedicationScheduleScreen({super.key, required this.patientId});
+  const ViewPrescriptionScreen({super.key, required this.patientId});
 
   @override
-  State<ViewMedicationScheduleScreen> createState() => _ViewMedicationScheduleScreenState();
+  State<ViewPrescriptionScreen> createState() => _ViewPrescriptionScreenState();
 }
 
-class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScreen> {
+class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
   // indica si está cargando los datos
   bool loading = true;
   List<dynamic> medications = []; // es donde se guardan las rutinas de medicamentos
@@ -106,9 +106,9 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => CreateMedicationScheduleScreen(
+                        builder: (_) => CreatePrescriptionScreen(
                           patientId: widget.patientId,
-                          existingSchedule: med,
+                          existingPrescription: med,
                         ),
                       ),
                     ).then((_) => _loadMedication());
@@ -219,7 +219,7 @@ class _ViewMedicationScheduleScreenState extends State<ViewMedicationScheduleScr
             context,
             MaterialPageRoute(
               builder: (_) =>
-                  CreateMedicationScheduleScreen(patientId: widget.patientId),
+                  CreatePrescriptionScreen(patientId: widget.patientId),
             ),
           );
         },

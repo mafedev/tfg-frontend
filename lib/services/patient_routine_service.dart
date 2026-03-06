@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:tfg_frontend/features/routine/models/routine.dart';
+import 'package:tfg_frontend/models/routine.dart';
 
 class PatientRoutineService {
   final String baseUrl = 'http://10.0.2.2:8080/api';

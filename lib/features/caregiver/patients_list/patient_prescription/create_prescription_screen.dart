@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_prescription_service.dart';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_medication_service.dart';
+import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_prescription_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_medication_service.dart';
 import 'package:tfg_frontend/core/enums/prescription.dart';
 
-class CreateMedicationScheduleScreen extends StatefulWidget {
+class CreatePrescriptionScreen extends StatefulWidget {
   final int patientId; // id del paciente
-  final Map<String, dynamic>? existingSchedule; // para editar
+  final Map<String, dynamic>? existingPrescription; // para editar
 
-  const CreateMedicationScheduleScreen({super.key, required this.patientId, this.existingSchedule});
+  const CreatePrescriptionScreen({super.key, required this.patientId, this.existingPrescription});
 
   @override
-  State<CreateMedicationScheduleScreen> createState() => _CreateMedicationScheduleScreenState();
+  State<CreatePrescriptionScreen> createState() => _CreatePrescriptionScreenState();
 }
 
-class _CreateMedicationScheduleScreenState extends State<CreateMedicationScheduleScreen> {
+class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
   // Controllers para los TextField
   final _dose = TextEditingController();
   final _frequency = TextEditingController();
@@ -75,8 +75,8 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
       });
 
       // Si se está editando una rutina existente, carga sus datos
-      if (widget.existingSchedule != null) {
-        final sched = widget.existingSchedule!; // datos de la rutina existente
+      if (widget.existingPrescription != null) {
+        final sched = widget.existingPrescription!; // datos de la rutina existente
         prescriptionId = sched['id'] as int?; // guarda el id de la prescripción para futuras actualizaciones
         _dose.text = sched['dose'].toString(); // carga la dosis en el TextField
         _frequency.text = sched['frequencyHours']?.toString() ?? ''; // carga la frecuencia en el TextField, si existe
@@ -136,7 +136,7 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
   }
 
   // ---------- Guardar rutina de medicamentos ----------
-  Future<void> _saveSchedule() async {
+  Future<void> _savePrescription() async {
     if (selectedMedication == null || selectedDoseUnit == null) { // si no se ha seleccionado un medicamento o una unidad de dosis, muestra un error
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Faltan datos')));
       return;
@@ -194,7 +194,7 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
 
     return Scaffold(
       appBar: AppLogoAppBar(
-        title: widget.existingSchedule == null ? 'Nueva rutina' : 'Editar rutina',
+        title: widget.existingPrescription == null ? 'Nueva rutina' : 'Editar rutina',
         backgroundColor: AppColors.caregiverAppBar,
       ),
       body: SingleChildScrollView(
@@ -320,8 +320,8 @@ class _CreateMedicationScheduleScreenState extends State<CreateMedicationSchedul
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _saveSchedule,
-              child: Text(widget.existingSchedule == null ? 'Crear prescripción' : 'Actualizar prescripción'),
+              onPressed: _savePrescription,
+              child: Text(widget.existingPrescription == null ? 'Crear prescripción' : 'Actualizar prescripción'),
             ),
           ],
         ),

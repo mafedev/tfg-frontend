@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:tfg_frontend/core/secure_storage_service.dart';
+import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import '../models/patient.dart';
 
 class RelationService {
