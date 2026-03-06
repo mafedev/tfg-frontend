@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'dart:developer';
-import 'package:tfg_frontend/features/caregiver/patients/services/caregiver_routine_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
 
 class CreateRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente, para crear la rutina

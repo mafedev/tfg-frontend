@@ -4,7 +4,7 @@ import 'package:tfg_frontend/features/auth/services/auth_service.dart';
 import 'package:tfg_frontend/features/auth/screens/signup_screen.dart';
 import 'package:tfg_frontend/features/navigation/navbar_caregiver.dart';
 import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
-import 'package:tfg_frontend/core/secure_storage_service.dart';
+import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/enums/user_role.dart';
 
 class LoginScreen extends StatefulWidget {

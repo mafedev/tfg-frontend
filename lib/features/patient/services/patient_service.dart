@@ -1,8 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import 'package:tfg_frontend/core/secure_storage_service.dart';
-import 'package:tfg_frontend/features/relation/models/patient.dart';
+import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/models/patient.dart';
 
 class PatientService {
   final String baseUrl = 'http://10.0.2.2:8080/api'; // url base

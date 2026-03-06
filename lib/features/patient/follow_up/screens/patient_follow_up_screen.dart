@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 
 class PatientFollowUpScreen extends StatefulWidget {
   const PatientFollowUpScreen({super.key});

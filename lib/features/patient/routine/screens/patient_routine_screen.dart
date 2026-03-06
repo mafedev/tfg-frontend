@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/secure_storage_service.dart';
+import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/features/routine/models/routine.dart';
-import 'package:tfg_frontend/features/routine/services/patient_routine_service.dart';
-import 'package:tfg_frontend/core/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/models/routine.dart';
+import 'package:tfg_frontend/services/patient_routine_service.dart';
+import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 
 class PatientRoutineScreen extends StatefulWidget {
   const PatientRoutineScreen({super.key});
