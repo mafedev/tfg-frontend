@@ -15,6 +15,10 @@ class CaregiverPatientsScreen extends StatefulWidget {
 }
 
 class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
+  // -------------------- Variables de estado --------------------
+  bool loadingPatients = true;
+  bool generatingCode = false;
+
   String? relationCode;
   final RelationService _relationService = RelationService();
   List<Patient> patients = []; // lista de pacientes por cuidador
@@ -26,30 +30,59 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   }
 
   // Espera que el backend devuelva el código
-  void _generateCode() async {
+  Future<void> _generateCode() async {
+    // indica que se está generando el código y muestra que está cargando
+    setState(() {
+      generatingCode = true;
+    });
+
     final code = await _relationService.generateRelationCode();
+
+    if (!mounted) return; // si el widget ya no está en pantalla, no hace nada
 
     setState(() {
       relationCode = code;
+      generatingCode = false; // ya no está generando el código
     });
 
     if (code == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('No se pudo generar el código')),
       );
-    } else {
-      // Luego de generar el código, se actualiza la lista
-      _loadPatients();
     }
   }
 
   // Obtiene la lista de pacientes
-  void _loadPatients() async {
-    final fetchedPatients = await _relationService.getPatients();
-
+  Future<void> _loadPatients() async {
+    // muestra que se está cargando la lista
     setState(() {
-      patients = fetchedPatients;
+      loadingPatients = true;
     });
+
+    // intenta obtener la lista de pacientes desde el backend
+    try {
+      final fetchedPatients = await _relationService
+          .getPatients(); // obtiene la lista de pacientes vinculados al cuidador
+
+      if (!mounted) return; // si el widget ya no está en pantalla, no hace nada
+
+      // actualiza el estado con la lista obtenida y oculta el indicador de carga
+      setState(() {
+        patients = fetchedPatients;
+        loadingPatients = false;
+      });
+    } catch (e) {
+      // si hay un error, oculta el indicador de carga y muestra un mensaje de error
+      if (!mounted) return;
+
+      setState(() {
+        loadingPatients = false;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Error cargando pacientes')));
+    }
   }
 
   // Elimina la relación con un paciente
@@ -98,13 +131,13 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
 
   // Permite poder copiar el código al portapapeles
   void _copyCodeToClipboard() {
-  if (relationCode != null) {
-    Clipboard.setData(ClipboardData(text: relationCode!));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Código copiado al portapapeles')),
-    );
+    if (relationCode != null) {
+      Clipboard.setData(ClipboardData(text: relationCode!));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Código copiado al portapapeles')),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -115,97 +148,123 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
         padding: const EdgeInsets.all(18.0),
         child: Column(
           children: [
-            // Ocupa todo el espacio disponible para la lista
             Expanded(
-              // -------------------- Lista de pacientes --------------------
-              child: ListView.builder(
-                itemCount: patients.length, // número de pacientes
-                itemBuilder: (context, index) { // cómo construir cada ítem
-                  final patient = patients[index]; // paciente actual
+            // -------------------- Lista de pacientes --------------------
+              child: Builder(
+                builder: (context) {
+                  if (loadingPatients) {
+                    // Mientras cargan los pacientes, se muestra el círculo de carga
+                    return const Center(child: CircularProgressIndicator());
+                  }
 
-                  // Cada paciente se muestra en un contenedor
-                  return Container(margin: const EdgeInsets.symmetric(vertical: 7), // espacio entre items
-                    
-                    // Estilo del contenedor
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  if (patients.isEmpty) {
+                    // Si no hay pacientes, se muestra el mensaje
+                    return const Center(
+                      child: Text(
+                        'No tienes pacientes vinculados',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    );
+                  }
 
-                    // -------------------- Datos del paciente --------------------
-                    child: ListTile(
-                      leading: const Icon(Icons.person),
-                      title: Text(
-                        '${patient.username[0].toUpperCase()}${patient.username.substring(1)}', // Para que el nombre tenga la primera en mayúscula
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                  // Si hay pacientes, se muestra la lista
+                  return ListView.builder(
+                    itemCount: patients.length,
+                    itemBuilder: (context, index) {
+                      final patient = patients[index];
+
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 7),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                      ),
-                      // id del paciente, (momentáneo)
-                      subtitle: Text(
-                        'ID: ${patient.id}',
-                        style: TextStyle(color: Colors.grey[600]),
-                      ), 
-                      // -------------------- Menú de opciones --------------------
-                      trailing: PopupMenuButton(
-                        itemBuilder: (ctx) => [
-                          // al hacer click, muestra las opciones
-                          // Opción de eliminar paciente
-                          PopupMenuItem(
-                            value: 'delete', // valor asociado a la opción
-                            child: const Row(
-                              children: [
-                                Icon(Icons.delete, color: AppColors.delete),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Eliminar',
-                                  style: TextStyle(color: AppColors.delete),
-                                ),
-                              ],
+                        child: ListTile(
+                          leading: const Icon(Icons.person),
+                          title: Text(
+                            '${patient.username[0].toUpperCase()}${patient.username.substring(1)}',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
                             ),
-                            // -------------------- Eliminar paciente --------------------
-                            // al seleccionar la opción, llama a la función de confirmación
-                            onTap: () => _confirmDelete(patient.id),
                           ),
-                        ],
-                      ),
-
-                      // -------------------- Detalles del paciente --------------------
-                      // Al hacer click en el paciente, navega a la pantalla de detalles
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PatientDetailsScreen(patientId: patient.id),
+                          // id del paciente, (momentáneo)
+                          subtitle: Text(
+                            'ID: ${patient.id}',
+                            style: TextStyle(color: Colors.grey[600]),
                           ),
-                        );
-                      },
-                    ),
+                          
+                          // -------------------- Menú de opciones --------------------
+                          trailing: PopupMenuButton(
+                            itemBuilder: (ctx) => [
+                              // al hacer click, muestra las opciones
+                              // Opción de eliminar paciente
+                              PopupMenuItem(
+                                value: 'delete', // valor asociado a la opción
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.delete, color: AppColors.delete),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Eliminar',
+                                      style: TextStyle(color: AppColors.delete),
+                                    ),
+                                  ],
+                                ),
+                                // -------------------- Eliminar paciente --------------------
+                                // al seleccionar la opción, llama a la función de confirmación
+                                onTap: () => _confirmDelete(patient.id),
+                              ),
+                            ],
+                          ),
+                          // -------------------- Detalles del paciente --------------------
+                          // Al hacer click en el paciente, navega a la pantalla de detalles
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PatientDetailsScreen(patientId: patient.id),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
                   );
                 },
               ),
             ),
 
-            // -------------------- Botón para generar el código de vinculación --------------------
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.caregiverAppBar,
-                foregroundColor: Colors.white,
-              ),
-              onPressed: _generateCode,
-              child: const Text('Agregar paciente'),
-            ),
             const SizedBox(height: 12),
+
+            // -------------------- Botón para generar el código de vinculación --------------------
+            if (generatingCode)
+              ElevatedButton(
+                onPressed: null, // desactivado mientras carga
+                child: const SizedBox( height: 20, width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
+                ),
+              )
+            else
+              ElevatedButton(
+                onPressed: _generateCode,
+                child: const Text('Agregar paciente'),
+              ),
+
+            const SizedBox(height: 12),
+
+            // -------------------- Muestra el código generado --------------------
             if (relationCode != null)
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
                     'Código generado: $relationCode',
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle( fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const SizedBox(width: 8),
                   IconButton(

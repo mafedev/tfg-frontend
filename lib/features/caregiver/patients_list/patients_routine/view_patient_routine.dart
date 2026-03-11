@@ -125,7 +125,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     // muestra un indicador de carga mientras se obtiene la rutina
     if (loading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
+        ),
       );
     }
 

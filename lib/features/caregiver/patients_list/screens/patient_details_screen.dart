@@ -91,7 +91,9 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverAppBar),
-        body: const Center(child: Text('Cargando paciente...')),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
+        ),
       );
     }
 
@@ -160,18 +162,17 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                     const SizedBox(height: 20),
 
-                    // ---------- Botón para crear rutina ----------
+                    // ---------- Botón para crear o ver rutina ----------
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-
-                        // Si tiene rutina, muestra el ícono de ver rutina, si no, el de crear rutina
-                        icon: Icon(hasRoutine ? Icons.visibility : Icons.schedule, color: Colors.white),
-
+                        icon: loadingRoutine
+                            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            // Si tiene rutina, muestra el ícono de ver rutina, si no, el de crear rutina
+                            : Icon(hasRoutine ? Icons.visibility : Icons.schedule, color: Colors.white),
                         // Si tiene rutina, muestra "Ver rutina", si no, "Crear rutina"
                         label: Text(hasRoutine ? 'Ver rutina' : 'Crear rutina', style: const TextStyle(color: Colors.white),),
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.caregiverAppBar,),
-                        
                         // Si está cargando, deshabilita el botón
                         onPressed: loadingRoutine
                             ? null
@@ -195,10 +196,10 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         // Si tiene medicación, muestra el ícono de ver medicación, si no, el de agregar medicación
-                        icon: Icon(hasMedication ? Icons.visibility : Icons.medication,color: Colors.white),
-
-                        // Lo mismo, pero con el texto
-                        label: Text(hasMedication ? 'Ver medicación': 'Agregar medicación',
+                        icon: loadingMedication
+                            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : Icon(hasMedication ? Icons.visibility : Icons.medication, color: Colors.white),
+                        label: Text(hasMedication ? 'Ver prescripción' : 'Crear prescripción',
                           style: const TextStyle(color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
