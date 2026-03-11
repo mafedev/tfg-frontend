@@ -8,7 +8,7 @@ import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/v
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_prescription_service.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/models/patient.dart';
-import 'package:tfg_frontend/features/patient/services/patient_service.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/patient_service.dart';
 
 class PatientDetailsScreen extends StatefulWidget {
   final int patientId;
@@ -84,6 +84,89 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     }
   }
 
+  // ------------------- Editar paciente -------------------
+  void _editPatient() async {
+    final phoneController = TextEditingController(text: patient!.phone); // guarda el texto que se introduce en el campo
+    final notesController = TextEditingController(text: patient!.notes); // guardda las notas que se introduzcan para luego guardarlas en la base de datos
+    String? diseaseStage = patient!.diseaseStage;
+
+    // Muestra un diálogo para editar los datos del paciente
+    // es await porque queremos esperar a que el usuario termine de editar antes de continuar con la ejecución del código
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar paciente'),
+          content: SingleChildScrollView(
+            child: Column(
+              children: [
+                // Editar teléfono
+                TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono')),
+
+                // Agregar o editar notas
+                TextField(controller: notesController, decoration: const InputDecoration(labelText: 'Notas')),
+
+                // Dropdown para seleccionar la etapa de la enfermedad
+                DropdownButton<String>(
+                  value: diseaseStage,
+                  hint: const Text('Etapa de la enfermedad'),
+                  items: ['EARLY', 'MODERATE', 'ADVANCED']
+                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                      .toList(),
+                  onChanged: (value) => setState(() => diseaseStage = value),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            // Al presionar cancelar, simplemente cierra el diálogo sin guardar cambios
+            TextButton(onPressed: () => Navigator.pop(context),child: const Text('Cancelar')),
+
+            // Al presionar guardar, llama a la función _updatePatient que hace la llamada al servicio para actualizar los datos del paciente en el backend
+            ElevatedButton(
+              onPressed: () async {
+                await _updatePatient(
+                  phoneController.text,
+                  notesController.text,
+                  diseaseStage,
+                );
+                Navigator.pop(context);
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ------------------- Llamada al servicio para actualizar -------------------
+  Future<void> _updatePatient(String phone, String notes, String? diseaseStage) async {
+    
+    // Hace la llamada al servicio para actualizar los datos del paciente en el backend
+    final success = await _patientService.updatePatient(
+      id: patient!.id,
+      phone: phone,
+      notes: notes,
+      diseaseStage: diseaseStage,
+    );
+
+    // si sale bien, actualiza los datos
+    if (success) {
+      setState(() {
+        patient = Patient(
+          id: patient!.id,
+          username: patient!.username,
+          phone: phone,
+          notes: notes,
+          diseaseStage: diseaseStage,
+        );
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al actualizar paciente')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Si patient es null, mostramos un mensaje de carga
@@ -145,19 +228,36 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                         const Icon(Icons.person, size: 80),
                       ],
                     ),
-
                     const SizedBox(height: 16),
                     const Divider(),
                     const SizedBox(height: 8),
 
                     // ---------- Información del paciente ----------
-                    Row(
-                      children: [
-                        // ---------- Teléfono ----------
-                        const Icon(Icons.phone,size: 20, color: Colors.black54),
-                        const SizedBox(width: 8),
-                        Text('${patient!.phone}', style: const TextStyle(fontSize: 16),),
-                      ],
+                    // Teléfono
+                    Text('Teléfono: ${patient!.phone ?? "No especificado"}', style: const TextStyle(fontSize: 16)),
+                    const SizedBox(height: 8),
+
+                    // Etapa de la enfermedad
+                    Text('Etapa de la enfermedad: ${patient!.diseaseStage ?? "No especificada"}', style: const TextStyle(fontSize: 16)),
+                    const SizedBox(height: 8),
+                    
+                    // Notas
+                    Text('Notas: ${patient!.notes ?? "Sin notas"}', style: const TextStyle(fontSize: 16)),
+
+                    const SizedBox(height: 20),
+
+                    // ---------- Botón para editar paciente ----------
+                    SizedBox(
+                      width: double.infinity, // el botón ocupa todo el ancho disponible
+                      // Al presionar, se llama a la función _editPatient que muestra un diálogo para editar los datos del paciente
+                      child: ElevatedButton.icon(
+                        icon: const Icon(Icons.edit),
+                        label: const Text('Editar paciente'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.caregiverAppBar,
+                        ),
+                        onPressed: _editPatient,
+                      ),
                     ),
 
                     const SizedBox(height: 20),
