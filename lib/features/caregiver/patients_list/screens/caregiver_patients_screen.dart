@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/screens/patient_details_screen.dart';
@@ -95,6 +96,16 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     );
   }
 
+  // Permite poder copiar el código al portapapeles
+  void _copyCodeToClipboard() {
+  if (relationCode != null) {
+    Clipboard.setData(ClipboardData(text: relationCode!));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Código copiado al portapapeles')),
+    );
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -186,9 +197,23 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
               onPressed: _generateCode,
               child: const Text('Agregar paciente'),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             if (relationCode != null)
-              Text('Código generado: $relationCode'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Código generado: $relationCode',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.copy, size: 20),
+                    onPressed: _copyCodeToClipboard,
+                  ),
+                ],
+              ),
           ],
         ),
       ),
