@@ -95,6 +95,8 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     final notesController = TextEditingController(text: patient!.notes);
     String? diseaseStage = patient!.diseaseStage;
 
+    final _formKey = GlobalKey<FormState>();
+
     // Muestra un diálogo para editar los datos del paciente
     // es await porque queremos esperar a que el usuario termine de editar antes de continuar con la ejecución del código
     await showDialog(
@@ -102,27 +104,40 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: const Text('Editar paciente'),
-          content: SingleChildScrollView(
-            child: Column(
-              children: [
-                TextField(
-                  controller: phoneController,
-                  decoration: const InputDecoration(labelText: 'Teléfono'),
-                ),
-                TextField(
-                  controller: notesController,
-                  decoration: const InputDecoration(labelText: 'Notas'),
-                ),
-                const SizedBox(height: 10),
-                DropdownButton<String>(
-                  value: diseaseStage,
-                  hint: const Text('Etapa de la enfermedad'),
-                  items: ['EARLY', 'MODERATE', 'ADVANCED']
-                      .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                      .toList(),
-                  onChanged: (value) => setDialogState(() => diseaseStage = value),
-                ),
-              ],
+          content: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: phoneController,
+                    decoration: const InputDecoration(labelText: 'Teléfono'),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'El teléfono es obligatorio';
+                      }
+                      if (value.length < 9) {
+                        return 'Número de teléfono no válido';
+                      }
+                      return null;
+                    },
+                  ),
+                  TextField(
+                    controller: notesController,
+                    decoration: const InputDecoration(labelText: 'Notas'),
+                  ),
+                  const SizedBox(height: 10),
+                  DropdownButton<String>(
+                    value: diseaseStage,
+                    hint: const Text('Etapa de la enfermedad'),
+                    items: ['EARLY', 'MODERATE', 'ADVANCED']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                        .toList(),
+                    onChanged: (value) =>
+                        setDialogState(() => diseaseStage = value),
+                  ),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -135,6 +150,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
               onPressed: updatingPatient
                   ? null
                   : () async {
+                      if (!_formKey.currentState!.validate()) return;
                       setDialogState(() => updatingPatient = true);
                       await _updatePatient(
                         phoneController.text,
@@ -279,9 +295,16 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
   // ---------- Widgets modularizados ----------
   Widget _infoText(String title, String? value) {
+    final displayValue = (value == null || value.trim().isEmpty)
+        ? "Sin notas"
+        : value;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Text('$title: ${value ?? "No especificado"}', style: const TextStyle(fontSize: 16)),
+      child: Text(
+        '$title: $displayValue',
+        style: const TextStyle(fontSize: 16),
+      ),
     );
   }
 
