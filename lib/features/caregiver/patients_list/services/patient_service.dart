@@ -34,17 +34,16 @@ class PatientService {
   }
 
   // ------------------- Actualizar los datos del paciente -------------------
-  Future<bool> updatePatient({
-    required int id,
-    String? phone,
-    String? notes,
+  Future<void> updatePatient(
+    int patientId,
+    String phone,
+    String notes,
     String? diseaseStage,
-  }) async {
-    final token = await SecureStorageService().getToken();
-
+  ) async {
+    final token = await _storage.getToken();
     // Hace la petición PUT para actualizar los datos del paciente
-    final response = await http.put(
-      Uri.parse('$baseUrl/patients/$id'),
+    await http.put(
+      Uri.parse('$baseUrl/patients/$patientId'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
@@ -55,7 +54,5 @@ class PatientService {
         'diseaseStage': diseaseStage,
       }),
     );
-
-    return response.statusCode == 200;
   }
 }
