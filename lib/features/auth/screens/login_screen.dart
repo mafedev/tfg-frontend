@@ -191,14 +191,17 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState?.validate() ?? false) {// valida el formulario
       final authService = AuthService();
       final userData = await authService.login( // llama el método de login del servicio de autenticación
-        emailController.text,
-        passwordController.text,
+        email: emailController.text,
+        password: passwordController.text,
       );
 
       // Si el login es exitoso, userData contendrá los datos del usuario
       if (userData != null) {
         final storage = SecureStorageService();
         await storage.saveToken(userData['token']); // guarda el token de autenticación de forma segura
+
+        // Se recomienda verificar antes de un ScaffoldMessenger o un Navigator
+        if (!mounted) return; // protege el contexto
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Inicio de sesión correcto')), // muestra un mensaje de éxito
