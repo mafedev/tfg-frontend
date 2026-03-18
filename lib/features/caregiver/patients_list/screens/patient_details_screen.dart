@@ -212,7 +212,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
       setState(() {
         patient = Patient(
           id: patient!.id,
-          username: patient!.username,
+          name: patient!.name,
           phone: phone,
           notes: notes,
           diseaseStage: diseaseStage,
@@ -270,7 +270,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              capitalize(patient!.username),
+                              capitalize(patient!.name),
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
