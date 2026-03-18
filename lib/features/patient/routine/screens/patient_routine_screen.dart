@@ -32,7 +32,7 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     }
 
     // hace la petición para obtener la rutina, y lo guarda en result
-    final result = await PatientRoutineService().getMyRoutine(token);
+    final result = await PatientRoutineService().getMyRoutine();
 
     // actualiza el estado con la rutina obtenida, y pone cargar a false
     setState(() {

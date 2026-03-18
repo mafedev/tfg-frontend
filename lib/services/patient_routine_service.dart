@@ -1,18 +1,19 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/models/routine.dart';
+import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class PatientRoutineService {
   final String baseUrl = 'http://10.0.2.2:8080/api';
+  final SecureStorageService _storage = SecureStorageService();
 
-  // ----------- Obtiene la rutina del paciente -----------
-  Future<Routine?> getMyRoutine(String token) async {
-    // Hace la petición y pasa el token
+  // ----------- Obtiene la rutina del paciente ----------- 
+  Future<Routine?> getMyRoutine() async {
+    final token = await _storage.getToken();
+    if (token == null) return null;
+
     final response = await http.get(
-      Uri.parse(
-        '$baseUrl/routine',
-      ), // Endpotin para obtener la rutina del paciente
+      Uri.parse('$baseUrl/routine'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
