@@ -19,13 +19,13 @@ class RelationService {
       Uri.parse('$baseUrl/generate'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token'
-      }
+        'Authorization': 'Bearer $token',
+      },
     );
 
-    if (response.statusCode == 200){
+    if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['relationCode']; 
+      return data['relationCode'];
     } else {
       return null;
     }
@@ -42,12 +42,10 @@ class RelationService {
     final response = await http.post(
       Uri.parse('$baseUrl/link'),
       headers: {
-        'Content-Type' : 'application/json',
-        'Authorization' : 'Bearer $token'
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'code': code,
-      }),
+      body: jsonEncode({'code': code}),
     );
 
     if (response.statusCode == 200) {
@@ -68,9 +66,7 @@ class RelationService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/patients'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -91,9 +87,7 @@ class RelationService {
 
     final response = await http.delete(
       Uri.parse('$baseUrl/$patientId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     return response.statusCode == 200;
