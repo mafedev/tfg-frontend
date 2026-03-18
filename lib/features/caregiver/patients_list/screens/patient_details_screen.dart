@@ -111,7 +111,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                 children: [
                   TextFormField(
                     controller: phoneController,
-                    decoration: const InputDecoration(labelText: 'Teléfono'),
+                    decoration: const InputDecoration(
+                      labelText: 'Teléfono',
+                      prefixIcon: Icon(Icons.phone),
+                      border: OutlineInputBorder(),
+                    ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'El teléfono es obligatorio';
@@ -122,19 +126,35 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                       return null;
                     },
                   ),
-                  TextField(
+
+                  const SizedBox(height: 16),
+
+                  TextFormField(
                     controller: notesController,
-                    decoration: const InputDecoration(labelText: 'Notas'),
+                    decoration: const InputDecoration(
+                      labelText: 'Notas',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
                   ),
-                  const SizedBox(height: 10),
-                  DropdownButton<String>(
+
+                  const SizedBox(height: 16),
+
+                  DropdownButtonFormField<String>(
                     value: diseaseStage,
-                    hint: const Text('Etapa de la enfermedad'),
+                    decoration: const InputDecoration(
+                      labelText: 'Etapa de la enfermedad',
+                      prefixIcon: Icon(Icons.face),
+                      border: OutlineInputBorder(),
+                    ),
                     items: ['EARLY', 'MODERATE', 'ADVANCED']
                         .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                         .toList(),
-                    onChanged: (value) =>
-                        setDialogState(() => diseaseStage = value),
+                    onChanged: (value) {
+                      setDialogState(() {
+                        diseaseStage = value;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -203,6 +223,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     }
   }
 
+  String capitalize(String text) {
+  if (text.isEmpty) return text;
+  return text[0].toUpperCase() + text.substring(1);
+}
+
   @override
   Widget build(BuildContext context) {
     // Si patient es null, mostramos un mensaje de carga
@@ -244,7 +269,13 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(patient!.username, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)),
+                            Text(
+                              capitalize(patient!.username),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                             const SizedBox(height: 10),
                             Text('ID: ${patient!.id}', style: const TextStyle(color: Colors.black54)),
                           ],
@@ -258,7 +289,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                     // ---------- Información del paciente ----------
                     _infoText('Teléfono', patient!.phone),
-                    _infoText('Etapa de la enfermedad', patient!.diseaseStage),
+                    _infoText('Estado de la enfermedad', patient!.diseaseStage),
                     _infoText('Notas', patient!.notes),
                     const SizedBox(height: 20),
 
@@ -267,8 +298,8 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                       width: double.infinity, // el botón ocupa todo el ancho disponible
                       // Al presionar, se llama a la función _editPatient que muestra un diálogo para editar los datos del paciente
                       child: ElevatedButton.icon(
-                        icon: const Icon(Icons.edit),
-                        label: const Text('Editar paciente'),
+                        icon: const Icon(Icons.edit, color: Colors.white),
+                        label: const Text('Editar paciente', style: TextStyle(color: Colors.white)),
                         style: ElevatedButton.styleFrom(backgroundColor: AppColors.caregiverAppBar),
                         onPressed: _editPatient,
                       ),
@@ -294,19 +325,26 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   }
 
   // ---------- Widgets modularizados ----------
-  Widget _infoText(String title, String? value) {
-    final displayValue = (value == null || value.trim().isEmpty)
-        ? "Sin notas"
-        : value;
+ Widget _infoText(String label, String? value) {
+  final displayValue =
+      (value == null || value.trim().isEmpty) ? "No especificado" : value;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Text(
-        '$title: $displayValue',
-        style: const TextStyle(fontSize: 16),
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: RichText(
+      text: TextSpan(
+        style: const TextStyle(fontSize: 16, color: Colors.black),
+        children: [
+          TextSpan(
+            text: "$label: ",
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          TextSpan(text: displayValue),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _routineButton() {
     return SizedBox(
