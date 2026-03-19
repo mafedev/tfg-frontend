@@ -19,7 +19,7 @@ class Patient {
   // Crea el paciente a partir del JSON
   factory Patient.fromJson(Map<String, dynamic> json) {
     return Patient(
-      id: json['id'],
+      id: json['patientId'],
       name: json['name'] ?? json['username'], // soporta ambos casos
       phone: json['phone'],
       notes: json['notes'],
