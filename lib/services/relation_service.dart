@@ -7,7 +7,7 @@ class RelationService {
   final String baseUrl = 'http://10.0.2.2:8080/api/relations';
   final SecureStorageService _storage = SecureStorageService();
 
-  // ------------------- Botón de generar ------------------- 
+  // ------------------- Generar código -------------------
   Future<String?> generateRelationCode() async {
     final token = await _storage.getToken();
 
@@ -23,33 +23,6 @@ class RelationService {
       }
     );
 
-    if (response.statusCode == 200){
-      final data = jsonDecode(response.body);
-      return data['relationCode']; 
-    } else {
-      return null;
-    }
-  }
-
-  // ------------------- Enlaza al paciente con el cuidador ------------------- 
-  Future<String?> linkPatient(String code) async {
-    final token = await _storage.getToken();
-
-    if(token == null) {
-      return null;
-    }
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/link'),
-      headers: {
-        'Content-Type' : 'application/json',
-        'Authorization' : 'Bearer $token'
-      },
-      body: jsonEncode({
-        'code': code,
-      }),
-    );
-
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return data['relationCode'];
@@ -58,7 +31,27 @@ class RelationService {
     }
   }
 
-  // ------------------- Obtiene la lista de pacientes por cuidador ------------------- 
+  // ------------------- Vincular paciente -------------------
+  Future<bool> linkPatient(String code) async {
+    final token = await _storage.getToken();
+
+    if (token == null) {
+      return false;
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/link'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({'code': code}),
+    );
+
+    return response.statusCode == 200;
+  }
+
+  // ------------------- Obtener pacientes -------------------
   Future<List<Patient>> getPatients() async {
     final token = await _storage.getToken();
 
@@ -81,7 +74,7 @@ class RelationService {
     }
   }
 
-  // ------------------- Elimina la relación entre cuidador y paciente ------------------- 
+  // ------------------- Eliminar relación -------------------
   Future<bool> deleteRelation(int patientId) async {
     final token = await _storage.getToken();
 
