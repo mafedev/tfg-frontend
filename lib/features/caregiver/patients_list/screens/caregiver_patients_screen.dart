@@ -183,7 +183,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                         child: ListTile(
                           leading: const Icon(Icons.person),
                           title: Text(
-                            '${patient.username[0].toUpperCase()}${patient.username.substring(1)}',
+                            patient.username?.isNotEmpty == true ? patient.username![0].toUpperCase() + patient.username!.substring(1) : patient.name?.isNotEmpty == true ? patient.name![0].toUpperCase() + patient.name!.substring(1) : 'Sin nombre',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

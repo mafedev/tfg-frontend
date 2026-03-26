@@ -270,7 +270,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              capitalize(patient!.username),
+                              capitalize( patient!.username ?? patient!.name ?? 'Sin nombre'),
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
