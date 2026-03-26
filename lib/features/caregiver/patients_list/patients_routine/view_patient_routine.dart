@@ -18,16 +18,19 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   final RoutineService _routineService = RoutineService();
 
   Map<String, dynamic>? routine; // contiene la rutina obtenida
+  Map<String, dynamic>? tracking; // contiene el tracking obtenido
   bool loading = true; // indica si se está cargando la rutina
+  bool loadingTracking = true;
 
   // Cuando se inicia la pantalla, carga la rutina
   @override
   void initState() {
     super.initState();
     _loadRoutine();
+    _loadTracking();
   }
 
-  // Carga la rutina desde el backend
+  // -------------------- Carga rutina --------------------
   Future<void> _loadRoutine() async {
     setState(() => loading = true);
     try {
@@ -65,6 +68,48 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
   }
 
+  // -------------------- Carga tracking --------------------
+  Future<void> _loadTracking() async {
+    setState(() => loadingTracking = true);
+    try {
+      tracking = await _routineService.getTodayTracking(widget.patientId);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar tracking: $e')),
+      );
+    } finally {
+      setState(() => loadingTracking = false);
+    }
+  }
+
+  // -------------------- Marcar acción --------------------
+  Future<void> _markAction(String action) async {
+    try {
+      if (action == 'breakfast') {
+        await _routineService.markBreakfast(widget.patientId);
+      }
+      // Aquí podrías agregar lunch, dinner, bath, hydration si quieres
+      await _loadTracking();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al marcar $action: $e')),
+      );
+    }
+  }
+
+  // -------------------- Checkbox item --------------------
+  Widget _trackingItem(String label, bool value, Function() onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
+          Checkbox(value: value, onChanged: (_) => onTap()),
+        ],
+      ),
+    );
+  }
+
   // -------------------- Widget para el título de cada sección --------------------
   Widget _sectionTitle(String text, IconData icon) {
     return Row(
@@ -94,7 +139,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     );
   }
 
-  // -------------------- Ítem de texto de la rutina (sin icono) --------------------
+  // -------------------- Ítem de texto de la rutina --------------------
   Widget _routineItem(String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
@@ -123,9 +168,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
-    if (loading) {
+    if (loading || loadingTracking) {
       return const Scaffold(
-        body: const Center(
+        body: Center(
           child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
         ),
       );
@@ -148,6 +193,11 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                       _sectionTitle('Comidas', Icons.restaurant),
                       const SizedBox(height: 12),
                       _routineItem('Desayuno', formatTime(routine!['breakfastTime'])),
+                      _trackingItem(
+                        'Desayuno realizado',
+                        tracking?['breakfastDone'] ?? false,
+                        () => _markAction('breakfast'),
+                      ),
                       _routineItem('Comida', formatTime(routine!['lunchTime'])),
                       _routineItem('Cena', formatTime(routine!['dinnerTime'])),
                     ],
@@ -202,6 +252,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                         );
                         // Recarga la rutina después de editar
                         _loadRoutine();
+                        _loadTracking();
                       },
                       child: const Text('Editar rutina'),
                     ),

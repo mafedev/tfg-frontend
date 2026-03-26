@@ -125,4 +125,60 @@ class RoutineService {
       throw Exception('Error: ${response.statusCode} - ${response.body}');
     }
   }
+
+  // ---------- Marcar acción (desayuno, comida, cena, baño, hidratación) ----------
+  Future<void> markAction(int trackingId, String action) async {
+    final token = await _secureStorageService.getToken();
+    if (token == null) throw Exception('Token no disponible');
+
+    final url = Uri.parse('$_baseUrl/routine-tracking/$trackingId/$action');
+    final response = await http.put(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      log('Error al marcar $action: ${response.statusCode} - ${response.body}');
+      throw Exception('Error al marcar $action');
+    }
+  }
+
+  // ---------- Obtener tracking de hoy ----------
+  Future<Map<String, dynamic>> getTodayTracking(int patientId) async {
+    final token = await _secureStorageService.getToken();
+    if (token == null) throw Exception('Token no disponible');
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/routine-tracking/today/$patientId'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al obtener tracking: ${response.statusCode}');
+    }
+  }
+
+  // Marcar desayuno
+  Future<void> markBreakfast(int patientId) async {
+    final token = await _secureStorageService.getToken();
+    if (token == null) throw Exception('Token no disponible');
+
+    final url = Uri.parse('$_baseUrl/routine-tracking/$patientId/breakfast');
+    final res = await http.put(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception('Error al marcar desayuno: ${res.statusCode}');
+    }
+  }
 }
