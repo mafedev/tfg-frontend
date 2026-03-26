@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/create_patient/create_patient_screen.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/screens/patient_details_screen.dart';
 import 'package:tfg_frontend/models/patient.dart';
@@ -182,7 +183,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                         child: ListTile(
                           leading: const Icon(Icons.person),
                           title: Text(
-                            '${patient.username[0].toUpperCase()}${patient.username.substring(1)}',
+                            patient.username?.isNotEmpty == true ? patient.username![0].toUpperCase() + patient.username!.substring(1) : patient.name?.isNotEmpty == true ? patient.name![0].toUpperCase() + patient.name!.substring(1) : 'Sin nombre',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -237,6 +238,21 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
             ),
 
             const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () async {
+                final created = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const CreatePatientScreen(),
+                  ),
+                );
+
+                if (created == true) {
+                  _loadPatients();
+                }
+              },
+              child: const Text('Crear paciente sin cuenta'),
+            ),
 
             // -------------------- Botón para generar el código de vinculación --------------------
             if (generatingCode)

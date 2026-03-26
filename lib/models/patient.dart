@@ -1,27 +1,30 @@
 class Patient {
   final int id;
-  final String username;
+  final String? username;
+  final String? name;
   final String? phone;
   final String? notes;
-  final String? diseaseStage; 
+  final String? diseaseStage;
 
-// Constructor
+  // Constructor
   Patient({
     required this.id,
-    required this.username,
-    required this.phone,
+    this.username,
+    this.name,
+    this.phone,
     this.notes,
     this.diseaseStage,
   });
 
-// Crea el paciente a partir del JSON
+  // Crea el paciente a partir del JSON
   factory Patient.fromJson(Map<String, dynamic> json) {
     return Patient(
-      id: json['id'], // obtiene el id del json
-      username: json['username'], // obtiene el nombre del JSON
-      phone: json['phone'], // puede ser null
-      notes: json['notes'], 
-      diseaseStage: json['diseaseStage'], 
+      id: json['id'],
+      username: json['username'],
+      name: json['name'],
+      phone: json['phone'],
+      notes: json['notes'],
+      diseaseStage: json['diseaseStage'],
     );
   }
 }
