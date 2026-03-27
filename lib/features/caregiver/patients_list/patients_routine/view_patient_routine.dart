@@ -20,7 +20,13 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   Map<String, dynamic>? routine; // contiene la rutina obtenida
   Map<String, dynamic>? tracking; // contiene el tracking obtenido
   bool loading = true; // indica si se está cargando la rutina
-  bool loadingTracking = true;
+
+  // Estados de la rutina
+  bool breakfastDone = false;
+  bool lunchDone = false;
+  bool dinnerDone = false;
+  bool bathDone = false;
+  bool hydrationDone = false;
 
   // Cuando se inicia la pantalla, carga la rutina
   @override
@@ -32,7 +38,6 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
   // -------------------- Carga rutina --------------------
   Future<void> _loadRoutine() async {
-    setState(() => loading = true);
     try {
       routine = await _routineService.getRoutine(widget.patientId); // obtiene la rutina
     } catch (e) {
@@ -70,31 +75,53 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
   // -------------------- Carga tracking --------------------
   Future<void> _loadTracking() async {
-    setState(() => loadingTracking = true);
     try {
       tracking = await _routineService.getTodayTracking(widget.patientId);
+
+      // Actualiza los estados de la rutina según el tracking
+      setState(() {
+        breakfastDone = tracking?['breakfastDone'] ?? false;
+        lunchDone = tracking?['lunchDone'] ?? false;
+        dinnerDone = tracking?['dinnerDone'] ?? false;
+        bathDone = tracking?['bathDone'] ?? false;
+        hydrationDone = tracking?['hydrationDone'] ?? false;
+      });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al cargar tracking: $e')),
-      );
-    } finally {
-      setState(() => loadingTracking = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
     }
   }
 
-  // -------------------- Marcar acción --------------------
-  Future<void> _markAction(String action) async {
-    try {
-      if (action == 'breakfast') {
-        await _routineService.markBreakfast(widget.patientId);
-      }
-      // Aquí podrías agregar lunch, dinner, bath, hydration si quieres
-      await _loadTracking();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al marcar $action: $e')),
-      );
-    }
+  // -------------------- Marcar como hecho --------------------
+  // Desayuno
+  Future<void> _markBreakfast() async {
+    await _routineService.markBreakfast(widget.patientId);
+    setState(() => breakfastDone = true);
+  }
+
+  // Almuerzo
+  Future<void> _markLunch() async {
+    await _routineService.markLunch(widget.patientId);
+    setState(() => lunchDone = true);
+  }
+
+  // Cena
+  Future<void> _markDinner() async {
+    await _routineService.markDinner(widget.patientId);
+    setState(() => dinnerDone = true);
+  }
+
+  // Baño
+  Future<void> _markBath() async {
+    await _routineService.markBath(widget.patientId);
+    setState(() => bathDone = true);
+  }
+
+  // Hidratación
+  Future<void> _markHydration() async {
+    await _routineService.markHydration(widget.patientId);
+    setState(() => hydrationDone = true);
   }
 
   // -------------------- Checkbox item --------------------
@@ -163,12 +190,11 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
   }
 
-
   // -------------------- Construye la pantalla --------------------
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
-    if (loading || loadingTracking) {
+    if (loading) {
       return const Scaffold(
         body: Center(
           child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
@@ -192,14 +218,24 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                     children: [
                       _sectionTitle('Comidas', Icons.restaurant),
                       const SizedBox(height: 12),
-                      _routineItem('Desayuno', formatTime(routine!['breakfastTime'])),
+
                       _trackingItem(
-                        'Desayuno realizado',
+                        'Desayuno - ${formatTime(routine!['breakfastTime'])}',
                         tracking?['breakfastDone'] ?? false,
-                        () => _markAction('breakfast'),
+                        _markBreakfast,
                       ),
-                      _routineItem('Comida', formatTime(routine!['lunchTime'])),
-                      _routineItem('Cena', formatTime(routine!['dinnerTime'])),
+
+                      _trackingItem(
+                        'Almuerzo - ${formatTime(routine!['lunchTime'])}',
+                        tracking?['lunchDone'] ?? false,
+                        _markLunch,
+                      ),
+
+                      _trackingItem(
+                        'Cena - ${formatTime(routine!['dinnerTime'])}',
+                        tracking?['dinnerDone'] ?? false,
+                        _markDinner,
+                      ),
                     ],
                   ),
 
@@ -208,15 +244,12 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                     children: [
                       _sectionTitle('Hidratación', Icons.water_drop),
                       const SizedBox(height: 12),
-                      routine!['hydrationEnabled'] == true
-                          ? Text(
-                              'Recordatorio cada ${routine!['hydrationReminderHours']} horas',
-                              style: const TextStyle(fontSize: 16),
-                            )
-                          : const Text(
-                              'Recordatorios desactivados',
-                              style: TextStyle(color: Colors.grey),
-                            ),
+
+                      _trackingItem(
+                        'Hidratación realizada',
+                        tracking?['hydrationDone'] ?? false,
+                        _markHydration,
+                      ),
                     ],
                   ),
 
@@ -225,7 +258,12 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                     children: [
                       _sectionTitle('Aseo', Icons.bathtub),
                       const SizedBox(height: 12),
-                      _routineItem('Baño', formatTime(routine!['bathTime'])),
+
+                      _trackingItem(
+                        'Baño - ${formatTime(routine!['bathTime'])}',
+                        tracking?['bathDone'] ?? false,
+                        _markBath,
+                      ),
                     ],
                   ),
 
@@ -252,7 +290,6 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                         );
                         // Recarga la rutina después de editar
                         _loadRoutine();
-                        _loadTracking();
                       },
                       child: const Text('Editar rutina'),
                     ),
