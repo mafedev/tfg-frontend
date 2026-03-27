@@ -96,32 +96,42 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   // -------------------- Marcar como hecho --------------------
   // Desayuno
   Future<void> _markBreakfast() async {
+    final newValue = !breakfastDone;
     await _routineService.markBreakfast(widget.patientId);
-    setState(() => breakfastDone = true);
+    setState(() => breakfastDone = newValue);
+    await _loadTracking();
   }
 
   // Almuerzo
   Future<void> _markLunch() async {
+    final newValue = !lunchDone;
     await _routineService.markLunch(widget.patientId);
-    setState(() => lunchDone = true);
+    setState(() => lunchDone = newValue);
+    await _loadTracking();
   }
 
   // Cena
   Future<void> _markDinner() async {
+    final newValue = !dinnerDone;
     await _routineService.markDinner(widget.patientId);
-    setState(() => dinnerDone = true);
+    setState(() => dinnerDone = newValue);
+    await _loadTracking();
   }
 
   // Baño
   Future<void> _markBath() async {
+    final newValue = !bathDone;
     await _routineService.markBath(widget.patientId);
-    setState(() => bathDone = true);
+    setState(() => bathDone = newValue);
+    await _loadTracking();
   }
 
   // Hidratación
   Future<void> _markHydration() async {
+    final newValue = !hydrationDone;
     await _routineService.markHydration(widget.patientId);
-    setState(() => hydrationDone = true);
+    setState(() => hydrationDone = newValue);
+    await _loadTracking();
   }
 
   // -------------------- Checkbox item --------------------
