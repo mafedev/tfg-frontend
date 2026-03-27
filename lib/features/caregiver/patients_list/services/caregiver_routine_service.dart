@@ -16,7 +16,7 @@ class RoutineService {
     required String dinnerTime,
     required String bathTime,
     required bool hydrationEnabled,
-    required int hydrationReminderHours
+    required int hydrationReminderHours,
   }) async {
     // Obtener el token del almacenamiento seguro
     final token = await _secureStorageService.getToken();
@@ -56,9 +56,7 @@ class RoutineService {
 
     final response = await http.get(
       Uri.parse('$_baseUrl/routine/$patientId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -143,12 +141,18 @@ class RoutineService {
     }
   }
 
-  // Marcar desayuno
-  Future<void> markBreakfast(int patientId) async {
+  // ---------- Actualizar cualquier item de la rutina ----------
+  Future<void> updateRoutineItem({
+    required int patientId,
+    required String item, // "breakfast", "lunch", "dinner", "bath", "hydration"
+    required bool done,
+  }) async {
     final token = await _secureStorageService.getToken();
     if (token == null) throw Exception('Token no disponible');
 
-    final url = Uri.parse('$_baseUrl/routine-tracking/$patientId/breakfast');
+    final url = Uri.parse(
+      '$_baseUrl/routine-tracking/$patientId/$item?done=$done',
+    );
     final res = await http.put(
       url,
       headers: {
@@ -158,83 +162,7 @@ class RoutineService {
     );
 
     if (res.statusCode != 200) {
-      throw Exception('Error al marcar desayuno: ${res.statusCode}');
-    }
-  }
-
-  // ---------- Marcar almuerzo ----------
-  Future<void> markLunch(int patientId) async {
-    final token = await _secureStorageService.getToken();
-    if (token == null) throw Exception('Token no disponible');
-
-    final url = Uri.parse('$_baseUrl/routine-tracking/$patientId/lunch');
-    final res = await http.put(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Error al marcar comida: ${res.statusCode}');
-    }
-  }
-
-  // ---------- Marcar cena ----------
-  Future<void> markDinner(int patientId) async {
-    final token = await _secureStorageService.getToken();
-    if (token == null) throw Exception('Token no disponible');
-
-    final url = Uri.parse('$_baseUrl/routine-tracking/$patientId/dinner');
-    final res = await http.put(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Error al marcar cena: ${res.statusCode}');
-    }
-  }
-
-  // ---------- Marcar baño ----------
-  Future<void> markBath(int patientId) async {
-    final token = await _secureStorageService.getToken();
-    if (token == null) throw Exception('Token no disponible');
-
-    final url = Uri.parse('$_baseUrl/routine-tracking/$patientId/bath');
-    final res = await http.put(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Error al marcar baño: ${res.statusCode}');
-    }
-  }
-
-  // ---------- Marcar hidratación ----------
-  Future<void> markHydration(int patientId) async {
-    final token = await _secureStorageService.getToken();
-    if (token == null) throw Exception('Token no disponible');
-
-    final url = Uri.parse('$_baseUrl/routine-tracking/$patientId/hydration');
-    final res = await http.put(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Error al marcar hidratación: ${res.statusCode}');
+      throw Exception('Error al marcar $item: ${res.statusCode}');
     }
   }
 }

@@ -21,13 +21,6 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   Map<String, dynamic>? tracking; // contiene el tracking obtenido
   bool loading = true; // indica si se está cargando la rutina
 
-  // Estados de la rutina
-  bool breakfastDone = false;
-  bool lunchDone = false;
-  bool dinnerDone = false;
-  bool bathDone = false;
-  bool hydrationDone = false;
-
   // Cuando se inicia la pantalla, carga la rutina
   @override
   void initState() {
@@ -77,15 +70,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   Future<void> _loadTracking() async {
     try {
       tracking = await _routineService.getTodayTracking(widget.patientId);
-
-      // Actualiza los estados de la rutina según el tracking
-      setState(() {
-        breakfastDone = tracking?['breakfastDone'] ?? false;
-        lunchDone = tracking?['lunchDone'] ?? false;
-        dinnerDone = tracking?['dinnerDone'] ?? false;
-        bathDone = tracking?['bathDone'] ?? false;
-        hydrationDone = tracking?['hydrationDone'] ?? false;
-      });
+      setState(() {}); // recarga la interfaz
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -94,54 +79,31 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   }
 
   // -------------------- Marcar como hecho --------------------
-  // Desayuno
-  Future<void> _markBreakfast() async {
-    final newValue = !breakfastDone;
-    await _routineService.markBreakfast(widget.patientId);
-    setState(() => breakfastDone = newValue);
-    await _loadTracking();
-  }
-
-  // Almuerzo
-  Future<void> _markLunch() async {
-    final newValue = !lunchDone;
-    await _routineService.markLunch(widget.patientId);
-    setState(() => lunchDone = newValue);
-    await _loadTracking();
-  }
-
-  // Cena
-  Future<void> _markDinner() async {
-    final newValue = !dinnerDone;
-    await _routineService.markDinner(widget.patientId);
-    setState(() => dinnerDone = newValue);
-    await _loadTracking();
-  }
-
-  // Baño
-  Future<void> _markBath() async {
-    final newValue = !bathDone;
-    await _routineService.markBath(widget.patientId);
-    setState(() => bathDone = newValue);
-    await _loadTracking();
-  }
-
-  // Hidratación
-  Future<void> _markHydration() async {
-    final newValue = !hydrationDone;
-    await _routineService.markHydration(widget.patientId);
-    setState(() => hydrationDone = newValue);
-    await _loadTracking();
+  Future<void> _toggleTrackingItem(String key) async {
+    try {
+      final currentValue = tracking?[key] ?? false;
+      await _routineService.updateRoutineItem(
+        patientId: widget.patientId,
+        item: key.replaceAll('Done', '').toLowerCase(),
+        done: !currentValue,
+      );
+      await _loadTracking(); // recarga la interfaz
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error al actualizar $key: $e')));
+    }
   }
 
   // -------------------- Checkbox item --------------------
-  Widget _trackingItem(String label, bool value, Function() onTap) {
+  Widget _trackingItem(String label, String key) {
+    final value = tracking?[key] ?? false;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
-          Checkbox(value: value, onChanged: (_) => onTap()),
+          Checkbox(value: value, onChanged: (_) => _toggleTrackingItem(key)),
         ],
       ),
     );
@@ -231,20 +193,17 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
                       _trackingItem(
                         'Desayuno - ${formatTime(routine!['breakfastTime'])}',
-                        tracking?['breakfastDone'] ?? false,
-                        _markBreakfast,
+                        'breakfastDone',
                       ),
 
                       _trackingItem(
                         'Almuerzo - ${formatTime(routine!['lunchTime'])}',
-                        tracking?['lunchDone'] ?? false,
-                        _markLunch,
+                        'lunchDone',
                       ),
 
                       _trackingItem(
                         'Cena - ${formatTime(routine!['dinnerTime'])}',
-                        tracking?['dinnerDone'] ?? false,
-                        _markDinner,
+                        'dinnerDone',
                       ),
                     ],
                   ),
@@ -254,12 +213,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                     children: [
                       _sectionTitle('Hidratación', Icons.water_drop),
                       const SizedBox(height: 12),
-
-                      _trackingItem(
-                        'Hidratación realizada',
-                        tracking?['hydrationDone'] ?? false,
-                        _markHydration,
-                      ),
+                      _trackingItem('Hidratación realizada', 'hydrationDone'),
                     ],
                   ),
 
@@ -271,8 +225,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
                       _trackingItem(
                         'Baño - ${formatTime(routine!['bathTime'])}',
-                        tracking?['bathDone'] ?? false,
-                        _markBath,
+                        'bathDone',
                       ),
                     ],
                   ),
@@ -300,6 +253,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
                         );
                         // Recarga la rutina después de editar
                         _loadRoutine();
+                        _loadTracking(); // refresca también el tracking
                       },
                       child: const Text('Editar rutina'),
                     ),
