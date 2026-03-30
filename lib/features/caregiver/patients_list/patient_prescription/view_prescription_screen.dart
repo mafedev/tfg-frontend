@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/medication_tracking_screen.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/create_prescription_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_prescription_service.dart';
@@ -60,11 +61,31 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
       backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(title: 'Medicación', backgroundColor: AppColors.caregiverAppBar),
 
-      // ----------- Lista de medicación ----------
-      body: ListView.builder(
-        itemCount: medications.length, // número de elementos en la lista
-        itemBuilder: (context, index) { // cómo construir cada elemento
-          final med = medications[index];
+      body: Column(
+        children: [
+          // ----------- Botón para ver tomas del día ----------
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.caregiverPrimary, foregroundColor: Colors.white),
+                // al hacer click, navega a la pantalla de seguimiento de tomas
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => MedicationTrackingScreen(patientId: widget.patientId)));
+                },
+                icon: const Icon(Icons.access_time),
+                label: const Text('Ver tomas de hoy'),
+              ),
+            ),
+          ),
+
+          // ----------- Lista de medicación ----------
+          Expanded(
+            child: ListView.builder(
+              itemCount: medications.length, // número de elementos en la lista
+              itemBuilder: (context, index) { // cómo construir cada elemento
+                final med = medications[index];
 
           // Cada medicamento se muestra en una card desplegable, con su información
           return Card(
@@ -93,7 +114,7 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
                 ),
               ),
 
-              // -------------- Tres puntos superiores --------------
+              // -------------- Tres puntos --------------
               trailing: PopupMenuButton<String>(
                 icon: const Icon(
                   Icons.more_vert,
@@ -203,15 +224,17 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
                     padding: const EdgeInsets.only(top: 8),
                     child: Text('Estado: ${med['status'] ?? 'ACTIVE'}', style: const TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                ),
-              ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-
-        },
+          ),
+        ],
       ),
 
-      // ---------- Botón para agregar nueva rutina de medicación ----------
+      // ---------- Botón para agregar nueva prescripción ----------
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.caregiverAccent,
         onPressed: () {
