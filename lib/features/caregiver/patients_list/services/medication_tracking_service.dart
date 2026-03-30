@@ -6,14 +6,17 @@ class MedicationTrackingService {
   static const String _baseUrl = 'http://10.0.2.2:8080/api';
   final SecureStorageService _secureStorageService = SecureStorageService();
 
-  // -------------------- Obtener tracking de hoy --------------------
-  // obtiene el seguimiento del día para un paciente específico
-  Future<List<Map<String, dynamic>>> getTodayTracking(int patientId) async {
+  // -------------------- Obtener tracking por fecha --------------------
+  // obtiene el seguimiento de un paciente en una fecha específica
+  Future<List<Map<String, dynamic>>> getMedicationTracking(int patientId, DateTime date) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
-    
+
+    // formatea la fecha a yyyy-MM-dd para  pasarla como parámetro en la URL
+    final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
     // hace la petición
     final response = await http.get(
-      Uri.parse('$_baseUrl/patients/$patientId/tracking/today'),
+      Uri.parse('$_baseUrl/patients/$patientId/tracking?date=$formattedDate'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',

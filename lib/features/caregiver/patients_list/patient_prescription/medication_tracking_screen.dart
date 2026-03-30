@@ -18,6 +18,7 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
 
   bool _loading = true; // maneja el círculo de carga
   List<MedicationTracking> _trackingList = []; // lista local con el tracking
+  DateTime _selectedDate = DateTime.now(); // fecha seleccionada para mostrar el tracking
 
   @override
   void initState() {
@@ -30,7 +31,7 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
     setState(() => _loading = true); // al inicio pone cargar a true para mostrar el circulo de carga
     
     try {
-      final result = await _service.getTodayTracking(widget.patientId); // obtiene el tracking de hoy para el paciente
+      final result = await _service.getMedicationTracking(widget.patientId, _selectedDate);
       
       setState(
         () => _trackingList = result // mapea el tracking obtenido a la lista de tracking local
@@ -89,7 +90,45 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppLogoAppBar(title: 'Tomas de hoy', backgroundColor: AppColors.caregiverAppBar),
-        body: const Center(child: Text('No hay tomas programadas para hoy')),
+        body: Column(
+          children: [
+            // -------- Selector de fecha ----------
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      setState(() {
+                        _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+                      });
+                      _loadTracking();
+                    },
+                  ),
+                  Text(
+                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward),
+                    onPressed: () {
+                      setState(() {
+                        _selectedDate = _selectedDate.add(
+                          const Duration(days: 1),
+                        );
+                      });
+                      _loadTracking();
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            const Expanded(child: Center(child: Text('No hay tomas programadas para hoy'))),
+          ],
+        ),
       );
     }
 
@@ -100,7 +139,46 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16),
 
+        child: Column(
+          children: [
+            // -------- Selector de fecha ----------
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    setState(() {
+                      _selectedDate = _selectedDate.subtract(
+                        const Duration(days: 1),
+                      );
+                    });
+                    _loadTracking();
+                  },
+                ),
+                Text(
+                  '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: () {
+                    setState(() {
+                      _selectedDate = _selectedDate.add(
+                        const Duration(days: 1),
+                      );
+                    });
+                    _loadTracking();
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
         // Muestra la lista de medicamentos
+      Expanded(
         child: ListView.builder(
           itemCount: _trackingList.length, // el número de medicamentos a mostrar es el largo de la lista de tracking
           
@@ -141,6 +219,16 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
                             children: [
                               // muestra la hora
                               Expanded(child: Text(_formatTime(t.scheduledTime))),
+                              // Texto según el toggle
+                              Text(
+                                t.taken ? 'TAKEN' : 'PENDING',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+
+                              const SizedBox(width: 8),
+
                               // agrega el checkbox para marcar si lo ha tomado o no
                               Checkbox(
                                 value: t.taken, // el valor del checkbox depende de si la toma ha sido marcada como tomada o no
@@ -157,6 +245,9 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
               ),
             );
           },
+              ),
+            ),
+          ],
         ),
       ),
     );
