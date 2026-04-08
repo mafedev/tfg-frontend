@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import '../models/patient.dart';
 
 class RelationService {
-  final String baseUrl = 'http://10.0.2.2:8080/api/relations';
+  final String baseUrl = ApiConfig.relationsEndpoint;
   final SecureStorageService _storage = SecureStorageService();
 
   // ------------------- Generar código -------------------

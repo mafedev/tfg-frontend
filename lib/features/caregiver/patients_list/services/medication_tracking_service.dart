@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class MedicationTrackingService {
-  static const String _baseUrl = 'http://10.0.2.2:8080/api';
+  static const String _baseUrl = ApiConfig.patientsEndpoint;
+  static const String _trackingUrl = ApiConfig.medicationTrackingEndpoint;
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // -------------------- Obtener tracking por fecha --------------------
@@ -16,7 +18,7 @@ class MedicationTrackingService {
 
     // hace la petición
     final response = await http.get(
-      Uri.parse('$_baseUrl/patients/$patientId/tracking?date=$formattedDate'),
+      Uri.parse('$_baseUrl/$patientId/tracking?date=$formattedDate'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -39,7 +41,7 @@ class MedicationTrackingService {
     // hace la petición
     final response = await http.put(
       Uri.parse(
-        '$_baseUrl/patients/tracking/toggle?prescriptionId=$prescriptionId&scheduledTime=$scheduledTime',
+        '$_trackingUrl/toggle?prescriptionId=$prescriptionId&scheduledTime=$scheduledTime',
       ),
       headers: {
         'Content-Type': 'application/json',

@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class RoutineService {
-  static const String _baseUrl = 'http://10.0.2.2:8080/api';
+  static const String _routineUrl = ApiConfig.routineEndpoint;
+  static const String _trackingUrl = ApiConfig.routineTrackingEndpoint;
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ------------- Crear rutina -------------
@@ -26,7 +28,7 @@ class RoutineService {
 
     // hace la petición POST al backend
     final response = await http.post(
-      Uri.parse('$_baseUrl/routine/$patientId'), // Endpoint para crear rutina
+      Uri.parse('$_routineUrl/$patientId'), // Endpoint para crear rutina
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -55,7 +57,7 @@ class RoutineService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/routine/$patientId'),
+      Uri.parse('$_routineUrl/$patientId'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -83,7 +85,7 @@ class RoutineService {
     final token = await _secureStorageService.getToken();
 
     final response = await http.put(
-      Uri.parse('$_baseUrl/routine/$patientId'),
+      Uri.parse('$_routineUrl/$patientId'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token', // Agregar token de autenticación
@@ -113,7 +115,7 @@ class RoutineService {
     if (token == null) throw Exception('Token no disponible');
 
     final response = await http.delete(
-      Uri.parse('$_baseUrl/routine/$patientId'),
+      Uri.parse('$_routineUrl/$patientId'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -130,7 +132,7 @@ class RoutineService {
     if (token == null) throw Exception('Token no disponible');
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/routine-tracking/today/$patientId'),
+      Uri.parse('$_trackingUrl/today/$patientId'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -151,7 +153,7 @@ class RoutineService {
     if (token == null) throw Exception('Token no disponible');
 
     final url = Uri.parse(
-      '$_baseUrl/routine-tracking/$patientId/$item?done=$done',
+      '$_trackingUrl/$patientId/$item?done=$done',
     );
     final res = await http.put(
       url,
