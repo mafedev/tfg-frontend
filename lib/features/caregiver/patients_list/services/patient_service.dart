@@ -1,11 +1,11 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/models/patient.dart';
 
 class PatientService {
-  final String baseUrl = 'http://10.0.2.2:8080/api'; // url base
+  final String baseUrl = ApiConfig.patientsEndpoint;
   final SecureStorageService _storage =
       SecureStorageService(); // es para obtener el token guardado
 
@@ -17,7 +17,7 @@ class PatientService {
 
     // hace la petición
     final response = await http.get(
-      Uri.parse('$baseUrl/patients/$patientId'),
+      Uri.parse('$baseUrl/$patientId'),
       headers: {
         'Authorization': 'Bearer $token', // envía el token
         'Content-Type': 'application/json', // indica que está enviando un JSON
@@ -43,7 +43,7 @@ class PatientService {
     final token = await _storage.getToken();
     // Hace la petición PUT para actualizar los datos del paciente
     await http.put(
-      Uri.parse('$baseUrl/patients/$patientId'),
+      Uri.parse('$baseUrl/$patientId'),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',

@@ -2,11 +2,12 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/config/api_config.dart';
 
 // Responsabilidad: autenticación
 class AuthService {
   // url base de las peticiones de autenticación
-  final String baseUrl = 'http://10.0.2.2:8080/api/auth';
+  final String baseUrl = ApiConfig.authEndpoint;
 
   // ------------------- Crear un nuevo usuario -------------------
   // Future es para que Flutter no se congele al hacer la petición, y todos lo datos son requeridos
