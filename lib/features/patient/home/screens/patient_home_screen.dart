@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/services/relation_service.dart';
+import 'package:tfg_frontend/services/patient_medication_service.dart';
+import 'package:tfg_frontend/core/services/notification_service.dart';
 
 // Esta pantalla es para el paciente. Permite vincularse con un cuidador usando el código de vinculación
 class PatientHomeScreen extends StatefulWidget {
@@ -14,22 +16,65 @@ class PatientHomeScreen extends StatefulWidget {
 class _PatientHomeScreenState extends State<PatientHomeScreen> {
   // Controlador para el campo de texto donde el paciente escribe el código
   final TextEditingController codeController = TextEditingController();
-  
+
   // Servicio para manejar la relación entre paciente y cuidador
   final RelationService _relationService = RelationService();
+  // Servicio para obtener el tracking de medicamentos del paciente
+  final PatientMedicationService _medicationService = PatientMedicationService();
+  // Servicio para programar notificaciones locales
+  final NotificationService _notificationService = NotificationService();
+
+  @override
+  void initState() {
+    super.initState();
+    _initNotifications();
+  }
+
+  @override
+  void dispose() {
+    codeController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initNotifications() async {
+    try {
+      await _notificationService.init();
+
+      final tracking = await _medicationService.getMedicationTrackingForDate(
+        DateTime.now(),
+      );
+
+      for (var med in tracking) {
+        for (var t in med.times) {
+          final dt = DateTime.parse(t.scheduledTime);
+
+          if (dt.isAfter(DateTime.now())) {
+            await _notificationService.scheduleNotification(
+              id: dt.hashCode,
+              dateTime: dt,
+              title: 'Toma de medicamento',
+              body: 'Es hora de tomar ${med.medicationName}',
+            );
+          }
+        }
+      }
+    } catch (e) {
+      print('Notifications error: $e');
+    }
+  }
 
   // Función que se ejecuta cuando el paciente presiona el botón de vincular
   Future<void> _link() async {
-  final success = await _relationService.linkPatient(codeController.text.trim());
+    final success = await _relationService.linkPatient(codeController.text.trim());
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(success
-          ? 'Paciente conectado correctamente'
-          : 'Error conectando el paciente'),
-    ),
-  );
-}
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(success
+              ? 'Paciente conectado correctamente'
+              : 'Error conectando el paciente'),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -40,24 +40,6 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
             .map((json) => MedicationTracking.fromJson(json)) // convierte cada json a un objeto MedicationTracking
             .toList(), // y luego lo convierte a una lista
       );
-
-      // programa las notificaciones para las tomas futuras
-      for (var med in _trackingList) { // itera los medicamentos del tracking
-        for (var t in med.times) { // itera las tomas de cada uno
-          // convierte la hora programada de la toma a un DateTime para compararla con la hora actual y programar la notificación solo si es futura
-          final dt = DateTime.parse(t.scheduledTime);
-
-          // si la hora programada es futura, programa la notificación para esa hora con el título y cuerpo correspondiente
-          if (dt.isAfter(DateTime.now())) {
-            await notificationService.scheduleNotification(
-              id: dt.hashCode, // usa el hash del DateTime como id único para la notificación
-              dateTime: dt, // la hora programada para la notificación es la hora programada de la toma
-              title: 'Toma de medicamento', // título de la notificación
-              body: 'Es hora de tomar ${med.medicationName}', // cuerpo de la notificación con el nombre del medicamento a tomar
-            );
-          }
-        }
-      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
     } finally {
