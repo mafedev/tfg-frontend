@@ -1,18 +1,17 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/models/routine.dart';
 
 class PatientRoutineService {
-  final String baseUrl = 'http://10.0.2.2:8080/api';
+  final String baseUrl = ApiConfig.routineEndpoint;
 
   // ----------- Obtiene la rutina del paciente -----------
   Future<Routine?> getMyRoutine(String token) async {
     // Hace la petición y pasa el token
     final response = await http.get(
-      Uri.parse(
-        '$baseUrl/routine',
-      ), // Endpotin para obtener la rutina del paciente
+      Uri.parse(baseUrl), // Endpotin para obtener la rutina del paciente
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',

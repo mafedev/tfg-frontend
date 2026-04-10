@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/services/notification_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/models/medication_tracking.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/main.dart';
 import '../services/medication_tracking_service.dart';
 
 class MedicationTrackingScreen extends StatefulWidget {

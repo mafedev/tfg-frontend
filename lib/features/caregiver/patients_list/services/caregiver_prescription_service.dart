@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/enums/prescription.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class CaregiverPrescriptionService {
-  static const String _baseUrl = 'http://10.0.2.2:8080/api/prescriptions';
+  static const String _baseUrl = ApiConfig.prescriptionsEndpoint;
 
   final SecureStorageService _secureStorageService = SecureStorageService();
 
