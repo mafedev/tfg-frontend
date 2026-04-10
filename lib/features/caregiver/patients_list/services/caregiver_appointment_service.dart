@@ -58,4 +58,21 @@ class AppointmentService {
       throw Exception("Error ${response.statusCode}");
     }
   }
+
+  // borrar
+  Future<void> deleteAppointment(int id) async {
+    final token = await _secureStorageService.getToken();
+
+    final response = await http.delete(
+      Uri.parse('${ApiConfig.appointmentEndpoint}/$id'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Error eliminando cita");
+    }
+  }
 }

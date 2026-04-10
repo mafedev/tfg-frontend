@@ -40,6 +40,17 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     }
   }
 
+  Future<void> _deleteAppointment(int id) async {
+    try {
+      await service.deleteAppointment(id);
+      _loadAppointments();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error eliminando cita: $e")));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,6 +81,10 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                         Text("Fecha: ${a['dateTime'] ?? ''}"),
                         Text("Descripción: ${a['description'] ?? ''}"),
                       ],
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {_deleteAppointment(a['id']);},
                     ),
                   ),
                 );
