@@ -40,4 +40,22 @@ class AppointmentService {
       return false;
     }
   }
+
+  Future<List<dynamic>> getAppointmentsByPatient(int patientId) async {
+    final token = await _secureStorageService.getToken();
+
+    final response = await http.get(
+      Uri.parse('${ApiConfig.appointmentEndpoint}/patient/$patientId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception("Error ${response.statusCode}");
+    }
+  }
 }
