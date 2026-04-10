@@ -3,8 +3,9 @@ import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver
 
 class CreateAppointmentScreen extends StatefulWidget {
   final int patientId;
+  final Map<String, dynamic>? existingAppointment;
 
-  const CreateAppointmentScreen({super.key, required this.patientId});
+  const CreateAppointmentScreen({super.key, required this.patientId, this.existingAppointment});
 
   @override
   State<CreateAppointmentScreen> createState() => _CreateAppointmentScreenState();
@@ -18,14 +19,46 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
 
   final service = AppointmentService();
 
-  void createAppointment() async {
-    final success = await service.createAppointment(
-      title: titleController.text,
-      description: descriptionController.text,
-      location: locationController.text,
-      dateTime: dateTimeController.text,
-      patientId: widget.patientId,
-    );
+  bool isEditing = false;
+  int? appointmentId;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.existingAppointment != null) {
+      final appt = widget.existingAppointment!;
+
+      isEditing = true;
+      appointmentId = appt['id'];
+
+      titleController.text = appt['title'] ?? '';
+      descriptionController.text = appt['description'] ?? '';
+      locationController.text = appt['location'] ?? '';
+      dateTimeController.text = appt['dateTime'] ?? '';
+    }
+  }
+
+  void saveAppointment() async {
+    bool success;
+
+    if (isEditing) {
+      success = await service.updateAppointment(
+        id: appointmentId!,
+        title: titleController.text,
+        description: descriptionController.text,
+        location: locationController.text,
+        dateTime: dateTimeController.text,
+      );
+    } else {
+      success = await service.createAppointment(
+        title: titleController.text,
+        description: descriptionController.text,
+        location: locationController.text,
+        dateTime: dateTimeController.text,
+        patientId: widget.patientId,
+      );
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(success ? "Cita creada" : "Error al crear cita")),
@@ -35,7 +68,7 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Crear cita")),
+      appBar: AppBar(title: Text(isEditing ? "Editar cita" : "Crear cita")),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -65,8 +98,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
             const SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: createAppointment,
-              child: const Text("Crear cita"),
+              onPressed: saveAppointment,
+              child: Text(isEditing ? "Actualizar" : "Crear"),
             ),
           ],
         ),

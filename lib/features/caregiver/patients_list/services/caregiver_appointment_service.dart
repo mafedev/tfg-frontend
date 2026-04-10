@@ -75,4 +75,31 @@ class AppointmentService {
       throw Exception("Error eliminando cita");
     }
   }
+
+  Future<bool> updateAppointment({
+    required int id,
+    required String title,
+    required String description,
+    required String location,
+    required String dateTime,
+  }) async {
+    final token = await SecureStorageService().getToken();
+
+    final response = await http.put(
+      
+      Uri.parse('${ApiConfig.appointmentEndpoint}/$id'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "title": title,
+        "description": description,
+        "location": location,
+        "dateTime": dateTime,
+      }),
+    );
+
+    return response.statusCode == 200;
+  }
 }

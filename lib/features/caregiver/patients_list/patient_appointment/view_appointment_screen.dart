@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_appointment_service.dart';
+import 'create_appointment_screen.dart';
 
 class ViewAppointmentsScreen extends StatefulWidget {
   final int patientId;
@@ -82,9 +83,39 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                         Text("Descripción: ${a['description'] ?? ''}"),
                       ],
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {_deleteAppointment(a['id']);},
+
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        
+                        if (value == 'edit') {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CreateAppointmentScreen(
+                                patientId: widget.patientId,
+                                existingAppointment: a,
+                              ),
+                            ),
+                          );
+
+                          _loadAppointments();
+                        }
+
+                        
+                        if (value == 'delete') {
+                          _deleteAppointment(a['id']);
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Editar'),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('Eliminar'),
+                        ),
+                      ],
                     ),
                   ),
                 );
