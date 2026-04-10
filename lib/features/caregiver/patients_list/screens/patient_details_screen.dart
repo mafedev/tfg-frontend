@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_appointment/create_appointment_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/patient_service.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/create_prescription_screen.dart';
@@ -314,6 +315,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                     // ---------- Botón prescripción ----------
                     _medicationButton(),
+
+                    // ---------- Botón citas ----------
+                    const SizedBox(height: 20),
+
+                    _createAppointmentButton(),
                   ],
                 ),
               ),
@@ -396,6 +402,25 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                 );
                 setState(() => loadingMedication = false);
               },
+      ),
+    );
+  }
+
+  Widget _createAppointmentButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.event, color: Colors.white),
+        label: const Text('Crear cita', style: TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CreateAppointmentScreen(patientId: patient!.id),
+            ),
+          );
+        },
       ),
     );
   }
