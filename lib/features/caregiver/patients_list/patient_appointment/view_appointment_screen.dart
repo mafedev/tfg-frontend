@@ -121,6 +121,21 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                 );
               },
             ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.caregiverAccent,
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => CreateAppointmentScreen(
+                patientId: widget.patientId,
+              ),
+            ),
+          );
+          _loadAppointments();
+        },
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
