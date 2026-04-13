@@ -68,6 +68,25 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
               itemBuilder: (context, index) {
                 final a = appointments[index];
 
+                DateTime? date;
+                if (a['dateTime'] != null) {
+                  date = DateTime.tryParse(a['dateTime']);
+                }
+
+                String fecha = '';
+                String hora = '';
+
+                if (date != null) {
+                  fecha =
+                      "${date.day.toString().padLeft(2, '0')}/"
+                      "${date.month.toString().padLeft(2, '0')}/"
+                      "${date.year}";
+
+                  hora =
+                      "${date.hour.toString().padLeft(2, '0')}:"
+                      "${date.minute.toString().padLeft(2, '0')}";
+                }
+
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -79,7 +98,13 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("Lugar: ${a['location'] ?? ''}"),
-                        Text("Fecha: ${a['dateTime'] ?? ''}"),
+
+                        if (fecha.isNotEmpty)
+                          Text("Día: $fecha"),
+
+                        if (hora.isNotEmpty)
+                          Text("Hora: $hora"),
+
                         Text("Descripción: ${a['description'] ?? ''}"),
                       ],
                     ),
