@@ -31,6 +31,15 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
       setState(() {
         appointments = result;
+        appointments.sort((a, b) {
+          final dateA = DateTime.tryParse(a['dateTime'] ?? '');
+          final dateB = DateTime.tryParse(b['dateTime'] ?? '');
+
+          if (dateA == null || dateB == null) return 0;
+
+          return dateA.compareTo(dateB);
+        });
+
         loading = false;
       });
     } catch (e) {
