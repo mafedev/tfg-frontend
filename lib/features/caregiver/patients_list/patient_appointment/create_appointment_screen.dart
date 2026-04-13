@@ -22,6 +22,8 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   bool isEditing = false;
   int? appointmentId;
 
+  DateTime? selectedDateTime;
+
   @override
   void initState() {
     super.initState();
@@ -36,11 +38,63 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       descriptionController.text = appt['description'] ?? '';
       locationController.text = appt['location'] ?? '';
       dateTimeController.text = appt['dateTime'] ?? '';
+
+      if (appt['dateTime'] != null) {
+        selectedDateTime = DateTime.parse(appt['dateTime']);
+      }
     }
   }
 
+  Future<void> _pickDateTime() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: selectedDateTime ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (date == null) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(
+        selectedDateTime ?? DateTime.now(),
+      ),
+    );
+
+    if (time == null) return;
+
+    final finalDateTime = DateTime(
+      date.year,
+      date.month,
+      date.day,
+      time.hour,
+      time.minute,
+    );
+
+    setState(() {
+      selectedDateTime = finalDateTime;
+
+      dateTimeController.text =
+          "${finalDateTime.day.toString().padLeft(2, '0')}/"
+          "${finalDateTime.month.toString().padLeft(2, '0')}/"
+          "${finalDateTime.year} "
+          "${finalDateTime.hour.toString().padLeft(2, '0')}:"
+          "${finalDateTime.minute.toString().padLeft(2, '0')}";
+    });
+  }
+
+
   void saveAppointment() async {
     bool success;
+
+    final formattedDate = selectedDateTime != null
+        ? "${selectedDateTime!.year.toString().padLeft(4, '0')}-"
+          "${selectedDateTime!.month.toString().padLeft(2, '0')}-"
+          "${selectedDateTime!.day.toString().padLeft(2, '0')}T"
+          "${selectedDateTime!.hour.toString().padLeft(2, '0')}:"
+          "${selectedDateTime!.minute.toString().padLeft(2, '0')}:00"
+        : dateTimeController.text;
 
     if (isEditing) {
       success = await service.updateAppointment(
@@ -48,21 +102,22 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         title: titleController.text,
         description: descriptionController.text,
         location: locationController.text,
-        dateTime: dateTimeController.text,
+        dateTime: formattedDate,
       );
     } else {
       success = await service.createAppointment(
         title: titleController.text,
         description: descriptionController.text,
         location: locationController.text,
-        dateTime: dateTimeController.text,
+        dateTime: formattedDate,
         patientId: widget.patientId,
       );
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(success ? "Cita creada" : "Error al crear cita")),
+      SnackBar(content: Text(success ? "Cita guardada" : "Error al guardar cita")),
     );
+    Navigator.pop(context);
   }
 
   @override
@@ -90,8 +145,11 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
 
             TextField(
               controller: dateTimeController,
+              readOnly: true,
+              onTap: _pickDateTime,
               decoration: const InputDecoration(
-                labelText: "Fecha (2026-04-15T10:30:00)",
+                labelText: "Fecha y hora",
+                suffixIcon: Icon(Icons.calendar_today),
               ),
             ),
 
