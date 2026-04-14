@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_appointment/create_appointment_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_appointment/view_appointment_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_appointment_service.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/patient_service.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/create_prescription_screen.dart';
@@ -36,6 +39,9 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   bool loadingMedication = true;
   bool hasMedication = false;
 
+  bool loadingAppointments = true;
+  bool hasAppointments = false;
+
   bool updatingPatient = false;
   
   // Servicio encargado de obtener los datos del paciente desde el backend
@@ -43,12 +49,15 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   // Servicio para obtener la rutina
   final RoutineService _routineService = RoutineService();
 
+  final AppointmentService _appointmentService = AppointmentService();
+
   @override
   void initState() {
     super.initState();
     _loadPatient();
     _checkRoutine(); // verifica si tiene rutina creada
     _checkMedication(); // verifica si tiene medicación asignada
+    _checkAppointments();
   }
 
   // ---------- Cargar paciente ----------
@@ -84,6 +93,21 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
       });
     } catch (e) {
       setState(() => loadingMedication = false);
+    }
+  }
+
+  void _checkAppointments() async {
+    try {
+      final result = await _appointmentService.getAppointmentsByPatient(
+        widget.patientId,
+      );
+
+      setState(() {
+        hasAppointments = result.isNotEmpty;
+        loadingAppointments = false;
+      });
+    } catch (e) {
+      setState(() => loadingAppointments = false);
     }
   }
 
@@ -314,6 +338,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                     // ---------- Botón prescripción ----------
                     _medicationButton(),
+
+                    // ---------- Botón citas ----------
+                    const SizedBox(height: 20),
+
+                    _appointmentButton()
                   ],
                 ),
               ),
@@ -395,6 +424,34 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                   ),
                 );
                 setState(() => loadingMedication = false);
+              },
+      ),
+    );
+  }
+
+  Widget _appointmentButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: loadingAppointments
+            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2,color: Colors.white))
+            : Icon(hasAppointments ? Icons.visibility : Icons.event, color: Colors.white),
+        label: Text(hasAppointments ? 'Ver citas' : 'Crear cita', style: const TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+        onPressed: loadingAppointments
+            ? null
+            : () async {
+                setState(() => loadingAppointments = true);
+
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => hasAppointments
+                        ? ViewAppointmentsScreen(patientId: patient!.id)
+                        : CreateAppointmentScreen(patientId: patient!.id),
+                  ),
+                );
+                _checkAppointments(); 
               },
       ),
     );

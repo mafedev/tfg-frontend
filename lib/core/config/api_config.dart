@@ -9,6 +9,7 @@ class ApiConfig {
   static const String relationsEndpoint = '$baseUrl/relations';
   static const String medicationsEndpoint = '$baseUrl/medications';
   static const String routineEndpoint = '$baseUrl/routine';
+  static const String appointmentEndpoint = '$baseUrl/appointments';
   
   // Endpoints para tracking
   static const String medicationTrackingEndpoint = '$patientsEndpoint/tracking';
