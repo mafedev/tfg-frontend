@@ -19,6 +19,8 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
   final service = AppointmentService();
 
+  DateTime? selectedDate;
+
   @override
   void initState() {
     super.initState();
@@ -61,8 +63,38 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     }
   }
 
+  Future<void> _pickFilterDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  List<dynamic> _filteredAppointments() {
+    if (selectedDate == null) return appointments;
+
+    return appointments.where((a) {
+      final date = DateTime.tryParse(a['dateTime'] ?? '');
+      if (date == null) return false;
+
+      return date.year == selectedDate!.year &&
+          date.month == selectedDate!.month &&
+          date.day == selectedDate!.day;
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final filtered = _filteredAppointments();
+
     return Scaffold(
       appBar: const AppLogoAppBar(
         title: 'Citas',
@@ -70,12 +102,36 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
-          : appointments.isEmpty
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: _pickFilterDate,
+                      ),
+                      const SizedBox(width: 10),
+
+                      if (selectedDate != null)
+                        TextButton(
+                          onPressed: () {
+                            setState(() => selectedDate = null);
+                          },
+                          child: const Text("Limpiar"),
+                        ),
+                    ],
+                  ),
+                ),
+
+        Expanded(
+          child: filtered.isEmpty
           ? const Center(child: Text("No hay citas"))
           : ListView.builder(
-              itemCount: appointments.length,
+              itemCount: filtered.length,
               itemBuilder: (context, index) {
-                final a = appointments[index];
+                final a = filtered[index];
 
                 DateTime? date;
                 if (a['dateTime'] != null) {
@@ -154,6 +210,9 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                   ),
                 );
               },
+                        ),
+                ),
+              ],
             ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.caregiverAccent,
