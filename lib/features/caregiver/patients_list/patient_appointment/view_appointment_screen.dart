@@ -59,7 +59,18 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Error eliminando cita: $e")));
+      ).showSnackBar(SnackBar(content: Text("Error eliminando cita")));
+    }
+  }
+
+  Future<void> _updateStatus(int id, String status) async {
+    try {
+      await service.updateStatus(id, status);
+      _loadAppointments();
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error actualizando estado")));
     }
   }
 
@@ -113,7 +124,6 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                         onPressed: _pickFilterDate,
                       ),
                       const SizedBox(width: 10),
-
                       if (selectedDate != null)
                         TextButton(
                           onPressed: () {
@@ -133,10 +143,9 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
               itemBuilder: (context, index) {
                 final a = filtered[index];
 
-                DateTime? date;
-                if (a['dateTime'] != null) {
-                  date = DateTime.tryParse(a['dateTime']);
-                }
+                DateTime? date = DateTime.tryParse(
+                  a['dateTime'] ?? '',
+                );
 
                 String fecha = '';
                 String hora = '';
@@ -151,6 +160,8 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                       "${date.hour.toString().padLeft(2, '0')}:"
                       "${date.minute.toString().padLeft(2, '0')}";
                 }
+
+                final status = a['status'] ?? 'PENDING';
 
                 return Card(
                   margin: const EdgeInsets.symmetric(
@@ -171,12 +182,20 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                           Text("Hora: $hora"),
 
                         Text("Descripción: ${a['description'] ?? ''}"),
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          "Estado: $status",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
 
                     trailing: PopupMenuButton<String>(
                       onSelected: (value) async {
-                        
                         if (value == 'edit') {
                           await Navigator.push(
                             context,
@@ -195,6 +214,13 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                         if (value == 'delete') {
                           _deleteAppointment(a['id']);
                         }
+
+                        if (value == 'PENDING' ||
+                            value == 'ATTENDED' ||
+                            value == 'MISSED' ||
+                            value == 'CANCELLED') {
+                          _updateStatus(a['id'], value);
+                        }
                       },
                       itemBuilder: (context) => [
                         const PopupMenuItem(
@@ -204,6 +230,23 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                         const PopupMenuItem(
                           value: 'delete',
                           child: Text('Eliminar'),
+                        ),
+                        PopupMenuDivider(),
+                        PopupMenuItem(
+                          value: 'PENDING',
+                          child: Text('Pendiente'),
+                        ),
+                        PopupMenuItem(
+                          value: 'ATTENDED',
+                          child: Text('Asistió'),
+                        ),
+                        PopupMenuItem(
+                          value: 'MISSED',
+                          child: Text('No asistió'),
+                        ),
+                        PopupMenuItem(
+                          value: 'CANCELLED',
+                          child: Text('Cancelada'),
                         ),
                       ],
                     ),

@@ -102,4 +102,21 @@ class AppointmentService {
 
     return response.statusCode == 200;
   }
+
+  Future<void> updateStatus(int id, String status) async {
+    final response = await http.patch(
+      Uri.parse(
+        'http://10.0.2.2:8080/api/appointments/$id/status?status=$status',
+      ),
+      headers: {
+        'Authorization': 'Bearer ${await SecureStorageService().getToken()}',
+      },
+    );
+
+    print("UPDATE STATUS -> ${response.statusCode}");
+
+    if (response.statusCode != 200) {
+      throw Exception("Error actualizando estado");
+    }
+  }
 }
