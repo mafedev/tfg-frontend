@@ -74,6 +74,18 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     }
   }
 
+  Widget _buildStatusChip(dynamic appointment, String value, String label) {
+    final isSelected = appointment['status'] == value;
+
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) {
+        _updateStatus(appointment['id'], value);
+      },
+    );
+  }
+
   Future<void> _pickFilterDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -161,8 +173,6 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                       "${date.minute.toString().padLeft(2, '0')}";
                 }
 
-                final status = a['status'] ?? 'PENDING';
-
                 return Card(
                   margin: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -183,13 +193,20 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
                         Text("Descripción: ${a['description'] ?? ''}"),
 
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
 
-                        Text(
-                          "Estado: $status",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Wrap(
+                          spacing: 8,
+                          children: [
+                            _buildStatusChip(
+                                a, 'PENDING', 'Pendiente'),
+                            _buildStatusChip(
+                                a, 'ATTENDED', 'Asistió'),
+                            _buildStatusChip(
+                                a, 'MISSED', 'No asistió'),
+                            _buildStatusChip(
+                                a, 'CANCELLED', 'Cancelada'),
+                          ],
                         ),
                       ],
                     ),
@@ -214,13 +231,6 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                         if (value == 'delete') {
                           _deleteAppointment(a['id']);
                         }
-
-                        if (value == 'PENDING' ||
-                            value == 'ATTENDED' ||
-                            value == 'MISSED' ||
-                            value == 'CANCELLED') {
-                          _updateStatus(a['id'], value);
-                        }
                       },
                       itemBuilder: (context) => [
                         const PopupMenuItem(
@@ -230,23 +240,6 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                         const PopupMenuItem(
                           value: 'delete',
                           child: Text('Eliminar'),
-                        ),
-                        PopupMenuDivider(),
-                        PopupMenuItem(
-                          value: 'PENDING',
-                          child: Text('Pendiente'),
-                        ),
-                        PopupMenuItem(
-                          value: 'ATTENDED',
-                          child: Text('Asistió'),
-                        ),
-                        PopupMenuItem(
-                          value: 'MISSED',
-                          child: Text('No asistió'),
-                        ),
-                        PopupMenuItem(
-                          value: 'CANCELLED',
-                          child: Text('Cancelada'),
                         ),
                       ],
                     ),
