@@ -31,7 +31,11 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
       final result = await CaregiverPrescriptionService().getByPatient(widget.patientId);
 
       setState(() {
-        medications = result; // guarda la medicación obtenida
+        medications = result.where((med) {
+          final status = med['status'] ?? 'ACTIVE';
+          return status != 'CANCELLED';
+        }).toList();
+
         loading = false; // deja de cargar
       });
     } catch (e) {
