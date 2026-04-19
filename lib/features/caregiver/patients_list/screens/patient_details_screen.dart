@@ -13,6 +13,7 @@ import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/models/patient.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/core/enums/disease_stage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -117,7 +118,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
     final phoneController = TextEditingController(text: patient!.phone);
     final notesController = TextEditingController(text: patient!.notes);
-    String? diseaseStage = patient!.diseaseStage;
+    DiseaseStage? diseaseStage = patient!.diseaseStage;
 
     final _formKey = GlobalKey<FormState>();
 
@@ -164,15 +165,15 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                   const SizedBox(height: 16),
 
-                  DropdownButtonFormField<String>(
+                  DropdownButtonFormField<DiseaseStage>(
                     value: diseaseStage,
                     decoration: const InputDecoration(
                       labelText: 'Etapa de la enfermedad',
                       prefixIcon: Icon(Icons.face),
                       border: OutlineInputBorder(),
                     ),
-                    items: ['EARLY', 'MODERATE', 'ADVANCED']
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    items: DiseaseStage.values
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
                         .toList(),
                     onChanged: (value) {
                       setDialogState(() {
@@ -219,7 +220,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   }
 
   // ------------------- Llamada al servicio para actualizar -------------------
-  Future<void> _updatePatient(String phone, String notes, String? diseaseStage) async {
+  Future<void> _updatePatient(String phone, String notes, DiseaseStage? diseaseStage) async {
     final token = await SecureStorageService().getToken();
     final response = await http.put(
       Uri.parse('http://10.0.2.2:8080/api/patients/${patient!.id}'),
@@ -227,7 +228,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
       body: json.encode({
         'phone': phone,
         'notes': notes,
-        'diseaseStage': diseaseStage,
+        'diseaseStage': diseaseStage?.name,
       }),
     );
 
@@ -313,7 +314,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                     // ---------- Información del paciente ----------
                     _infoText('Teléfono', patient!.phone),
-                    _infoText('Estado de la enfermedad', patient!.diseaseStage),
+                    _infoText('Estado de la enfermedad', patient!.diseaseStage?.name),
                     _infoText('Notas', patient!.notes),
                     const SizedBox(height: 20),
 

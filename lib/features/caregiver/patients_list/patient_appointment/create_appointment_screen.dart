@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_appointment_service.dart';
+import 'package:tfg_frontend/models/appointment/appointment_request.dart';
+import 'package:tfg_frontend/models/appointment/appointment_response.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
   final int patientId;
-  final Map<String, dynamic>? existingAppointment;
+  final AppointmentResponse? existingAppointment;
 
   const CreateAppointmentScreen({super.key, required this.patientId, this.existingAppointment});
 
@@ -32,16 +34,20 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       final appt = widget.existingAppointment!;
 
       isEditing = true;
-      appointmentId = appt['id'];
+      appointmentId = appt.id;
 
-      titleController.text = appt['title'] ?? '';
-      descriptionController.text = appt['description'] ?? '';
-      locationController.text = appt['location'] ?? '';
-      dateTimeController.text = appt['dateTime'] ?? '';
+      titleController.text = appt.title;
+      descriptionController.text = appt.description;
+      locationController.text = appt.location;
 
-      if (appt['dateTime'] != null) {
-        selectedDateTime = DateTime.parse(appt['dateTime']);
-      }
+      selectedDateTime = appt.dateTime;
+      final dt = selectedDateTime!;
+      dateTimeController.text =
+          "${dt.day.toString().padLeft(2, '0')}/"
+          "${dt.month.toString().padLeft(2, '0')}/"
+          "${dt.year} "
+          "${dt.hour.toString().padLeft(2, '0')}:"
+          "${dt.minute.toString().padLeft(2, '0')}";
     }
   }
 
@@ -86,32 +92,27 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
 
 
   void saveAppointment() async {
-    bool success;
+    bool success = false;
 
-    final formattedDate = selectedDateTime != null
-        ? "${selectedDateTime!.year.toString().padLeft(4, '0')}-"
-          "${selectedDateTime!.month.toString().padLeft(2, '0')}-"
-          "${selectedDateTime!.day.toString().padLeft(2, '0')}T"
-          "${selectedDateTime!.hour.toString().padLeft(2, '0')}:"
-          "${selectedDateTime!.minute.toString().padLeft(2, '0')}:00"
-        : dateTimeController.text;
+    final DateTime dateTime = selectedDateTime ??
+        DateTime.tryParse(dateTimeController.text) ??
+        DateTime.now();
+
+    final request = AppointmentRequest(
+      title: titleController.text,
+      description: descriptionController.text,
+      location: locationController.text,
+      dateTime: dateTime,
+      patientId: widget.patientId,
+    );
 
     if (isEditing) {
       success = await service.updateAppointment(
         id: appointmentId!,
-        title: titleController.text,
-        description: descriptionController.text,
-        location: locationController.text,
-        dateTime: formattedDate,
+        request: request,
       );
     } else {
-      success = await service.createAppointment(
-        title: titleController.text,
-        description: descriptionController.text,
-        location: locationController.text,
-        dateTime: formattedDate,
-        patientId: widget.patientId,
-      );
+      success = await service.createAppointment(request);
     }
 
     ScaffoldMessenger.of(context).showSnackBar(

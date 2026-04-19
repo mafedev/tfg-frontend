@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
-import 'package:tfg_frontend/core/enums/prescription.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/models/medication/prescription_request.dart';
 
 class CaregiverPrescriptionService {
   static const String _baseUrl = ApiConfig.prescriptionsEndpoint;
@@ -10,35 +10,9 @@ class CaregiverPrescriptionService {
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ---------- Crear prescripción ----------
-  Future<void> createPrescription({
-    required int patientId,
-    required int medicationId,
-    required double dose,
-    required DoseUnit doseUnit,
-    int? frequencyHours,
-    String? startDate,
-    String? endDate,
-    String? firstDoseTime,
-    List<int>? daysOfWeek,
-    String? notes,
-    String? status,
-  }) async {
+  Future<void> createPrescription(PrescriptionRequest request) async {
     final token = await _secureStorageService.getToken();
     if (token == null) throw Exception('Token no disponible');
-
-    final body = {
-      'patientId': patientId,
-      'medicationId': medicationId,
-      'dose': dose,
-      'doseUnit': doseUnit.name,
-      'frequencyHours': frequencyHours,
-      'startDate': startDate,
-      'endDate': endDate,
-      'firstDoseTime': firstDoseTime,
-      'daysOfWeek': daysOfWeek != null ? _daysToApi(daysOfWeek) : null,
-      'notes': notes,
-      'status': status ?? 'ACTIVE',
-    };
 
     final response = await http.post(
       Uri.parse(_baseUrl),
@@ -46,7 +20,7 @@ class CaregiverPrescriptionService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(body),
+      body: jsonEncode(request.toJson()),
     );
 
     if (response.statusCode != 200) {
@@ -93,34 +67,10 @@ class CaregiverPrescriptionService {
   // ---------- Actualizar prescripción ----------
   Future<void> updatePrescription({
     required int prescriptionId,
-    required int patientId,
-    required int medicationId,
-    required double dose,
-    required DoseUnit doseUnit,
-    int? frequencyHours,
-    String? startDate,
-    String? endDate,
-    String? firstDoseTime,
-    List<int>? daysOfWeek,
-    String? notes,
-    String? status,
+    required PrescriptionRequest request,
   }) async {
     final token = await _secureStorageService.getToken();
     if (token == null) throw Exception('Token no disponible');
-
-    final body = {
-      'patientId': patientId,
-      'medicationId': medicationId,
-      'dose': dose,
-      'doseUnit': doseUnit.name,
-      'frequencyHours': frequencyHours,
-      'startDate': startDate,
-      'endDate': endDate,
-      'firstDoseTime': firstDoseTime,
-      'daysOfWeek': daysOfWeek != null ? _daysToApi(daysOfWeek) : null,
-      'notes': notes,
-      'status': status ?? 'ACTIVE',
-    };
 
     final response = await http.put(
       Uri.parse('$_baseUrl/$prescriptionId'),
@@ -128,35 +78,11 @@ class CaregiverPrescriptionService {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(body),
+      body: jsonEncode(request.toJson()),
     );
 
     if (response.statusCode != 200) {
       throw Exception('Error al actualizar prescripción: ${response.body}');
     }
-  }
-
-  // ---------- Convertir días a formato API ----------
-  List<String> _daysToApi(List<int> days) {
-    return days.map((d) {
-      switch (d) {
-        case 1:
-          return 'MONDAY';
-        case 2:
-          return 'TUESDAY';
-        case 3:
-          return 'WEDNESDAY';
-        case 4:
-          return 'THURSDAY';
-        case 5:
-          return 'FRIDAY';
-        case 6:
-          return 'SATURDAY';
-        case 7:
-          return 'SUNDAY';
-        default:
-          throw Exception('Día inválido');
-      }
-    }).toList();
   }
 }

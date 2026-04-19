@@ -6,6 +6,7 @@ import 'package:tfg_frontend/features/navigation/navbar_caregiver.dart';
 import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/enums/user_role.dart';
+import 'package:tfg_frontend/models/user/login_response.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -190,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {// valida el formulario
       final authService = AuthService();
-      final userData = await authService.login( // llama el método de login del servicio de autenticación
+      final LoginResponse? userData = await authService.login(
         emailController.text,
         passwordController.text,
       );
@@ -198,16 +199,14 @@ class _LoginScreenState extends State<LoginScreen> {
       // Si el login es exitoso, userData contendrá los datos del usuario
       if (userData != null) {
         final storage = SecureStorageService();
-        await storage.saveToken(userData['token']); // guarda el token de autenticación de forma segura
+        await storage.saveToken(userData.token);
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Inicio de sesión correcto')), // muestra un mensaje de éxito
         );
 
-
-        // Navega a la pantalla según el rol del usuario        
-        String roleString = userData['role'];
-        UserRole userRole = UserRole.values.firstWhere(
+        final String roleString = userData.role;
+        final UserRole userRole = UserRole.values.firstWhere(
           (role) => role.name == roleString,
           orElse: () => UserRole.PATIENT,
         );
