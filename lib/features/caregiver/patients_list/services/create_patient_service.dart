@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
+import 'package:tfg_frontend/core/enums/disease_stage.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class PatientService {
@@ -9,7 +10,7 @@ class PatientService {
   Future<void> createPatientWithoutUser(
     String name,
     String phone,
-    String diseaseStage,
+    DiseaseStage diseaseStage,
     String notes,
   ) async {
     final token = await SecureStorageService().getToken();
@@ -23,7 +24,7 @@ class PatientService {
       body: json.encode({
         'name': name,
         'phone': phone,
-        'diseaseStage': diseaseStage,
+        'diseaseStage': diseaseStage.name,
         'notes': notes,
       }),
     );
