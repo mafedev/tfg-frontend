@@ -5,6 +5,7 @@ import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_medication_service.dart';
 import 'package:tfg_frontend/core/enums/prescription.dart';
 import 'package:tfg_frontend/models/medication/prescription_request.dart';
+import 'package:tfg_frontend/models/medication/medication_response.dart';
 
 class CreatePrescriptionScreen extends StatefulWidget {
   final int patientId; // id del paciente
@@ -26,12 +27,10 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
   TimeOfDay? selectedHour;
   DateTime? startDate;
   DateTime? endDate;
-  List<int> selectedDays = [];
-
   // Lista de medicamentos obtenidos del servicio
-  List<dynamic> medications = [];
+  List<MedicationResponse> medications = [];
+  MedicationResponse? selectedMedication;
 
-  dynamic selectedMedication; // medicamento seleccionado en el Dropdown
   String selectedStatus = 'ACTIVE'; // estado seleccionado en el Dropdown, por defecto 'ACTIVE'
 
   DoseUnit? selectedDoseUnit; // unidad de dosis seleccionada en el Dropdown
@@ -61,18 +60,18 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         medications = loadedMedications; // guarda la lista de medicamentos
         // Si hay medicamentos y no se ha seleccionado ninguno, selecciona el primero
         if (medications.isNotEmpty && selectedMedication == null) {
-          selectedMedication = medications[0];
+          selectedMedication = medications.first;
         }
       });
 
       // Si se está editando una rutina existente, carga sus datos
       if (widget.existingPrescription != null) {
         final sched = widget.existingPrescription!; // datos de la rutina existente
-        prescriptionId = sched['id'] as int?; // guarda el id de la prescripción para futuras actualizaciones
+        prescriptionId = sched['id']; // guarda el id de la prescripción para futuras actualizaciones
         _dose.text = sched['dose'].toString(); // carga la dosis en el TextField
         _frequency.text = sched['frequencyHours']?.toString() ?? ''; // carga la frecuencia en el TextField, si existe
         _notes.text = sched['notes']?.toString() ?? ''; // carga las notas en el TextField, si existen
-        selectedStatus = sched['status']?.toString() ?? 'ACTIVE'; // carga el estado, si existe, o deja 'ACTIVE' por defecto
+        selectedStatus = sched['status'] ?? 'ACTIVE'; // carga el estado, si existe, o deja 'ACTIVE' por defecto
         startDate = sched['startDate'] != null ? DateTime.parse(sched['startDate']) : null; // carga la fecha de inicio, si existe
         endDate = sched['endDate'] != null ? DateTime.parse(sched['endDate']) : null; // carga la fecha de fin, si existe
         
@@ -87,12 +86,12 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         final medicationId = sched['medication']['id'];
         
         selectedMedication = medications.firstWhere(
-          (m) => (m['id'] as int?) == medicationId,
-          orElse: () => null,
+          (m) => m.id == medicationId,
+          orElse: () => medications.first,
         );
         
         // carga la unidad de dosis seleccionada, comparando por nombre (por ejemplo, 'MG', 'ML', etc.)
-        final doseUnitStr = sched['doseUnit']?.toString() ?? 'MG';
+        final doseUnitStr = sched['doseUnit'] ?? 'MG';
         selectedDoseUnit = DoseUnit.values.firstWhere(
           (u) => u.name.toUpperCase() == doseUnitStr.toUpperCase(),
           orElse: () => DoseUnit.MG,
@@ -125,7 +124,7 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
     try {
       final request = PrescriptionRequest(
         patientId: widget.patientId,
-        medicationId: selectedMedication['id'],
+        medicationId: selectedMedication!.id,
         dose: double.parse(_dose.text),
         doseUnit: selectedDoseUnit!,
         frequencyHours: _frequency.text.isNotEmpty ? int.parse(_frequency.text) : null,
@@ -153,7 +152,9 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       appBar: AppLogoAppBar(
@@ -165,10 +166,10 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         child: Column(
           children: [
             // ---------- Selector de medicamento ----------
-            DropdownButtonFormField(
+            DropdownButtonFormField<MedicationResponse>(
               value: selectedMedication,
               hint: const Text('Selecciona un medicamento'),
-              items: medications.map((m) => DropdownMenuItem(value: m, child: Text(m['name']))).toList(),
+              items: medications.map((m) => DropdownMenuItem(value: m, child: Text(m.name))).toList(),
               onChanged: (value) => setState(() => selectedMedication = value),
             ),
             const SizedBox(height: 12),
@@ -202,7 +203,9 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
             ElevatedButton(
               onPressed: () async {
                 final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                if (picked != null) setState(() => selectedHour = picked);
+                if (picked != null) {
+                  setState(() => selectedHour = picked);
+                }
               },
               child: Text(selectedHour == null ? 'Seleccionar primera dosis' : 'Primera dosis: ${selectedHour!.format(context)}'),
             ),
@@ -217,9 +220,11 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
-                if (picked != null) setState(() => startDate = picked);
+                if (picked != null) {
+                  setState(() => startDate = picked);
+                }
               },
-              child: Text(startDate == null ? 'Seleccionar fecha inicio' : 'Inicio: ${startDate!.toIso8601String().split('T')[0]}'),
+              child: Text(startDate == null ? 'Fecha inicio' : 'Inicio: ${startDate!.toIso8601String().split('T')[0]}'),
             ),
             const SizedBox(height: 12),
 
@@ -232,9 +237,11 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
-                if (picked != null) setState(() => endDate = picked);
+                if (picked != null) {
+                  setState(() => endDate = picked);
+                }
               },
-              child: Text(endDate == null ? 'Seleccionar fecha fin' : 'Fin: ${endDate!.toIso8601String().split('T')[0]}'),
+              child: Text(endDate == null ? 'Fecha fin' : 'Fin: ${endDate!.toIso8601String().split('T')[0]}'),
             ),
             const SizedBox(height: 12),
 
