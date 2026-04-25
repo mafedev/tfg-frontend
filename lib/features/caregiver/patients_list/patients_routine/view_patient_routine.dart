@@ -3,6 +3,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/create_routine_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
+import 'package:tfg_frontend/models/routine.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente cuya rutina se va a ver
@@ -16,9 +17,7 @@ class ViewRoutineScreen extends StatefulWidget {
 class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   // Servicio para obtener y manipular la rutina
   final RoutineService _routineService = RoutineService();
-
-  Map<String, dynamic>? routine; // contiene la rutina obtenida
-  Map<String, dynamic>? tracking; // contiene el tracking obtenido
+  Routine? routine; // contiene la rutina obtenida
   bool loading = true; // indica si se está cargando la rutina
 
   // Cuando se inicia la pantalla, carga la rutina
@@ -26,14 +25,28 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   void initState() {
     super.initState();
     _loadRoutine();
-    _loadTracking();
   }
 
   // -------------------- Carga rutina --------------------
   Future<void> _loadRoutine() async {
     try {
-      routine = await _routineService.getRoutine(widget.patientId); // obtiene la rutina
-    } catch (e) {
+      final data = await _routineService.getRoutine(widget.patientId);
+
+      if (data == null) {
+        setState(() {
+          routine = null;
+          loading = false;
+        });
+        return;
+      }
+
+      setState(() {
+        routine = Routine.fromJson(data);
+      });
+    } catch (e, stack) {
+      setState(() {
+        routine = null;
+      });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al cargar rutina')));
     } finally {
       setState(() => loading = false); // indica que ya no está cargando
@@ -58,7 +71,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     if (confirm != true) return; // si cancela, no hace nada
 
     try {
-      await _routineService.deleteRoutine(widget.patientId); // llama al DELETE del backend
+      // await _routineService.deleteRoutine(widget.patientId); // llama al DELETE del backend
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rutina eliminada')));
       setState(() => routine = null); // actualiza estado para reflejar eliminación
     } catch (e) {
@@ -69,7 +82,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   // -------------------- Carga tracking --------------------
   Future<void> _loadTracking() async {
     try {
-      tracking = await _routineService.getTodayTracking(widget.patientId);
+      // tracking = await _routineService.getTodayTracking(widget.patientId);
       setState(() {}); // recarga la interfaz
     } catch (e) {
       ScaffoldMessenger.of(
@@ -81,13 +94,13 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   // -------------------- Marcar como hecho --------------------
   Future<void> _toggleTrackingItem(String key) async {
     try {
-      final currentValue = tracking?[key] ?? false;
-      await _routineService.updateRoutineItem(
-        patientId: widget.patientId,
-        item: key.replaceAll('Done', '').toLowerCase(),
-        done: !currentValue,
-      );
-      await _loadTracking(); // recarga la interfaz
+      // final currentValue = tracking?[key] ?? false;
+      // // await _routineService.updateRoutineItem(
+      //   patientId: widget.patientId,
+      //   item: key.replaceAll('Done', '').toLowerCase(),
+      //   done: !currentValue,
+      // );
+      // await _loadTracking(); // recarga la interfaz
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -96,14 +109,13 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   }
 
   // -------------------- Checkbox item --------------------
-  Widget _trackingItem(String label, String key) {
-    final value = tracking?[key] ?? false;
+  Widget _trackingItem(String label, int? itemId) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
           Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
-          Checkbox(value: value, onChanged: (_) => _toggleTrackingItem(key)),
+          // Checkbox(value: value, onChanged: (_) => _toggleTrackingItem(key)),
         ],
       ),
     );
@@ -181,54 +193,20 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         padding: const EdgeInsets.all(18),
         child: routine == null
             ? const Center(child: Text('No hay rutina asignada'))
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                // ---------- Muestra los horarios de la rutina ----------
+            : ListView(
                 children: [
-                  // ----------- COMIDAS -----------
-                  _sectionCard(
-                    children: [
-                      _sectionTitle('Comidas', Icons.restaurant),
-                      const SizedBox(height: 12),
+                  _sectionTitle('Actividades', Icons.list),
+                  const SizedBox(height: 12),
 
-                      _trackingItem(
-                        'Desayuno - ${formatTime(routine!['breakfastTime'])}',
-                        'breakfastDone',
+                  ...routine!.items.map((item) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(item.name),
+                        subtitle: Text(item.time),
+                        trailing: Text(item.type),
                       ),
-
-                      _trackingItem(
-                        'Almuerzo - ${formatTime(routine!['lunchTime'])}',
-                        'lunchDone',
-                      ),
-
-                      _trackingItem(
-                        'Cena - ${formatTime(routine!['dinnerTime'])}',
-                        'dinnerDone',
-                      ),
-                    ],
-                  ),
-
-                  // ----------- HIDRATACIÓN -----------
-                  _sectionCard(
-                    children: [
-                      _sectionTitle('Hidratación', Icons.water_drop),
-                      const SizedBox(height: 12),
-                      _trackingItem('Hidratación realizada', 'hydrationDone'),
-                    ],
-                  ),
-
-                  // ----------- ASEO -----------
-                  _sectionCard(
-                    children: [
-                      _sectionTitle('Aseo', Icons.bathtub),
-                      const SizedBox(height: 12),
-
-                      _trackingItem(
-                        'Baño - ${formatTime(routine!['bathTime'])}',
-                        'bathDone',
-                      ),
-                    ],
-                  ),
+                    );
+                  }),
 
                   const SizedBox(height: 50),
 

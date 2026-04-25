@@ -1,51 +1,67 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class RoutineService {
-  static const String _routineUrl = ApiConfig.routineEndpoint;
-  static const String _trackingUrl = ApiConfig.routineTrackingEndpoint;
+  final String _routineUrl = ApiConfig.routineEndpoint;
+  final String _itemsUrl = ApiConfig.routineEndpoint + "/items";
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ------------- Crear rutina -------------
   // Crea una nueva rutina para un paciente
-  Future<void> createRoutine({
-    required int patientId,
-    required String breakfastTime,
-    required String lunchTime,
-    required String dinnerTime,
-    required String bathTime,
-    required bool hydrationEnabled,
-    required int hydrationReminderHours,
-  }) async {
-    // Obtener el token del almacenamiento seguro
+  Future<int> createRoutine(int patientId) async {
     final token = await _secureStorageService.getToken();
     if (token == null) {
-      throw Exception('Token no disponible. Por favor inicia sesión.');
+      throw Exception('Token no disponible');
     }
 
-    // hace la petición POST al backend
     final response = await http.post(
-      Uri.parse('$_routineUrl/$patientId'), // Endpoint para crear rutina
+      Uri.parse('$_routineUrl/$patientId'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode({
-        'breakfastTime': breakfastTime,
-        'lunchTime': lunchTime,
-        'dinnerTime': dinnerTime,
-        'bathTime': bathTime,
-        'hydrationEnabled': hydrationEnabled,
-        'hydrationReminderHours': hydrationReminderHours,
-      }),
     );
 
-    if (response.statusCode != 200) {
-      log('Error creando rutina: ${response.statusCode}');
-      throw Exception('Error al crear rutina');
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+
+      if (data == null || data['id'] == null) {
+        throw Exception("Respuesta inválida del backend");
+      }
+
+      return data['id'];
+    }
+
+    throw Exception('Error creando rutina: ${response.body}');
+  }
+
+  // ---------------- Crear item ----------------
+  Future<void> createItem({
+    required int routineId,
+    required String name,
+    required String time,
+    required String type,
+  }) async {
+    // Obtener el token del almacenamiento seguro
+    final token = await _secureStorageService.getToken();
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    // hace la petición POST al backend
+    final response = await http.post(
+      Uri.parse('$_itemsUrl/$routineId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({"name": name, "time": time, "type": type}),
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Error creando item: ${response.body}');
     }
   }
 
@@ -69,102 +85,6 @@ class RoutineService {
       return null; // no hay rutina
     }
 
-    throw Exception('Error al obtener rutina');
-  }
-
-  // ---------- Editar rutina ----------
-  Future<void> updateRoutine({
-    required int patientId,
-    required String breakfastTime,
-    required String lunchTime,
-    required String dinnerTime,
-    required String bathTime,
-    required bool hydrationEnabled,
-    required int hydrationReminderHours,
-  }) async {
-    final token = await _secureStorageService.getToken();
-
-    final response = await http.put(
-      Uri.parse('$_routineUrl/$patientId'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', // Agregar token de autenticación
-      },
-      // cuerpo de la petición con los datos de la rutina
-      body: jsonEncode({
-        'breakfastTime': breakfastTime,
-        'lunchTime': lunchTime,
-        'dinnerTime': dinnerTime,
-        'bathTime': bathTime,
-        'hydrationEnabled': hydrationEnabled,
-        'hydrationReminderHours': hydrationReminderHours,
-      }),
-    );
-
-    // Si la respuesta no es 200, lanza una excepción
-    if (response.statusCode != 200) {
-      log('Error response status: ${response.statusCode}');
-      log('Error body: ${response.body}');
-      throw Exception('Error: ${response.statusCode} - ${response.body}');
-    }
-  }
-
-  // ------------- Eliminar rutina -------------
-  Future<void> deleteRoutine(int patientId) async {
-    final token = await _secureStorageService.getToken();
-    if (token == null) throw Exception('Token no disponible');
-
-    final response = await http.delete(
-      Uri.parse('$_routineUrl/$patientId'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    if (response.statusCode != 200) {
-      log('Error response status: ${response.statusCode}');
-      log('Error body: ${response.body}');
-      throw Exception('Error: ${response.statusCode} - ${response.body}');
-    }
-  }
-
-  // ---------- Obtener tracking de hoy ----------
-  Future<Map<String, dynamic>> getTodayTracking(int patientId) async {
-    final token = await _secureStorageService.getToken();
-    if (token == null) throw Exception('Token no disponible');
-
-    final response = await http.get(
-      Uri.parse('$_trackingUrl/today/$patientId'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Error al obtener tracking: ${response.statusCode}');
-    }
-  }
-
-  // ---------- Actualizar cualquier item de la rutina ----------
-  Future<void> updateRoutineItem({
-    required int patientId,
-    required String item, // "breakfast", "lunch", "dinner", "bath", "hydration"
-    required bool done,
-  }) async {
-    final token = await _secureStorageService.getToken();
-    if (token == null) throw Exception('Token no disponible');
-
-    final url = Uri.parse(
-      '$_trackingUrl/$patientId/$item?done=$done',
-    );
-    final res = await http.put(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (res.statusCode != 200) {
-      throw Exception('Error al marcar $item: ${res.statusCode}');
-    }
+    throw Exception('Error obteniendo rutina: ${response.body}');
   }
 }
