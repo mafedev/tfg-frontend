@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer';
+
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
@@ -6,6 +8,8 @@ import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 class RoutineService {
   final String _routineUrl = ApiConfig.routineEndpoint;
   final String _itemsUrl = ApiConfig.routineEndpoint + "/items";
+  final String _trackingUrl = ApiConfig.routineEndpoint + "/tracking";
+
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ------------- Crear rutina -------------
@@ -86,5 +90,39 @@ class RoutineService {
     }
 
     throw Exception('Error obteniendo rutina: ${response.body}');
+  }
+
+  // ---------- Tracking ----------
+  Future<List<Map<String, dynamic>>> getTracking(int patientId) async {
+    final token = await _secureStorageService.getToken();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+
+    final response = await http.get(
+      Uri.parse('$_trackingUrl/$patientId?date=$today'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    final data = jsonDecode(response.body);
+
+    return List<Map<String, dynamic>>.from(data);
+  }
+
+  // ---------- Cambiar estado rutina ----------
+  Future<void> updateTrackingStatus({
+    required int trackingId,
+    required String status,
+  }) async {
+    final token = await _secureStorageService.getToken();
+
+    final url = Uri.parse('$_trackingUrl/$trackingId?status=$status');
+
+    final response = await http.put(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error actualizando tracking');
+    }
   }
 }
