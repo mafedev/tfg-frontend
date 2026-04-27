@@ -1,22 +1,26 @@
 class RoutineItem {
   final int id;
-  final String name;
-  final String time;
-  final String type;
+  String name;
+  String? time;
+  String type;
 
   RoutineItem({
     required this.id,
     required this.name,
-    required this.time,
+    this.time,
     required this.type,
   });
 
   factory RoutineItem.fromJson(Map<String, dynamic> json) {
     return RoutineItem(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      time: json['time'] ?? '',
-      type: json['type'] ?? '',
+      id: json['id'],
+      name: json['name'],
+      time: json['time'],
+      type: json['type'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'time': time, 'type': type};
   }
 }

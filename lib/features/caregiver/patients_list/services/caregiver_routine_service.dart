@@ -1,14 +1,12 @@
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class RoutineService {
   final String _routineUrl = ApiConfig.routineEndpoint;
-  final String _itemsUrl = ApiConfig.routineEndpoint + "/items";
-  final String _trackingUrl = ApiConfig.routineEndpoint + "/tracking";
+  final String _itemsUrl = "${ApiConfig.routineEndpoint}/items";
+  final String _trackingUrl = "${ApiConfig.routineEndpoint}/tracking";
 
   final SecureStorageService _secureStorageService = SecureStorageService();
 
@@ -27,19 +25,15 @@ class RoutineService {
         'Authorization': 'Bearer $token',
       },
     );
+    final data = jsonDecode(response.body);
 
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-
-      if (data == null || data['id'] == null) {
-        throw Exception("Respuesta inválida del backend");
-      }
-
-      return data['id'];
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception("Error creando rutina");
     }
 
-    throw Exception('Error creando rutina: ${response.body}');
+    return data['id'];
   }
+
 
   // ---------------- Crear item ----------------
   Future<void> createItem({
@@ -102,9 +96,7 @@ class RoutineService {
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    final data = jsonDecode(response.body);
-
-    return List<Map<String, dynamic>>.from(data);
+    return List<Map<String, dynamic>>.from(jsonDecode(response.body));
   }
 
   // ---------- Cambiar estado rutina ----------
@@ -114,15 +106,85 @@ class RoutineService {
   }) async {
     final token = await _secureStorageService.getToken();
 
-    final url = Uri.parse('$_trackingUrl/$trackingId?status=$status');
-
     final response = await http.put(
-      url,
+      Uri.parse('$_trackingUrl/$trackingId?status=$status'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode != 200) {
       throw Exception('Error actualizando tracking');
+    }
+  }
+
+  // ---------- Editar rutina ----------
+  Future<void> updateRoutine(
+    int routineId,
+    List<Map<String, dynamic>> items,
+  ) async {
+    final token = await _secureStorageService.getToken();
+
+    final response = await http.put(
+      Uri.parse('$_routineUrl/$routineId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({"items": items}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Error actualizando rutina");
+    }
+  }
+
+  // ---------- Editar item de rutina ----------
+  Future<void> updateItem({
+    required int itemId,
+    required String name,
+    required String time,
+    required String type,
+  }) async {
+    final token = await _secureStorageService.getToken();
+
+    final response = await http.put(
+      Uri.parse('$_itemsUrl/$itemId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({"name": name, "time": time, "type": type}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception("Error actualizando item");
+    }
+  }
+  
+  // ---------- Borrar rutina ----------
+  Future<void> deleteRoutine(int patientId) async {
+    final token = await _secureStorageService.getToken();
+
+    final response = await http.delete(
+      Uri.parse('$_routineUrl/$patientId'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception("Error eliminando rutina");
+    }
+  }
+
+  // ---------- Borrar item de rutina ----------
+  Future<void> deleteItem(int itemId) async {
+    final token = await _secureStorageService.getToken();
+
+    final response = await http.delete(
+      Uri.parse('$_itemsUrl/$itemId'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      throw Exception("Error eliminando item");
     }
   }
 }

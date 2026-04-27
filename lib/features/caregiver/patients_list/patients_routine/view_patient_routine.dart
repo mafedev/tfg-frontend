@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/enums/tracking_status.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/create_routine_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/edit_routine_item_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/models/routine.dart';
 
@@ -28,8 +28,12 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   @override
   void initState() {
     super.initState();
-    _loadRoutine();
-    _loadTracking();
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    await _loadRoutine();
+    await _loadTracking();
   }
 
   // -------------------- Carga rutina --------------------
@@ -37,16 +41,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     try {
       final data = await _routineService.getRoutine(widget.patientId);
 
-      if (data == null) {
-        setState(() {
-          routine = null;
-          loading = false;
-        });
-        return;
-      }
-
       setState(() {
-        routine = Routine.fromJson(data);
+        routine = data != null ? Routine.fromJson(data) : null;
+        loading = false;
       });
     } catch (e, stack) {
       setState(() {
@@ -63,24 +60,19 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     try {
       final data = await _routineService.getTracking(widget.patientId);
 
-      final Map<int, int> tempIds = {};
-      final Map<int, TrackingStatus> tempStatus = {};
+      final ids = <int, int>{};
+      final status = <int, TrackingStatus>{};
 
       for (var t in data) {
-        final itemId = t['itemId'];
-        final trackingId = t['id'];
-        final status = t['status'];
-
-        tempIds[itemId] = trackingId;
-
-        tempStatus[itemId] = TrackingStatus.values.firstWhere(
-          (e) => e.name == status,
+        ids[t['itemId']] = t['id'];
+        status[t['itemId']] = TrackingStatus.values.firstWhere(
+          (e) => e.name == t['status'],
         );
       }
 
       setState(() {
-        trackingIdMap = tempIds;
-        trackingStatusMap = tempStatus;
+        trackingIdMap = ids;
+        trackingStatusMap = status;
       });
     } catch (e) {
       ScaffoldMessenger.of(
@@ -90,20 +82,20 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   }
 
   // -------------------- Marcar estado --------------------
-  Future<void> _updateTrackingStatus(int itemId, TrackingStatus status) async {
+  Future<void> _updateTrackingStatus(int itemId, TrackingStatus s) async {
     try {
       final trackingId = trackingIdMap[itemId];
 
       if (trackingId == null) {
-        throw Exception("Tracking no encontrado para item $itemId");
+        return;
       }
 
       await _routineService.updateTrackingStatus(
         trackingId: trackingId,
-        status: status.name,
+        status: s.name,
       );
       setState(() {
-        trackingStatusMap[itemId] = status;
+        trackingStatusMap[itemId] = s;
       });
     } catch (e) {
       ScaffoldMessenger.of(
@@ -112,32 +104,41 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
   }
 
-  // -------------------- Chips --------------------
-  Widget _trackingChips(int itemId) {
-    final current = trackingStatusMap[itemId] ?? TrackingStatus.PENDING;
+  // Borrar item de la rutina
+  Future<void> deleteItem(int itemId) async {
+    try {
+      await _routineService.deleteItem(itemId);
+      await loadAll();
 
-    return Wrap(
-      spacing: 8,
-      children: TrackingStatus.values.map((status) {
-        final selected = status == current;
+    } catch (e) {
 
-        return ChoiceChip(
-          label: Text(status.name),
-          selected: selected,
-          onSelected: (_) {
-            _updateTrackingStatus(itemId, status);
-          },
-        );
-      }).toList(),
-    );
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error borrando item: $e")));
+      }
+    }
   }
 
-  // -------------------- Formatea hh:mm:ss -> hh:mm --------------------
-  String formatTime(String? time) {
-    if (time == null || time.isEmpty) return '--:--';
-    // divide por ":" y toma solo hora y minuto
-    final parts = time.split(':');
-    return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+  // Borrar rutina
+  Future<void> deleteRoutine() async {
+    await _routineService.deleteRoutine(widget.patientId);
+
+    setState(() {
+      routine = null;
+    });
+  }
+
+  // Editar rutina
+  Future<void> editRoutine() async {
+    if (routine == null) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EditRoutineScreen(routine: routine!)),
+    );
+
+    await loadAll();
   }
 
   // -------------------- Construye la pantalla --------------------
@@ -152,75 +153,48 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       );
     }
 
+    if (routine == null) {
+      return const Scaffold(body: Center(child: Text("No rutina")));
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const AppLogoAppBar(title: 'Rutina', backgroundColor: AppColors.caregiverAppBar),
-      body: Padding(
-        padding: const EdgeInsets.all(18),
-        child: routine == null
-            ? const Center(child: Text('No hay rutina asignada'))
-            : ListView(
-                children: [
-                  const Text('Actividades'),
-                  const SizedBox(height: 12),
+      body: ListView(
+        children: [
+          ...routine!.items.map((item) {
+            final current = trackingStatusMap[item.id] ?? TrackingStatus.PENDING;
 
-                  ...routine!.items.map((item) {
-                    return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item.name),
-                            Text(formatTime(item.time)),
-                            _trackingChips(item.id),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
+            return ListTile(
+              title: Text(item.name),
+              subtitle: Text(item.time ?? ""),
 
-                  const SizedBox(height: 50),
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.caregiverPrimary,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () async {
-                      // Navega a la pantalla de edición
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CreateRoutineScreen(
-                            patientId: widget.patientId,
-                            isEdit: true,
-                          ),
-                        ),
-                      );
-                      // Recarga la rutina después de editar
-                      _loadRoutine();
-                      _loadTracking(); // refresca también el tracking
-                    },
-                    child: const Text('Editar rutina'),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // ---------- Botón para eliminar la rutina ----------
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.delete,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: null,
-                      child: const Text('Eliminar rutina'),
-                    ),
-                  ),
-                ],
+              trailing: DropdownButton(
+                value: current,
+                items: TrackingStatus.values
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
+                    .toList(),
+                onChanged: (s) {
+                  if (s != null) _updateTrackingStatus(item.id, s);
+                },
               ),
+
+              onLongPress: () => deleteItem(item.id),
+            );
+          }),
+
+          const SizedBox(height: 20),
+
+          ElevatedButton(
+            onPressed: editRoutine,
+            child: const Text("Editar rutina"),
+          ),
+          // ---------- Botón para eliminar la rutina ----------
+          ElevatedButton(
+            onPressed: deleteRoutine,
+            child: const Text("Eliminar rutina"),
+          ),
+        ],
       ),
     );
   }
