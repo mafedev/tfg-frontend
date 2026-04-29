@@ -5,9 +5,10 @@ import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/edit_routine_item_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/models/routine.dart';
+import 'package:tfg_frontend/models/routine_item.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
-  final int patientId; // id del paciente cuya rutina se va a ver
+  final int patientId;
 
   const ViewRoutineScreen({super.key, required this.patientId});
 
@@ -141,7 +142,62 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     await loadAll();
   }
 
-  // -------------------- Construye la pantalla --------------------
+  Future<void> createItemDialog() async {
+    final nameController = TextEditingController();
+    TimeOfDay? selectedTime;
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Nuevo item"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: () async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+
+                if (time != null) {
+                  selectedTime = time;
+                }
+              },
+              child: const Text("Seleccionar hora"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              if (routine == null) return;
+
+              final timeString = selectedTime != null
+                  ? "${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}:00"
+                  : "00:00:00";
+
+              await _routineService.createItem(
+                routineId: routine!.id,
+                name: nameController.text,
+                time: timeString,
+                type: "OTHER",
+              );
+
+              Navigator.pop(context);
+              await loadAll();
+            },
+            child: const Text("Crear"),
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
@@ -160,6 +216,13 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const AppLogoAppBar(title: 'Rutina', backgroundColor: AppColors.caregiverAppBar),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.caregiverAppBar,
+        onPressed: createItemDialog,
+        child: const Icon(Icons.add),
+      ),
+
       body: ListView(
         children: [
           ...routine!.items.map((item) {
