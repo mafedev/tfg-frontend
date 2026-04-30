@@ -85,11 +85,17 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   // ---------- Cargar medicación ----------
   void _checkMedication() async {
     try {
-      final meds = await CaregiverPrescriptionService().getByPatient(widget.patientId); // obtiene la medicación del paciente con su id
+      final meds = await CaregiverPrescriptionService().getByPatient(
+        widget.patientId,
+      );
 
-      // si la lista no está vacía, entonces tiene medicación asignada
+      final activeMeds = meds.where((med) {
+        final status = med['status'] ?? 'ACTIVE';
+        return status != 'CANCELLED';
+      }).toList();
+
       setState(() {
-        hasMedication = meds.isNotEmpty; // si la lista no está vacía, entonces tiene medicación asignada
+        hasMedication = activeMeds.isNotEmpty; // si la lista no está vacía, entonces tiene medicación asignada
         loadingMedication = false; // ya no está cargando
       });
     } catch (e) {
