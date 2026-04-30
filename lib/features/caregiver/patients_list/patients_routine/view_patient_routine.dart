@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/enums/tracking_status.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/create_routine_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/edit_routine_item_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
+import 'package:tfg_frontend/models/routine.dart';
+import 'package:tfg_frontend/models/routine_item.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
-  final int patientId; // id del paciente cuya rutina se va a ver
+  final int patientId;
 
   const ViewRoutineScreen({super.key, required this.patientId});
 
@@ -16,61 +19,62 @@ class ViewRoutineScreen extends StatefulWidget {
 class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   // Servicio para obtener y manipular la rutina
   final RoutineService _routineService = RoutineService();
-
-  Map<String, dynamic>? routine; // contiene la rutina obtenida
-  Map<String, dynamic>? tracking; // contiene el tracking obtenido
+  Routine? routine; // contiene la rutina obtenida
   bool loading = true; // indica si se está cargando la rutina
+
+  Map<int, int> trackingIdMap = {};
+  Map<int, TrackingStatus> trackingStatusMap = {};
 
   // Cuando se inicia la pantalla, carga la rutina
   @override
   void initState() {
     super.initState();
-    _loadRoutine();
-    _loadTracking();
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    await _loadRoutine();
+    await _loadTracking();
   }
 
   // -------------------- Carga rutina --------------------
   Future<void> _loadRoutine() async {
     try {
-      routine = await _routineService.getRoutine(widget.patientId); // obtiene la rutina
-    } catch (e) {
+      final data = await _routineService.getRoutine(widget.patientId);
+
+      setState(() {
+        routine = data != null ? Routine.fromJson(data) : null;
+        loading = false;
+      });
+    } catch (e, stack) {
+      setState(() {
+        routine = null;
+      });
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al cargar rutina')));
     } finally {
       setState(() => loading = false); // indica que ya no está cargando
     }
   }
 
-  // -------------------- Elimina la rutina --------------------
-  Future<void> _deleteRoutine() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Eliminar rutina'),
-        content: const Text('¿Seguro que quieres eliminar esta rutina?'),
-        // Dependiendo de la opción elegida, devuelve true o false
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Eliminar')),
-        ],
-      ),
-    );
-
-    if (confirm != true) return; // si cancela, no hace nada
-
-    try {
-      await _routineService.deleteRoutine(widget.patientId); // llama al DELETE del backend
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rutina eliminada')));
-      setState(() => routine = null); // actualiza estado para reflejar eliminación
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al eliminar rutina: $e')));
-    }
-  }
-
   // -------------------- Carga tracking --------------------
   Future<void> _loadTracking() async {
     try {
-      tracking = await _routineService.getTodayTracking(widget.patientId);
-      setState(() {}); // recarga la interfaz
+      final data = await _routineService.getTracking(widget.patientId);
+
+      final ids = <int, int>{};
+      final status = <int, TrackingStatus>{};
+
+      for (var t in data) {
+        ids[t['itemId']] = t['id'];
+        status[t['itemId']] = TrackingStatus.values.firstWhere(
+          (e) => e.name == t['status'],
+        );
+      }
+
+      setState(() {
+        trackingIdMap = ids;
+        trackingStatusMap = status;
+      });
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -78,91 +82,122 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
   }
 
-  // -------------------- Marcar como hecho --------------------
-  Future<void> _toggleTrackingItem(String key) async {
+  // -------------------- Marcar estado --------------------
+  Future<void> _updateTrackingStatus(int itemId, TrackingStatus s) async {
     try {
-      final currentValue = tracking?[key] ?? false;
-      await _routineService.updateRoutineItem(
-        patientId: widget.patientId,
-        item: key.replaceAll('Done', '').toLowerCase(),
-        done: !currentValue,
+      final trackingId = trackingIdMap[itemId];
+
+      if (trackingId == null) {
+        return;
+      }
+
+      await _routineService.updateTrackingStatus(
+        trackingId: trackingId,
+        status: s.name,
       );
-      await _loadTracking(); // recarga la interfaz
+      setState(() {
+        trackingStatusMap[itemId] = s;
+      });
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Error al actualizar $key: $e')));
+      ).showSnackBar(const SnackBar(content: Text('Error actualizando tracking')));
     }
   }
 
-  // -------------------- Checkbox item --------------------
-  Widget _trackingItem(String label, String key) {
-    final value = tracking?[key] ?? false;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Expanded(child: Text(label, style: const TextStyle(fontSize: 16))),
-          Checkbox(value: value, onChanged: (_) => _toggleTrackingItem(key)),
+  // Borrar item de la rutina
+  Future<void> deleteItem(int itemId) async {
+    try {
+      await _routineService.deleteItem(itemId);
+      await loadAll();
+
+    } catch (e) {
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error borrando item: $e")));
+      }
+    }
+  }
+
+  // Borrar rutina
+  Future<void> deleteRoutine() async {
+    await _routineService.deleteRoutine(widget.patientId);
+
+    setState(() {
+      routine = null;
+    });
+  }
+
+  // Editar rutina
+  Future<void> editRoutine() async {
+    if (routine == null) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EditRoutineScreen(routine: routine!)),
+    );
+
+    await loadAll();
+  }
+
+  Future<void> createItemDialog() async {
+    final nameController = TextEditingController();
+    TimeOfDay? selectedTime;
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Nuevo item"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: nameController),
+
+            const SizedBox(height: 10),
+
+            ElevatedButton(
+              onPressed: () async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.now(),
+                );
+
+                if (time != null) {
+                  selectedTime = time;
+                }
+              },
+              child: const Text("Seleccionar hora"),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              if (routine == null) return;
+
+              final timeString = selectedTime != null
+                  ? "${selectedTime!.hour.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')}:00"
+                  : "00:00:00";
+
+              await _routineService.createItem(
+                routineId: routine!.id,
+                name: nameController.text,
+                time: timeString,
+                type: "OTHER",
+              );
+
+              Navigator.pop(context);
+              await loadAll();
+            },
+            child: const Text("Crear"),
+          )
         ],
       ),
     );
   }
 
-  // -------------------- Widget para el título de cada sección --------------------
-  Widget _sectionTitle(String text, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, color: AppColors.caregiverPrimary),
-        const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  // -------------------- Card --------------------
-  Widget _sectionCard({required List<Widget> children}) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: children,
-        ),
-      ),
-    );
-  }
-
-  // -------------------- Ítem de texto de la rutina --------------------
-  Widget _routineItem(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          Text(value, style: const TextStyle(fontSize: 16)),
-        ],
-      ),
-    );
-  }
-
-  // -------------------- Formatea hh:mm:ss -> hh:mm --------------------
-  String formatTime(String? time) {
-    if (time == null || time.isEmpty) return '--:--';
-    // divide por ":" y toma solo hora y minuto
-    final parts = time.split(':');
-    return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
-  }
-
-  // -------------------- Construye la pantalla --------------------
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
@@ -174,107 +209,55 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       );
     }
 
+    if (routine == null) {
+      return const Scaffold(body: Center(child: Text("No rutina")));
+    }
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const AppLogoAppBar(title: 'Rutina', backgroundColor: AppColors.caregiverAppBar),
-      body: Padding(
-        padding: const EdgeInsets.all(18),
-        child: routine == null
-            ? const Center(child: Text('No hay rutina asignada'))
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                // ---------- Muestra los horarios de la rutina ----------
-                children: [
-                  // ----------- COMIDAS -----------
-                  _sectionCard(
-                    children: [
-                      _sectionTitle('Comidas', Icons.restaurant),
-                      const SizedBox(height: 12),
 
-                      _trackingItem(
-                        'Desayuno - ${formatTime(routine!['breakfastTime'])}',
-                        'breakfastDone',
-                      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.caregiverAppBar,
+        onPressed: createItemDialog,
+        child: const Icon(Icons.add),
+      ),
 
-                      _trackingItem(
-                        'Almuerzo - ${formatTime(routine!['lunchTime'])}',
-                        'lunchDone',
-                      ),
+      body: ListView(
+        children: [
+          ...routine!.items.map((item) {
+            final current = trackingStatusMap[item.id] ?? TrackingStatus.PENDING;
 
-                      _trackingItem(
-                        'Cena - ${formatTime(routine!['dinnerTime'])}',
-                        'dinnerDone',
-                      ),
-                    ],
-                  ),
+            return ListTile(
+              title: Text(item.name),
+              subtitle: Text(item.time ?? ""),
 
-                  // ----------- HIDRATACIÓN -----------
-                  _sectionCard(
-                    children: [
-                      _sectionTitle('Hidratación', Icons.water_drop),
-                      const SizedBox(height: 12),
-                      _trackingItem('Hidratación realizada', 'hydrationDone'),
-                    ],
-                  ),
-
-                  // ----------- ASEO -----------
-                  _sectionCard(
-                    children: [
-                      _sectionTitle('Aseo', Icons.bathtub),
-                      const SizedBox(height: 12),
-
-                      _trackingItem(
-                        'Baño - ${formatTime(routine!['bathTime'])}',
-                        'bathDone',
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 50),
-
-                  // ---------- Botón para editar la rutina ----------
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.caregiverPrimary,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        // Navega a la pantalla de edición
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => CreateRoutineScreen(
-                              patientId: widget.patientId,
-                              isEdit: true,
-                            ),
-                          ),
-                        );
-                        // Recarga la rutina después de editar
-                        _loadRoutine();
-                        _loadTracking(); // refresca también el tracking
-                      },
-                      child: const Text('Editar rutina'),
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // ---------- Botón para eliminar la rutina ----------
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.delete,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: _deleteRoutine,
-                      child: const Text('Eliminar rutina'),
-                    ),
-                  ),
-                ],
+              trailing: DropdownButton(
+                value: current,
+                items: TrackingStatus.values
+                    .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
+                    .toList(),
+                onChanged: (s) {
+                  if (s != null) _updateTrackingStatus(item.id, s);
+                },
               ),
+
+              onLongPress: () => deleteItem(item.id),
+            );
+          }),
+
+          const SizedBox(height: 20),
+
+          ElevatedButton(
+            onPressed: editRoutine,
+            child: const Text("Editar rutina"),
+          ),
+          // ---------- Botón para eliminar la rutina ----------
+          ElevatedButton(
+            onPressed: deleteRoutine,
+            child: const Text("Eliminar rutina"),
+          ),
+        ],
       ),
     );
   }

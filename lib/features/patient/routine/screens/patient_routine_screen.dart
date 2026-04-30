@@ -71,12 +71,12 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Muestra cada elemento de la rutina en una card
-            _routineCard('Desayuno', formatTime(routine!.breakfastTime)),
-            _routineCard('Almuerzo', formatTime(routine!.lunchTime)),
-            _routineCard('Cena', formatTime(routine!.dinnerTime)),
-            _routineCard('Baño', formatTime(routine!.bathTime)),
-            _routineCard('Hidratación','Cada ${routine!.hydrationReminderHours} h',
-            ),
+            // _routineCard('Desayuno', formatTime(routine!.breakfastTime)),
+            // _routineCard('Almuerzo', formatTime(routine!.lunchTime)),
+            // _routineCard('Cena', formatTime(routine!.dinnerTime)),
+            // _routineCard('Baño', formatTime(routine!.bathTime)),
+            // _routineCard('Hidratación','Cada ${routine!.hydrationReminderHours} h',
+            // ),
           ],
         ),
       ),

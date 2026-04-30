@@ -1,30 +1,17 @@
+import 'package:tfg_frontend/models/routine_item.dart';
+
 class Routine {
-  final String breakfastTime;
-  final String lunchTime;
-  final String dinnerTime;
-  final String bathTime;
-  final bool hydrationEnabled;
-  final int? hydrationReminderHours; // puede ser nulo
+  final int id;
+  final List<RoutineItem> items;
 
-  // Constructor
-  Routine({
-    required this.breakfastTime,
-    required this.lunchTime,
-    required this.dinnerTime,
-    required this.bathTime,
-    required this.hydrationEnabled,
-    this.hydrationReminderHours,
-  });
+  Routine({required this.id, required this.items});
 
-  // ----------- Crea un objeto Routine a partir de un JSON -----------
   factory Routine.fromJson(Map<String, dynamic> json) {
     return Routine(
-      breakfastTime: json['breakfastTime'],
-      lunchTime: json['lunchTime'],
-      dinnerTime: json['dinnerTime'],
-      bathTime: json['bathTime'],
-      hydrationEnabled: json['hydrationEnabled'],
-      hydrationReminderHours: json['hydrationReminderHours'],
+      id: json['id'],
+      items: (json['items'] as List)
+          .map((e) => RoutineItem.fromJson(e))
+          .toList(),
     );
   }
 }
