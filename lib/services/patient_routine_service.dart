@@ -17,7 +17,7 @@ class PatientRoutineService {
     }
 
     final response = await http.get(
-      Uri.parse(baseUrl),
+      Uri.parse('$baseUrl/me'),
       headers: {'Authorization': 'Bearer $t'},
     );
 
