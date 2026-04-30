@@ -4,19 +4,19 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/models/medication_tracking.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/main.dart';
-import '../services/medication_tracking_service.dart';
+import '../services/prescription_tracking_service.dart';
 
-class MedicationTrackingScreen extends StatefulWidget {
+class PrescriptionTrackingScreen extends StatefulWidget {
   final int patientId;
 
-  const MedicationTrackingScreen({super.key, required this.patientId});
+  const PrescriptionTrackingScreen({super.key, required this.patientId});
 
   @override
-  State<MedicationTrackingScreen> createState() => _MedicationTrackingScreenState();
+  State<PrescriptionTrackingScreen> createState() => _PrescriptionTrackingScreenState();
 }
 
-class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
-  final MedicationTrackingService _service = MedicationTrackingService();
+class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen> {
+  final PrescriptionTrackingService _service = PrescriptionTrackingService();
 
   bool _loading = true; // maneja el círculo de carga
   List<MedicationTracking> _trackingList = []; // lista local con el tracking
@@ -33,7 +33,7 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
     setState(() => _loading = true); // al inicio pone cargar a true para mostrar el circulo de carga
     
     try {
-      final result = await _service.getMedicationTracking(widget.patientId, _selectedDate);
+      final result = await _service.getMedicationTracking(_selectedDate);
       
       setState(
         () => _trackingList = result // mapea el tracking obtenido a la lista de tracking local
@@ -56,7 +56,10 @@ class _MedicationTrackingScreenState extends State<MedicationTrackingScreen> {
 
     try {
       // luego hace la llamada al servicio para actualizar el estado en el backend
-      await _service.toggleTracking(med.prescriptionId, time.scheduledTime);
+      await _service.toggleTracking(
+        prescriptionId: med.prescriptionId,
+        scheduledTime: time.scheduledTime,
+      );
     } catch (e) {
       // si hay un error, deshace el cambio en la interfaz y muestra el error en pantalla
       setState(() => time.taken = !time.taken);

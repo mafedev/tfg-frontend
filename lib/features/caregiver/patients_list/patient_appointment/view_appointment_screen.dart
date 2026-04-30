@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_appointment_service.dart';
+import 'package:tfg_frontend/models/appointment/appointment_response.dart';
+import 'package:tfg_frontend/core/enums/appointment_status.dart';
 import 'create_appointment_screen.dart';
 
 class ViewAppointmentsScreen extends StatefulWidget {
@@ -15,7 +17,7 @@ class ViewAppointmentsScreen extends StatefulWidget {
 
 class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
   bool loading = true;
-  List<dynamic> appointments = [];
+  List<AppointmentResponse> appointments = [];
 
   final service = AppointmentService();
 
@@ -33,15 +35,7 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
       setState(() {
         appointments = result;
-        appointments.sort((a, b) {
-          final dateA = DateTime.tryParse(a['dateTime'] ?? '');
-          final dateB = DateTime.tryParse(b['dateTime'] ?? '');
-
-          if (dateA == null || dateB == null) return 0;
-
-          return dateA.compareTo(dateB);
-        });
-
+        appointments.sort((a, b) => a.dateTime.compareTo(b.dateTime));
         loading = false;
       });
     } catch (e) {
@@ -65,7 +59,12 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
   Future<void> _updateStatus(int id, String status) async {
     try {
-      await service.updateStatus(id, status);
+      final AppointmentStatus statusEnum = AppointmentStatus.values.firstWhere(
+        (s) => s.name == status,
+        orElse: () => AppointmentStatus.PENDING,
+      );
+
+      await service.updateStatus(id: id, status: statusEnum);
       _loadAppointments();
     } catch (e) {
       ScaffoldMessenger.of(
@@ -74,14 +73,14 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     }
   }
 
-  Widget _buildStatusChip(dynamic appointment, String value, String label) {
-    final isSelected = appointment['status'] == value;
+  Widget _buildStatusChip(AppointmentResponse appointment, String value, String label) {
+    final isSelected = appointment.status == value;
 
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
       onSelected: (_) {
-        _updateStatus(appointment['id'], value);
+        _updateStatus(appointment.id, value);
       },
     );
   }
@@ -101,13 +100,11 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     }
   }
 
-  List<dynamic> _filteredAppointments() {
+  List<AppointmentResponse> _filteredAppointments() {
     if (selectedDate == null) return appointments;
 
     return appointments.where((a) {
-      final date = DateTime.tryParse(a['dateTime'] ?? '');
-      if (date == null) return false;
-
+      final date = a.dateTime;
       return date.year == selectedDate!.year &&
           date.month == selectedDate!.month &&
           date.day == selectedDate!.day;
@@ -153,11 +150,9 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
           : ListView.builder(
               itemCount: filtered.length,
               itemBuilder: (context, index) {
-                final a = filtered[index];
+                final AppointmentResponse a = filtered[index];
 
-                DateTime? date = DateTime.tryParse(
-                  a['dateTime'] ?? '',
-                );
+                final date = a.dateTime;
 
                 String fecha = '';
                 String hora = '';
@@ -179,19 +174,17 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                     vertical: 6,
                   ),
                   child: ListTile(
-                    title: Text(a['title'] ?? 'Sin título'),
+                    title: Text(a.title),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Lugar: ${a['location'] ?? ''}"),
+                        Text("Lugar: ${a.location}"),
 
-                        if (fecha.isNotEmpty)
-                          Text("Día: $fecha"),
+                        if (fecha.isNotEmpty) Text("Día: $fecha"),
 
-                        if (hora.isNotEmpty)
-                          Text("Hora: $hora"),
+                        if (hora.isNotEmpty) Text("Hora: $hora"),
 
-                        Text("Descripción: ${a['description'] ?? ''}"),
+                        Text("Descripción: ${a.description}"),
 
                         const SizedBox(height: 8),
 
@@ -229,7 +222,7 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
                         
                         if (value == 'delete') {
-                          _deleteAppointment(a['id']);
+                          _deleteAppointment(a.id);
                         }
                       },
                       itemBuilder: (context) => [

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/models/patient.dart';
+import 'package:tfg_frontend/core/enums/disease_stage.dart';
 
 class EditPatientDialog extends StatefulWidget {
   final Patient patient;
@@ -14,7 +15,7 @@ class EditPatientDialog extends StatefulWidget {
 class _EditPatientDialogState extends State<EditPatientDialog> {
   late TextEditingController phoneController;
   late TextEditingController notesController;
-  String? diseaseStage;
+  DiseaseStage? diseaseStage;
 
   @override
   void initState() {
@@ -41,11 +42,11 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
             TextField(controller: phoneController, decoration: const InputDecoration(labelText: 'Teléfono')),
             TextField(controller: notesController, decoration: const InputDecoration(labelText: 'Notas')),
             const SizedBox(height: 10),
-            DropdownButton<String>(
+            DropdownButton<DiseaseStage>(
               value: diseaseStage,
               hint: const Text('Etapa de la enfermedad'),
-              items: ['EARLY', 'MODERATE', 'ADVANCED']
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+              items: DiseaseStage.values
+                  .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
                   .toList(),
               onChanged: (value) => setState(() => diseaseStage = value),
             ),
@@ -56,7 +57,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
         ElevatedButton(
           onPressed: () async {
-            await widget.onSave(phoneController.text, notesController.text, diseaseStage);
+            await widget.onSave(phoneController.text, notesController.text, diseaseStage?.name);
             Navigator.pop(context);
           },
           child: const Text('Guardar'),

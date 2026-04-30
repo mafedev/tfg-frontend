@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/enums/medication_type.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/models/medication/medication_response.dart';
 
 class CaregiverMedicationService {
   static const String _baseUrl = ApiConfig.medicationsEndpoint;
@@ -43,7 +44,7 @@ class CaregiverMedicationService {
   }
 
   // ---------- Obtener medicamentos ----------
-  Future<List<dynamic>> getMedications() async {
+  Future<List<MedicationResponse>> getMedications() async {
     final token = await _secureStorageService.getToken();
     
     // si el token es nulo, lanza una excepción
@@ -65,6 +66,8 @@ class CaregiverMedicationService {
       throw Exception('Error al obtener medicamentos: ${response.body}');
     }
 
-    return jsonDecode(response.body); // devuelve la lista de medicamentos
+    final List data = jsonDecode(response.body);
+
+    return data.map((e) => MedicationResponse.fromJson(e)).toList();
   }
 }

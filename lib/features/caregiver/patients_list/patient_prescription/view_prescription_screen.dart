@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/medication_tracking_screen.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/prescription_tracking_screen.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patient_prescription/create_prescription_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_prescription_service.dart';
@@ -76,7 +76,7 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
                 style: ElevatedButton.styleFrom(backgroundColor: AppColors.caregiverPrimary, foregroundColor: Colors.white),
                 // al hacer click, navega a la pantalla de seguimiento de tomas
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => MedicationTrackingScreen(patientId: widget.patientId)));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => PrescriptionTrackingScreen(patientId: widget.patientId)));
                 },
                 icon: const Icon(Icons.access_time),
                 label: const Text('Ver tomas de hoy'),

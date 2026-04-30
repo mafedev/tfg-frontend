@@ -4,6 +4,8 @@ import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_prescription_service.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_medication_service.dart';
 import 'package:tfg_frontend/core/enums/prescription.dart';
+import 'package:tfg_frontend/models/medication/prescription_request.dart';
+import 'package:tfg_frontend/models/medication/medication_response.dart';
 
 class CreatePrescriptionScreen extends StatefulWidget {
   final int patientId; // id del paciente
@@ -25,12 +27,10 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
   TimeOfDay? selectedHour;
   DateTime? startDate;
   DateTime? endDate;
-  List<int> selectedDays = [];
-
   // Lista de medicamentos obtenidos del servicio
-  List<dynamic> medications = [];
+  List<MedicationResponse> medications = [];
+  MedicationResponse? selectedMedication;
 
-  dynamic selectedMedication; // medicamento seleccionado en el Dropdown
   String selectedStatus = 'ACTIVE'; // estado seleccionado en el Dropdown, por defecto 'ACTIVE'
 
   DoseUnit? selectedDoseUnit; // unidad de dosis seleccionada en el Dropdown
@@ -38,16 +38,6 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
   bool loading = true;
   int? prescriptionId; // id de la prescripción, debug
 
-  // Días de la semana
-  final Map<int, String> weekDays = {
-    1: 'Lunes',
-    2: 'Martes',
-    3: 'Miércoles',
-    4: 'Jueves',
-    5: 'Viernes',
-    6: 'Sábado',
-    7: 'Domingo',
-  };
 
   // Estados posibles para la prescripción
   final List<String> statuses = ['ACTIVE', 'SUSPENDED', 'COMPLETED', 'CANCELLED'];
@@ -70,39 +60,21 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         medications = loadedMedications; // guarda la lista de medicamentos
         // Si hay medicamentos y no se ha seleccionado ninguno, selecciona el primero
         if (medications.isNotEmpty && selectedMedication == null) {
-          selectedMedication = medications[0];
+          selectedMedication = medications.first;
         }
       });
 
       // Si se está editando una rutina existente, carga sus datos
       if (widget.existingPrescription != null) {
         final sched = widget.existingPrescription!; // datos de la rutina existente
-        prescriptionId = sched['id'] as int?; // guarda el id de la prescripción para futuras actualizaciones
+        prescriptionId = sched['id']; // guarda el id de la prescripción para futuras actualizaciones
         _dose.text = sched['dose'].toString(); // carga la dosis en el TextField
         _frequency.text = sched['frequencyHours']?.toString() ?? ''; // carga la frecuencia en el TextField, si existe
         _notes.text = sched['notes']?.toString() ?? ''; // carga las notas en el TextField, si existen
-        selectedStatus = sched['status']?.toString() ?? 'ACTIVE'; // carga el estado, si existe, o deja 'ACTIVE' por defecto
+        selectedStatus = sched['status'] ?? 'ACTIVE'; // carga el estado, si existe, o deja 'ACTIVE' por defecto
         startDate = sched['startDate'] != null ? DateTime.parse(sched['startDate']) : null; // carga la fecha de inicio, si existe
         endDate = sched['endDate'] != null ? DateTime.parse(sched['endDate']) : null; // carga la fecha de fin, si existe
         
-        // Cargar días de la semana, si existen
-        // La API devuelve los días como una lista de strings, por ejemplo: ["MONDAY", "WEDNESDAY"], por lo que se convierten a números para la lógica de selección
-        if (sched['daysOfWeek'] != null && sched['daysOfWeek'] is List) {
-          selectedDays = (sched['daysOfWeek'] as List).map((day) { // convierte cada día de string a número
-            final dayStr = day.toString().toUpperCase(); // convierte a mayúsculas para comparación
-            // dependiendo del string, devuelve el número correspondiente al día de la semana (1 para lunes, 2 para martes, etc.)
-            switch (dayStr) {
-              case 'MONDAY': return 1;
-              case 'TUESDAY': return 2;
-              case 'WEDNESDAY': return 3;
-              case 'THURSDAY': return 4;
-              case 'FRIDAY': return 5;
-              case 'SATURDAY': return 6;
-              case 'SUNDAY': return 7;
-              default: return 0;
-            }
-          }).where((d) => d != 0).toList(); 
-        }
         
         // Cargar hora de primera dosis
         if (sched['firstDoseTime'] != null) {
@@ -114,12 +86,12 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         final medicationId = sched['medication']['id'];
         
         selectedMedication = medications.firstWhere(
-          (m) => (m['id'] as int?) == medicationId,
-          orElse: () => null,
+          (m) => m.id == medicationId,
+          orElse: () => medications.first,
         );
         
         // carga la unidad de dosis seleccionada, comparando por nombre (por ejemplo, 'MG', 'ML', etc.)
-        final doseUnitStr = sched['doseUnit']?.toString() ?? 'MG';
+        final doseUnitStr = sched['doseUnit'] ?? 'MG';
         selectedDoseUnit = DoseUnit.values.firstWhere(
           (u) => u.name.toUpperCase() == doseUnitStr.toUpperCase(),
           orElse: () => DoseUnit.MG,
@@ -150,39 +122,29 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
     final service = CaregiverPrescriptionService();
 
     try {
-      // Si existe prescriptionId, es una edición
+      final request = PrescriptionRequest(
+        patientId: widget.patientId,
+        medicationId: selectedMedication!.id,
+        dose: double.parse(_dose.text),
+        doseUnit: selectedDoseUnit!,
+        frequencyHours: _frequency.text.isNotEmpty ? int.parse(_frequency.text) : null,
+        startDate: startDate?.toIso8601String().split('T')[0],
+        endDate: endDate?.toIso8601String().split('T')[0],
+        firstDoseTime: hour,
+        notes: _notes.text.isNotEmpty ? _notes.text : null,
+        status: selectedStatus,
+      );
+
       if (prescriptionId != null) {
         await service.updatePrescription(
           prescriptionId: prescriptionId!,
-          patientId: widget.patientId,
-          medicationId: selectedMedication['id'],
-          dose: double.parse(_dose.text),
-          doseUnit: selectedDoseUnit!,
-          frequencyHours: _frequency.text.isNotEmpty ? int.parse(_frequency.text) : null,
-          startDate: startDate?.toIso8601String().split('T')[0], // lo pasa en formato YYYY-MM-DD
-          endDate: endDate?.toIso8601String().split('T')[0],
-          firstDoseTime: hour,
-          daysOfWeek: selectedDays.isNotEmpty ? selectedDays : null,
-          notes: _notes.text,
-          status: selectedStatus,
+          request: request,
         );
       } else {
-        // Si no, es una creación
-        await service.createPrescription(
-          patientId: widget.patientId,
-          medicationId: selectedMedication['id'],
-          dose: double.parse(_dose.text),
-          doseUnit: selectedDoseUnit!,
-          frequencyHours: _frequency.text.isNotEmpty ? int.parse(_frequency.text) : null,
-          startDate: startDate?.toIso8601String().split('T')[0],
-          endDate: endDate?.toIso8601String().split('T')[0],
-          firstDoseTime: hour,
-          daysOfWeek: selectedDays.isNotEmpty ? selectedDays : null,
-          notes: _notes.text,
-          status: selectedStatus,
-        );
+        await service.createPrescription(request);
       }
-      Navigator.pop(context); // vuelve a la pantalla anterior después de guardar
+
+      Navigator.pop(context);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
     }
@@ -190,7 +152,9 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       appBar: AppLogoAppBar(
@@ -202,10 +166,10 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         child: Column(
           children: [
             // ---------- Selector de medicamento ----------
-            DropdownButtonFormField(
+            DropdownButtonFormField<MedicationResponse>(
               value: selectedMedication,
               hint: const Text('Selecciona un medicamento'),
-              items: medications.map((m) => DropdownMenuItem(value: m, child: Text(m['name']))).toList(),
+              items: medications.map((m) => DropdownMenuItem(value: m, child: Text(m.name))).toList(),
               onChanged: (value) => setState(() => selectedMedication = value),
             ),
             const SizedBox(height: 12),
@@ -239,7 +203,9 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
             ElevatedButton(
               onPressed: () async {
                 final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                if (picked != null) setState(() => selectedHour = picked);
+                if (picked != null) {
+                  setState(() => selectedHour = picked);
+                }
               },
               child: Text(selectedHour == null ? 'Seleccionar primera dosis' : 'Primera dosis: ${selectedHour!.format(context)}'),
             ),
@@ -254,9 +220,11 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
-                if (picked != null) setState(() => startDate = picked);
+                if (picked != null) {
+                  setState(() => startDate = picked);
+                }
               },
-              child: Text(startDate == null ? 'Seleccionar fecha inicio' : 'Inicio: ${startDate!.toIso8601String().split('T')[0]}'),
+              child: Text(startDate == null ? 'Fecha inicio' : 'Inicio: ${startDate!.toIso8601String().split('T')[0]}'),
             ),
             const SizedBox(height: 12),
 
@@ -269,9 +237,11 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
                   firstDate: DateTime(2000),
                   lastDate: DateTime(2100),
                 );
-                if (picked != null) setState(() => endDate = picked);
+                if (picked != null) {
+                  setState(() => endDate = picked);
+                }
               },
-              child: Text(endDate == null ? 'Seleccionar fecha fin' : 'Fin: ${endDate!.toIso8601String().split('T')[0]}'),
+              child: Text(endDate == null ? 'Fecha fin' : 'Fin: ${endDate!.toIso8601String().split('T')[0]}'),
             ),
             const SizedBox(height: 12),
 
@@ -294,30 +264,6 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
               decoration: const InputDecoration(labelText: 'Estado'),
             ),
             const SizedBox(height: 12),
-
-            // ---------- Selector de días de la semana ----------
-            Text('Selecciona los días:', style: const TextStyle(fontWeight: FontWeight.bold)),
-            Wrap(
-              spacing: 8,
-              children: weekDays.entries.map((entry) {
-                final dayNumber = entry.key;
-                final dayName = entry.value;
-                final isSelected = selectedDays.contains(dayNumber);
-                return FilterChip(
-                  label: Text(dayName),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    setState(() {
-                      if (selected) {
-                        selectedDays.add(dayNumber);
-                      } else {
-                        selectedDays.remove(dayNumber);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-            ),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _savePrescription,

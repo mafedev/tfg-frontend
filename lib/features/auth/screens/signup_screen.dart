@@ -220,7 +220,7 @@ class _SignupScreenState extends State<SignupScreen> {
         username: nameController.text.trim(),
         email: emailController.text.trim(),
         password: passwordController.text,
-        role: selectedRole.name,
+        role: selectedRole,
         phone: phoneController.text,
       );
 

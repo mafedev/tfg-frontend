@@ -39,7 +39,7 @@ class PatientInfoSection extends StatelessWidget {
 
         // Etapa de la enfermedad
         Text(
-          'Etapa de la enfermedad: ${patient.diseaseStage ?? "No especificada"}',
+          'Etapa de la enfermedad: ${patient.diseaseStage?.name ?? "No especificada"}',
           style: const TextStyle(fontSize: 16),
         ),
         const SizedBox(height: 8),

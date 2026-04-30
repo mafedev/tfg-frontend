@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/core/enums/disease_stage.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/create_patient_service.dart';
 
 class CreatePatientScreen extends StatefulWidget {
@@ -16,7 +17,7 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
   final phoneController = TextEditingController();
   final notesController = TextEditingController();
 
-  String diseaseStage = 'EARLY';
+  DiseaseStage diseaseStage = DiseaseStage.EARLY;
   bool loading = false;
 
   final PatientService _patientService = PatientService();
@@ -87,14 +88,14 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
               const SizedBox(height: 16),
 
               // Etapa
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<DiseaseStage>(
                 value: diseaseStage,
                 decoration: const InputDecoration(
                   labelText: 'Estado de la enfermedad',
                   prefixIcon: Icon(Icons.health_and_safety),
                 ),
-                items: ['EARLY', 'MODERATE', 'ADVANCED']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                items: DiseaseStage.values
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
                     .toList(),
                 onChanged: (value) => setState(() => diseaseStage = value!),
               ),
