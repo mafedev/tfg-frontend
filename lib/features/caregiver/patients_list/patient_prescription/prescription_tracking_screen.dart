@@ -33,7 +33,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
     setState(() => _loading = true); // al inicio pone cargar a true para mostrar el circulo de carga
     
     try {
-      final result = await _service.getMedicationTracking(widget.patientId, _selectedDate);
+      final result = await _service.getMedicationTracking(_selectedDate);
       
       setState(
         () => _trackingList = result // mapea el tracking obtenido a la lista de tracking local

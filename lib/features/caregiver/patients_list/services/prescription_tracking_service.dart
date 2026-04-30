@@ -10,15 +10,16 @@ class PrescriptionTrackingService {
 
   // -------------------- GET tracking por fecha --------------------
   Future<List<Map<String, dynamic>>> getMedicationTracking(
-    int patientId,
     DateTime date,
   ) async {
     final token = await _secureStorageService.getToken();
 
     final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+    final url = '$_baseUrl?date=$formattedDate';
+
     final response = await http.get(
-      Uri.parse('$_baseUrl/$patientId?date=$formattedDate'),
+      Uri.parse(url),
       headers: {'Authorization': 'Bearer $token'},
     );
 
