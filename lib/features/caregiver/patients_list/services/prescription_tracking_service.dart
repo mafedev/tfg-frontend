@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/models/prescription_tracking.dart';
 
 class PrescriptionTrackingService {
   static const String _baseUrl = ApiConfig.prescriptionTrackingEndpoint;
@@ -9,7 +10,7 @@ class PrescriptionTrackingService {
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // -------------------- GET tracking por fecha --------------------
-  Future<List<Map<String, dynamic>>> getMedicationTracking(
+  Future<List<PrescriptionTracking>> getMedicationTracking(
     DateTime date,
   ) async {
     final token = await _secureStorageService.getToken();
@@ -25,7 +26,8 @@ class PrescriptionTrackingService {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      return data.cast<Map<String, dynamic>>();
+
+      return data.map((json) => PrescriptionTracking.fromJson(json)).toList();
     }
 
     throw Exception('Error GET tracking: ${response.statusCode}');

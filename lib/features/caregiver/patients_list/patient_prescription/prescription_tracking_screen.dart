@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/services/notification_service.dart';
+import 'package:tfg_frontend/core/enums/prescription_tracking_status.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/models/medication_tracking.dart';
+import 'package:tfg_frontend/models/prescription_tracking.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/main.dart';
 import '../services/prescription_tracking_service.dart';
 
 class PrescriptionTrackingScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
   final PrescriptionTrackingService _service = PrescriptionTrackingService();
 
   bool _loading = true; // maneja el círculo de carga
-  List<MedicationTracking> _trackingList = []; // lista local con el tracking
+  List<PrescriptionTracking> _trackingList = []; // lista local con el tracking
   DateTime _selectedDate = DateTime.now(); // fecha seleccionada para mostrar el tracking
 
   @override
@@ -30,16 +29,14 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
 
   // ----------- Lógica de carga y toggle -----------
   Future<void> _loadTracking() async {
-    setState(() => _loading = true); // al inicio pone cargar a true para mostrar el circulo de carga
+    setState(() => _loading = true);// al inicio pone cargar a true para mostrar el circulo de carga
     
     try {
       final result = await _service.getMedicationTracking(_selectedDate);
-      
-      setState(
-        () => _trackingList = result // mapea el tracking obtenido a la lista de tracking local
-            .map((json) => MedicationTracking.fromJson(json)) // convierte cada json a un objeto MedicationTracking
-            .toList(), // y luego lo convierte a una lista
-      );
+
+      setState(() {
+        _trackingList = result;
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
     } finally {
@@ -47,22 +44,61 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
     }
   }
 
+  TrackingStatus _parseStatus(String status) {
+    return TrackingStatus.values.firstWhere(
+      (e) => e.name == status,
+      orElse: () => TrackingStatus.PENDING,
+    );
+  }
+
+  bool _isTaken(String status) {
+    return _parseStatus(status) == TrackingStatus.TAKEN;
+  }
+
+  String _toggleStatus(String status) {
+    final parsed = _parseStatus(status);
+
+    return parsed == TrackingStatus.TAKEN
+        ? TrackingStatus.PENDING.name
+        : TrackingStatus.TAKEN.name;
+  }
+
   // ----------- Lógica de toggle -----------
   // Esta función se llama cuando el usuario marca o desmarca una toma
-  Future<void> _toggleTracking(MedicationTracking med, MedicationTrackingTime time) async {
-    
-    // al hacer click, primero actualiza el estado en la interfaz
-    setState(() => time.taken = !time.taken);
+  Future<void> _toggleTracking(PrescriptionTracking med, PrescriptionTrackingTime time) async {
+    final oldStatus = time.status;
+    final newStatus = _toggleStatus(oldStatus);
+
+    setState(() {
+      med.times = med.times.map((t) {
+        if (t.scheduledTime == time.scheduledTime) {
+          return PrescriptionTrackingTime(
+            scheduledTime: t.scheduledTime,
+            status: newStatus,
+          );
+        }
+        return t;
+      }).toList();
+    });
 
     try {
-      // luego hace la llamada al servicio para actualizar el estado en el backend
       await _service.toggleTracking(
         prescriptionId: med.prescriptionId,
         scheduledTime: time.scheduledTime,
       );
     } catch (e) {
-      // si hay un error, deshace el cambio en la interfaz y muestra el error en pantalla
-      setState(() => time.taken = !time.taken);
+      setState(() {
+        med.times = med.times.map((t) {
+          if (t.scheduledTime == time.scheduledTime) {
+            return PrescriptionTrackingTime(
+              scheduledTime: t.scheduledTime,
+              status: oldStatus,
+            );
+          }
+          return t;
+        }).toList();
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al actualizar: $e')));
     }
   }
@@ -86,53 +122,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
       return Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppLogoAppBar(title: 'Tomas de hoy', backgroundColor: AppColors.caregiverAppBar),
-        body: const Center(child: CircularProgressIndicator(color: AppColors.caregiverAppBar)),
-      );
-    }
-
-    // si no hay tomas, muestra el mensaje
-    if (_trackingList.isEmpty) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppLogoAppBar(title: 'Tomas de hoy', backgroundColor: AppColors.caregiverAppBar),
-        body: Column(
-          children: [
-            // -------- Selector de fecha ----------
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back),
-                    onPressed: () {
-                      setState(() {
-                        _selectedDate = _selectedDate.subtract(const Duration(days: 1));
-                      });
-                      _loadTracking();
-                    },
-                  ),
-                  Text(
-                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward),
-                    onPressed: () {
-                      setState(() {
-                        _selectedDate = _selectedDate.add(
-                          const Duration(days: 1),
-                        );
-                      });
-                      _loadTracking();
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            const Expanded(child: Center(child: Text('No hay tomas programadas para hoy'))),
-          ],
+        body: const Center(child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
         ),
       );
     }
@@ -182,75 +172,74 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
 
             const SizedBox(height: 10),
 
-        // Muestra la lista de medicamentos
-      Expanded(
-        child: ListView.builder(
-          itemCount: _trackingList.length, // el número de medicamentos a mostrar es el largo de la lista de tracking
-          
-          // para cada medicamento, construye una tarjeta con la info
-          itemBuilder: (context, index) {
-            final med = _trackingList[index]; // obtiene el medicamento actual a mostrar
+            // Muestra la lista de medicamentos
+            Expanded(
+              child: _trackingList.isEmpty
+                  ? const Center(child: Text('No hay tomas programadas'))
+                  : ListView.builder(
+                      itemCount: _trackingList.length, // el número de medicamentos a mostrar es el largo de la lista de tracking
+                      // para cada medicamento, construye una tarjeta con la info
+                      itemBuilder: (context, index) {
+                        final med = _trackingList[index];
 
-            // -------- Tarjeta ----------
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 8), // espacio entre las tarjetas
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // bordes redondeados
-              elevation: 3, // sombra
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    
-                    // Nombre del medicamento
-                    Text(
-                      med.medicationName,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-
-                    // Dosis
-                    if (med.dose.isNotEmpty) Text('Dosis: ${med.dose}'),
-
-                    const SizedBox(height: 12),
-
-                    // Si no hay tomas
-                    if (med.times.isEmpty) const Text('Sin tomas para hoy'),
-
-                    // Si hay tomas
-                    if (med.times.isNotEmpty)
-                      Column(
-                        children: med.times.map((t) { // para cada toma del medicamento, construye una fila con la hora y el checkbox
-                          return Row(
-                            children: [
-                              // muestra la hora
-                              Expanded(child: Text(_formatTime(t.scheduledTime))),
-                              // Texto según el toggle
-                              Text(
-                                t.taken ? 'TAKEN' : 'PENDING',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                    // -------- Tarjeta ----------
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8), // espacio entre las tarjetas
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // bordes redondeados
+                          elevation: 3, // sombra
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Nombre del medicamento
+                                Text(
+                                  med.medicationName,
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
-                              ),
 
-                              const SizedBox(width: 8),
+                                if (med.dose.isNotEmpty) Text('Dosis: ${med.dose}'),
 
-                              // agrega el checkbox para marcar si lo ha tomado o no
-                              Checkbox(
-                                value: t.taken, // el valor del checkbox depende de si la toma ha sido marcada como tomada o no
-                                onChanged: (_) {
-                                  _toggleTracking(med, t); // al cambiar el estado del checkbox, llama a la función de toggle para actualizar el estado tanto en la interfaz como en el backend
-                                },
-                              ),
-                            ],
-                          );
-                        }).toList(), // convierte la lista de tomas a una lista de widgets para mostrar en la interfaz
-                      ),
-                  ],
-                ),
-              ),
-            );
-          },
-              ),
+                                const SizedBox(height: 12),
+
+                                if (med.times.isEmpty) const Text('Sin tomas para hoy'),
+
+                                if (med.times.isNotEmpty)
+                                  Column(
+                                    children: med.times.map((t) {
+                                      final isTaken = _isTaken(t.status);
+
+                                      return Row(
+                                        children: [
+                                          // muestra la hora
+                                          Expanded(child: Text(_formatTime(t.scheduledTime))),
+                                          // Texto según el toggle
+                                          Text(
+                                            t.status,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+
+                                          const SizedBox(width: 8),
+
+                                          // agrega el checkbox para marcar si lo ha tomado o no
+                                          Checkbox(
+                                            value: isTaken, // el valor del checkbox depende de si la toma ha sido marcada como tomada o no
+                                            onChanged: (_) {
+                                              _toggleTracking(med, t); // al cambiar el estado del checkbox, llama a la función de toggle para actualizar el estado tanto en la interfaz como en el backend
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    }).toList(), // convierte la lista de tomas a una lista de widgets para mostrar en la interfaz
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

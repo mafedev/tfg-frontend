@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/models/medication_tracking.dart';
+import 'package:tfg_frontend/models/prescription_tracking.dart';
 import 'package:tfg_frontend/services/patient_medication_service.dart';
 import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 
@@ -14,7 +14,7 @@ class PatientFollowUpScreen extends StatefulWidget {
 class _PatientFollowUpScreenState extends State<PatientFollowUpScreen> {
   final PatientMedicationService _service = PatientMedicationService();
 
-  List<MedicationTracking> _tracking = []; // lista del seguimiento de medicamentos
+  List<PrescriptionTracking> _tracking = []; // lista del seguimiento de medicamentos
 
   @override
   void initState() {
