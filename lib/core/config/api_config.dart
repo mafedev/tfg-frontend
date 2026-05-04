@@ -14,4 +14,6 @@ class ApiConfig {
   // Endpoints para tracking
   static const String prescriptionTrackingEndpoint = '$baseUrl/prescription-tracking';
   static const String routineTrackingEndpoint = '$baseUrl/routine-tracking';
+
+  static const String patientAllergies = '$baseUrl/patients';
 }
