@@ -1,0 +1,4 @@
+enum TrackingStatus {
+  PENDING,
+  TAKEN,
+}
