@@ -60,4 +60,27 @@ class AllergyService {
       throw Exception('Error eliminando alergia: ${response.statusCode}');
     }
   }
+
+  Future<void> updateSeverity({
+    required int patientId,
+    required int allergyId,
+    required AllergySeverity severity,
+  }) async {
+    final token = await _storage.getToken();
+
+    final url = '${ApiConfig.patientAllergies}/$patientId/allergies/$allergyId';
+
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'severity': severity.name}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error actualizando severidad');
+    }
+  }
 }

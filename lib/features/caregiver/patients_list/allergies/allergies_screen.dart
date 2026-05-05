@@ -107,6 +107,46 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
     }
   }
 
+  void _editSeverity(Map<String, dynamic> allergyData) async {
+    AllergySeverity severity = AllergySeverity.values.firstWhere(
+      (e) => e.name == allergyData['severity'],
+      orElse: () => AllergySeverity.LOW,
+    );
+
+    await showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Editar severidad'),
+        content: DropdownButtonFormField<AllergySeverity>(
+          value: severity,
+          items: AllergySeverity.values
+              .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
+              .toList(),
+          onChanged: (v) => severity = v!,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _service.updateSeverity(
+                patientId: widget.patientId,
+                allergyId: allergyData['allergy']['id'],
+                severity: severity,
+              );
+
+              Navigator.pop(context);
+              _load();
+            },
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,9 +173,18 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
                   title: Text(a['allergy']['name'] ?? 'Sin nombre'),
                   subtitle: Text(a['severity'] ?? 'Sin severidad'),
 
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _delete(a['allergy']['id']),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue),
+                        onPressed: () => _editSeverity(a),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () => _delete(a['allergy']['id']),
+                      ),
+                    ],
                   ),
                 );
               },
