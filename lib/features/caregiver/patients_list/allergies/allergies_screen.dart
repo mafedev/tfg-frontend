@@ -93,6 +93,20 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
     );
   }
 
+  void _delete(int allergyId) async {
+    try {
+      await _service.delete(patientId: widget.patientId, allergyId: allergyId);
+
+      setState(() {
+        allergies.removeWhere((a) => a['allergy']['id'] == allergyId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alergia eliminada')));
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,6 +132,11 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
                 return ListTile(
                   title: Text(a['allergy']['name'] ?? 'Sin nombre'),
                   subtitle: Text(a['severity'] ?? 'Sin severidad'),
+
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: () => _delete(a['allergy']['id']),
+                  ),
                 );
               },
             ),

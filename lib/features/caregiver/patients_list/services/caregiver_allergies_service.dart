@@ -45,4 +45,19 @@ class AllergyService {
       }),
     );
   }
+
+  Future<void> delete({required int patientId, required int allergyId}) async {
+    final token = await _storage.getToken();
+
+    final url = '${ApiConfig.patientAllergies}/$patientId/allergies/$allergyId';
+
+    final response = await http.delete(
+      Uri.parse(url),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error eliminando alergia: ${response.statusCode}');
+    }
+  }
 }
