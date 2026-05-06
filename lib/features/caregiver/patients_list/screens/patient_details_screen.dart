@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/caregiver/patients_list/allergies/allergies_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patient_appointment/create_appointment_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patient_appointment/view_appointment_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_appointment_service.dart';
@@ -345,6 +346,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
                     // ---------- Botón prescripción ----------
                     _medicationButton(),
+                    const SizedBox(height: 20),
+
+                    // Botón alergías
+                    _allergyButton(),
+                    const SizedBox(height: 20),
 
                     // ---------- Botón citas ----------
                     const SizedBox(height: 20),
@@ -460,6 +466,25 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                 );
                 _checkAppointments(); 
               },
+      ),
+    );
+  }
+
+  Widget _allergyButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: const Icon(Icons.warning, color: Colors.white),
+        label: const Text('Alergias', style: TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PatientAllergiesScreen(patientId: patient!.id),
+            ),
+          );
+        },
       ),
     );
   }
