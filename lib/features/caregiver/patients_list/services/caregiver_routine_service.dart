@@ -87,12 +87,12 @@ class RoutineService {
   }
 
   // ---------- Tracking ----------
-  Future<List<Map<String, dynamic>>> getTracking(int patientId) async {
+  Future<List<Map<String, dynamic>>> getTracking({required int patientId, required DateTime date}) async {
     final token = await _secureStorageService.getToken();
-    final today = DateTime.now().toIso8601String().split('T')[0];
+    final formattedDate = date.toIso8601String().split('T')[0];
 
     final response = await http.get(
-      Uri.parse('$_trackingUrl/$patientId?date=$today'),
+      Uri.parse('$_trackingUrl/$patientId?date=$formattedDate'),
       headers: {'Authorization': 'Bearer $token'},
     );
 

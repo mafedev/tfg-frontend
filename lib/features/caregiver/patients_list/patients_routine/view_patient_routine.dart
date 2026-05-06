@@ -5,7 +5,6 @@ import 'package:tfg_frontend/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/patients_routine/edit_routine_item_screen.dart';
 import 'package:tfg_frontend/features/caregiver/patients_list/services/caregiver_routine_service.dart';
 import 'package:tfg_frontend/models/routine.dart';
-import 'package:tfg_frontend/models/routine_item.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
   final int patientId;
@@ -24,6 +23,8 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
   Map<int, int> trackingIdMap = {};
   Map<int, TrackingStatus> trackingStatusMap = {};
+
+  DateTime selectedDate = DateTime.now();
 
   // Cuando se inicia la pantalla, carga la rutina
   @override
@@ -59,7 +60,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   // -------------------- Carga tracking --------------------
   Future<void> _loadTracking() async {
     try {
-      final data = await _routineService.getTracking(widget.patientId);
+      final data = await _routineService.getTracking(patientId: widget.patientId, date: selectedDate);
 
       final ids = <int, int>{};
       final status = <int, TrackingStatus>{};
@@ -223,7 +224,50 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         child: const Icon(Icons.add),
       ),
 
-      body: ListView(
+      body: Column(
+        children: [
+          // -------- SELECTOR DE FECHA --------
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () async {
+                    setState(() {
+                      selectedDate = selectedDate.subtract(const Duration(days: 1));
+                    });
+                    await _loadTracking();
+                  },
+                ),
+
+                Text(
+                  "${selectedDate.toLocal()}".split(' ')[0],
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward),
+                  onPressed: () async {
+                    final tomorrow = selectedDate.add(const Duration(days: 1));
+
+                    if (tomorrow.isAfter(DateTime.now())) return;
+
+                    setState(() {
+                      selectedDate = tomorrow;
+                    });
+
+                    await _loadTracking();
+                  },
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: ListView(
         children: [
           ...routine!.items.map((item) {
             final current = trackingStatusMap[item.id] ?? TrackingStatus.PENDING;
@@ -256,6 +300,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
           ElevatedButton(
             onPressed: deleteRoutine,
             child: const Text("Eliminar rutina"),
+          ),
+        ],
+      ),
           ),
         ],
       ),
