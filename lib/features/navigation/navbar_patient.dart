@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/features/patient/emergency/screens/patient_emergency_screen.dart';
-import 'package:tfg_frontend/features/patient/follow_up/screens/patient_follow_up_screen.dart';
-import 'package:tfg_frontend/features/patient/home/screens/patient_home_screen.dart';
-import 'package:tfg_frontend/features/patient/routine/screens/patient_routine_screen.dart';
+import 'package:tfg_frontend/features/emergency/presentation/screens/patient_emergency_screen.dart';
+import 'package:tfg_frontend/features/follow_up/presentation/screens/patient_follow_up_screen.dart';
+import 'package:tfg_frontend/features/home/presentation/patient_home_screen.dart';
+import 'package:tfg_frontend/features/routines/presentation/screens/patient_routine_screen.dart';
 
 class NavbarPatient extends StatefulWidget {
   const NavbarPatient({super.key});
