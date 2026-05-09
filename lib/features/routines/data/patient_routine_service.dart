@@ -10,12 +10,13 @@ class PatientRoutineService {
 
   // ----------- Obtiene la rutina del paciente -----------
   Future<Routine?> getMyRoutine([String? token]) async {
-    final t = token ?? await _storage.getToken();
+    final t = token ?? await _storage.getToken(); // obtiene el token
 
     if (t == null) {
       throw Exception('Token no disponible');
     }
 
+    // Petición
     final response = await http.get(
       Uri.parse('$baseUrl/me'),
       headers: {'Authorization': 'Bearer $t'},

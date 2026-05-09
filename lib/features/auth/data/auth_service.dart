@@ -5,12 +5,10 @@ import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/shared/enums/user/user_role.dart';
 import 'package:tfg_frontend/shared/dtos/user/login_response.dart';
 
-// Responsabilidad: autenticación
 class AuthService {
   final String baseUrl = ApiConfig.authEndpoint;
 
   // ------------------- Crear un nuevo usuario -------------------
-  // Future es para que Flutter no se congele al hacer la petición, y todos lo datos son requeridos
   Future<bool> signup({
     required String username,
     required String email,
@@ -31,7 +29,7 @@ class AuthService {
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'}, // indica que está enviando un JSON
-        body: jsonEncode({ // pasa el Map a JSON
+        body: jsonEncode({ // cambia los objetos Dart a JSON para enviarlos
           'username': username,
           'email': email,
           'password': password,

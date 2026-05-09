@@ -21,11 +21,11 @@ class RoutineService {
     final response = await http.post(
       Uri.parse('$_routineUrl/$patientId'),
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json', // indica que el cuerpo es un JSON
       },
     );
-    final data = jsonDecode(response.body);
+    final data = jsonDecode(response.body); // convierte los objetos a JSON para enviarlo
 
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception("Error creando rutina");
@@ -42,13 +42,12 @@ class RoutineService {
     required String time,
     required String type,
   }) async {
-    // Obtener el token del almacenamiento seguro
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
     if (token == null) {
       throw Exception('Token no disponible');
     }
 
-    // hace la petición POST al backend
+    // Petición
     final response = await http.post(
       Uri.parse('$_itemsUrl/$routineId'),
       headers: {
@@ -65,11 +64,12 @@ class RoutineService {
 
   // ---------- Obtener rutina ----------
   Future<Map<String, dynamic>?> getRoutine(int patientId) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
     if (token == null) {
       throw Exception('Token no disponible');
     }
 
+    // Petición
     final response = await http.get(
       Uri.parse('$_routineUrl/$patientId'),
       headers: {'Authorization': 'Bearer $token'},
@@ -88,9 +88,10 @@ class RoutineService {
 
   // ---------- Tracking ----------
   Future<List<Map<String, dynamic>>> getTracking({required int patientId, required DateTime date}) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
     final formattedDate = date.toIso8601String().split('T')[0];
 
+    // Petición
     final response = await http.get(
       Uri.parse('$_trackingUrl/$patientId?date=$formattedDate'),
       headers: {'Authorization': 'Bearer $token'},
@@ -104,8 +105,9 @@ class RoutineService {
     required int trackingId,
     required String status,
   }) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.put(
       Uri.parse('$_trackingUrl/$trackingId?status=$status'),
       headers: {'Authorization': 'Bearer $token'},
@@ -121,8 +123,9 @@ class RoutineService {
     int routineId,
     List<Map<String, dynamic>> items,
   ) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.put(
       Uri.parse('$_routineUrl/$routineId'),
       headers: {
@@ -144,8 +147,9 @@ class RoutineService {
     required String time,
     required String type,
   }) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.put(
       Uri.parse('$_itemsUrl/$itemId'),
       headers: {
@@ -162,8 +166,9 @@ class RoutineService {
   
   // ---------- Borrar rutina ----------
   Future<void> deleteRoutine(int patientId) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.delete(
       Uri.parse('$_routineUrl/$patientId'),
       headers: {'Authorization': 'Bearer $token'},
@@ -176,8 +181,9 @@ class RoutineService {
 
   // ---------- Borrar item de rutina ----------
   Future<void> deleteItem(int itemId) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.delete(
       Uri.parse('$_itemsUrl/$itemId'),
       headers: {'Authorization': 'Bearer $token'},

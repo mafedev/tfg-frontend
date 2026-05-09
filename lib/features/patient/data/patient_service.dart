@@ -6,20 +6,17 @@ import 'package:tfg_frontend/shared/models/patient.dart';
 
 class PatientService {
   final String baseUrl = ApiConfig.patientsEndpoint;
-  final SecureStorageService _storage =
-      SecureStorageService(); // es para obtener el token guardado
+  final SecureStorageService _storage = SecureStorageService(); // es para obtener el token guardado
 
   // ------------------- Obtener los detalles por paciente -------------------
   Future<Patient?> getPatientDetails(int patientId) async {
-    // recibe el id del paciente para poder hacer la petición
-    final token = await _storage
-        .getToken(); // se obtiene el token desde el secure storage
+    final token = await _storage.getToken(); // se obtiene el token desde el secure storage
 
-    // hace la petición
+    // Petición
     final response = await http.get(
       Uri.parse('$baseUrl/$patientId'),
       headers: {
-        'Authorization': 'Bearer $token', // envía el token
+        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json', // indica que está enviando un JSON
       },
     );
@@ -41,7 +38,8 @@ class PatientService {
     String? diseaseStage,
   ) async {
     final token = await _storage.getToken();
-    // Hace la petición PUT para actualizar los datos del paciente
+    
+    // Petición
     await http.put(
       Uri.parse('$baseUrl/$patientId'),
       headers: {

@@ -10,10 +10,11 @@ class RelationService {
 
   // ------------------- Generar código -------------------
   Future<String?> generateRelationCode() async {
-    final token = await _storage.getToken();
+    final token = await _storage.getToken(); // obtiene el token
 
     if (token == null) return null;
 
+    // Petición
     final response = await http.post(
       Uri.parse(baseUrl),
       headers: {'Authorization': 'Bearer $token'},
@@ -29,10 +30,11 @@ class RelationService {
 
   // ------------------- Vincular paciente -------------------
   Future<bool> linkPatient(String code) async {
-    final token = await _storage.getToken();
+    final token = await _storage.getToken(); // obtiene el token
 
     if (token == null) return false;
 
+    // Petición
     final response = await http.post(
       Uri.parse('$baseUrl/link?code=$code'),
       headers: {'Authorization': 'Bearer $token'},
@@ -43,10 +45,11 @@ class RelationService {
 
   // ------------------- Obtener pacientes -------------------
   Future<List<Patient>> getPatients() async {
-    final token = await _storage.getToken();
+    final token = await _storage.getToken(); // obtiene el token
 
     if (token == null) return [];
 
+    // Petición
     final response = await http.get(
       Uri.parse('$baseUrl/patients'),
       headers: {'Authorization': 'Bearer $token'},
@@ -62,10 +65,11 @@ class RelationService {
 
   // ------------------- Eliminar relación -------------------
   Future<bool> deleteRelation(int patientId) async {
-    final token = await _storage.getToken();
+    final token = await _storage.getToken(); // obtiene el token
 
     if (token == null) return false;
 
+    // Petición
     final response = await http.delete(
       Uri.parse('$baseUrl/$patientId'),
       headers: {'Authorization': 'Bearer $token'},

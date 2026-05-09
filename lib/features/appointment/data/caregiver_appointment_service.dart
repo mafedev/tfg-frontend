@@ -10,27 +10,28 @@ class AppointmentService {
   static const String _baseUrl = ApiConfig.appointmentEndpoint;
   final SecureStorageService _secureStorageService = SecureStorageService();
 
+  // -------------------- Crear cita --------------------
   Future<bool> createAppointment(AppointmentRequest request) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.post(
       Uri.parse(_baseUrl),
       headers: {
-        "Content-Type": "application/json",
         "Authorization": "Bearer $token",
+        "Content-Type": "application/json", // indica que el cuerpo de la petición es JSON
       },
-      body: jsonEncode(request.toJson()),
+      body: jsonEncode(request.toJson()), // convierte los objetos Dart en JSON para enviarlos 
     );
 
     return response.statusCode == 201 || response.statusCode == 200;
   }
 
   // -------------------- Obtener citas --------------------
-  Future<List<AppointmentResponse>> getAppointmentsByPatient(
-    int patientId,
-  ) async {
-    final token = await _secureStorageService.getToken();
-
+  Future<List<AppointmentResponse>> getAppointmentsByPatient(int patientId) async {
+    final token = await _secureStorageService.getToken(); // obtiene el token
+    
+    // Petición
     final response = await http.get(
       Uri.parse('$_baseUrl/patient/$patientId'),
       headers: {"Authorization": "Bearer $token"},
@@ -42,10 +43,11 @@ class AppointmentService {
 
     final List data = jsonDecode(response.body);
 
+    // convierte la respuesta JSON en una lista de objetos AppointmentResponse
     return data.map((e) => AppointmentResponse.fromJson(e)).toList();
   }
 
-  // borrar
+  // -------------------- Borrar cita --------------------
   Future<void> deleteAppointment(int id) async {
     final token = await _secureStorageService.getToken();
 
@@ -64,15 +66,16 @@ class AppointmentService {
     required int id,
     required AppointmentRequest request,
   }) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.put(
       Uri.parse('$_baseUrl/$id'),
       headers: {
         "Authorization": "Bearer $token",
-        "Content-Type": "application/json",
+        "Content-Type": "application/json", // indica que el cuerpo es JSON
       },
-      body: jsonEncode(request.toJson()),
+      body: jsonEncode(request.toJson()), // convierte el request en un JSON para enviarlo
     );
 
     return response.statusCode == 200;
@@ -80,8 +83,9 @@ class AppointmentService {
 
   // -------------------- Cambiar estado --------------------
   Future<bool> updateStatus({required int id, required AppointmentStatus status}) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.patch(
       Uri.parse('$_baseUrl/$id/status?status=${status.name}'),
       headers: {"Authorization": "Bearer $token"},

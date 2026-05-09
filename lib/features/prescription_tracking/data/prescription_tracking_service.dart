@@ -9,16 +9,17 @@ class PrescriptionTrackingService {
 
   final SecureStorageService _secureStorageService = SecureStorageService();
 
-  // -------------------- GET tracking por fecha --------------------
+  // -------------------- Obtener tracking por fecha --------------------
   Future<List<PrescriptionTracking>> getMedicationTracking(
     DateTime date,
   ) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
     final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
     final url = '$_baseUrl?date=$formattedDate';
 
+    // Petición
     final response = await http.get(
       Uri.parse(url),
       headers: {'Authorization': 'Bearer $token'},
@@ -38,15 +39,16 @@ class PrescriptionTrackingService {
     required int prescriptionId,
     required String scheduledTime,
   }) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // Petición
     final response = await http.put(
       Uri.parse('$_baseUrl/toggle'),
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json', // indica que el cuerpo es un JSON
       },
-      body: jsonEncode({
+      body: jsonEncode({ // convierte los objetos a JSON para enviarlos
         'prescriptionId': prescriptionId,
         'scheduledTime': scheduledTime,
       }),

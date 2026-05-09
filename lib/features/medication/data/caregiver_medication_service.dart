@@ -15,7 +15,7 @@ class CaregiverMedicationService {
     String description,
     MedicationType type,
   ) async {
-    final token = await _secureStorageService.getToken(); // se obtiene el token del secure storage
+    final token = await _secureStorageService.getToken(); // se obtiene el token
 
     // si el token es nulo, lanza una excepción
     if (token == null) {

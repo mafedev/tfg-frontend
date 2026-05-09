@@ -11,16 +11,17 @@ class CaregiverPrescriptionService {
 
   // ---------- Crear prescripción ----------
   Future<void> createPrescription(PrescriptionRequest request) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
     if (token == null) throw Exception('Token no disponible');
 
+    // Petición
     final response = await http.post(
       Uri.parse(_baseUrl),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(request.toJson()),
+      body: jsonEncode(request.toJson()), // convierte el objeto a JSON
     );
 
     if (response.statusCode != 200) {
@@ -30,9 +31,10 @@ class CaregiverPrescriptionService {
 
   // ---------- Obtener prescripciones de un paciente ----------
   Future<List<dynamic>> getByPatient(int patientId) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
     if (token == null) throw Exception('Token no disponible');
 
+    // Petición
     final response = await http.get(
       Uri.parse('$_baseUrl/patient/$patientId'),
       headers: {
@@ -49,9 +51,10 @@ class CaregiverPrescriptionService {
 
   // ---------- Eliminar prescripción ----------
   Future<void> deletePrescription(int id) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
     if (token == null) throw Exception('Token no disponible');
 
+    // Petición
     final response = await http.delete(
       Uri.parse('$_baseUrl/$id'),
       headers: {
@@ -69,16 +72,17 @@ class CaregiverPrescriptionService {
     required int prescriptionId,
     required PrescriptionRequest request,
   }) async {
-    final token = await _secureStorageService.getToken();
+    final token = await _secureStorageService.getToken(); // obtiene el token
     if (token == null) throw Exception('Token no disponible');
 
+    // Petición
     final response = await http.put(
       Uri.parse('$_baseUrl/$prescriptionId'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
       },
-      body: jsonEncode(request.toJson()),
+      body: jsonEncode(request.toJson()), // convierte el objeto a JSON
     );
 
     if (response.statusCode != 200) {
