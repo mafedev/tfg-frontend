@@ -12,7 +12,7 @@ class PrescriptionTrackingService {
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // -------------------- Obtener tracking por fecha --------------------
-  Future<List<PrescriptionTracking>> getMedicationTracking(
+  Future<List<PrescriptionTracking>> getPrescriptionTracking(
     DateTime date,
   ) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
@@ -22,6 +22,7 @@ class PrescriptionTrackingService {
       throw Exception('Token no disponible');
     }
 
+    // formatea la fecha a 'YYYY-MM-DD' para enviarla como parámetro en la URL
     final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
     final url = '$_baseUrl?date=$formattedDate';
@@ -41,6 +42,43 @@ class PrescriptionTrackingService {
 
     final List<dynamic> data = jsonDecode(response.body);
 
+    return data.map((json) => PrescriptionTracking.fromJson(json)).toList();
+  }
+
+<<<<<<< Updated upstream
+  
+=======
+>>>>>>> Stashed changes
+  // -------------------- Obtener tracking de medicamentos --------------------
+  // Obtiene el tracking de medicamentos del paciente para una fecha específica
+  Future<List<PrescriptionTracking>> getPrescriptionTrackingForDate(DateTime date) async {
+    final token = await _secureStorageService.getToken();
+
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    // formatea la fecha en formato YYYY-MM-DD para enviarla como parámetro en la URL
+    final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+
+    final url = '$_baseUrl?date=$formattedDate';
+
+    // Petición
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    // valida respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error obteniendo tracking de medicamentos',
+    );
+
+    // convierte la respuesta JSON en una lista de objetos PrescriptionTracking
+    final List<dynamic> data = jsonDecode(response.body);
     return data.map((json) => PrescriptionTracking.fromJson(json)).toList();
   }
 

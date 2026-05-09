@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tracking_service.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
-import 'package:tfg_frontend/features/medication/data/patient_medication_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class PatientFollowUpScreen extends StatefulWidget {
@@ -12,7 +12,7 @@ class PatientFollowUpScreen extends StatefulWidget {
 }
 
 class _PatientFollowUpScreenState extends State<PatientFollowUpScreen> {
-  final PatientMedicationService _service = PatientMedicationService();
+  final PrescriptionTrackingService _service = PrescriptionTrackingService();
 
   List<PrescriptionTracking> _tracking = []; // lista del seguimiento de medicamentos
 
@@ -25,7 +25,7 @@ class _PatientFollowUpScreenState extends State<PatientFollowUpScreen> {
   // Carga el seguimiento de medicamentos para hoy
   Future<void> _load() async {
     try {
-      final data = await _service.getMedicationTrackingForDate(DateTime.now()); // obtiene el seguimiento de medicamentos para hoy
+      final data = await _service.getPrescriptionTrackingForDate(DateTime.now()); // obtiene el seguimiento de medicamentos para hoy
 
       setState(() {
         _tracking = data; // actualiza la lista con la información que devuelve

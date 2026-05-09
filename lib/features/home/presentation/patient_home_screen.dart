@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tracking_service.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/relation/data/relation_service.dart';
-import 'package:tfg_frontend/features/medication/data/patient_medication_service.dart';
 import 'package:tfg_frontend/core/services/notification_service.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
@@ -22,7 +22,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   // Servicio para manejar la relación entre paciente y cuidador
   final RelationService _relationService = RelationService();
   // Servicio para obtener el tracking de medicamentos del paciente
-  final PatientMedicationService _medicationService = PatientMedicationService();
+  final PrescriptionTrackingService _medicationService = PrescriptionTrackingService();
   final RoutineService _routineService = RoutineService();
   // Servicio para programar notificaciones locales
   final NotificationService _notificationService = NotificationService();
@@ -50,7 +50,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   // ---------------- MEDICAMENTOS ----------------
   Future<void> _scheduleMedicationNotifications() async {
-    final tracking = await _medicationService.getMedicationTrackingForDate(
+    final tracking = await _medicationService.getPrescriptionTrackingForDate(
       DateTime.now(),
     );
 
