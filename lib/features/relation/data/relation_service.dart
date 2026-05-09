@@ -1,80 +1,108 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import '../../../shared/models/patient.dart';
 
 class RelationService {
-  final String baseUrl = ApiConfig.relationsEndpoint;
+  final String _baseUrl = ApiConfig.relationsEndpoint;
   final SecureStorageService _storage = SecureStorageService();
 
   // ------------------- Generar código -------------------
   Future<String?> generateRelationCode() async {
     final token = await _storage.getToken(); // obtiene el token
 
-    if (token == null) return null;
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
 
     // Petición
     final response = await http.post(
-      Uri.parse(baseUrl),
+      Uri.parse(_baseUrl),
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['relationCode'];
-    }
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error generando código de relación',
+    );
 
-    return null;
+    final data = HttpResponseHandler.decode(response);
+    return data['relationCode'];
   }
 
   // ------------------- Vincular paciente -------------------
-  Future<bool> linkPatient(String code) async {
+  Future<void> linkPatient(String code) async {
     final token = await _storage.getToken(); // obtiene el token
 
-    if (token == null) return false;
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
 
     // Petición
     final response = await http.post(
-      Uri.parse('$baseUrl/link?code=$code'),
+      Uri.parse('$_baseUrl/link?code=$code'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    return response.statusCode == 200;
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error vinculando paciente',
+    );
   }
 
   // ------------------- Obtener pacientes -------------------
   Future<List<Patient>> getPatients() async {
     final token = await _storage.getToken(); // obtiene el token
 
-    if (token == null) return [];
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
 
     // Petición
     final response = await http.get(
-      Uri.parse('$baseUrl/patients'),
+      Uri.parse('$_baseUrl/patients'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      return data.map((e) => Patient.fromJson(e)).toList();
-    }
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error obteniendo pacientes',
+    );
 
-    return [];
+    final List data = HttpResponseHandler.decodeList(response);
+    return data.map((e) => Patient.fromJson(e)).toList();
   }
 
   // ------------------- Eliminar relación -------------------
-  Future<bool> deleteRelation(int patientId) async {
+  Future<void> deleteRelation(int patientId) async {
     final token = await _storage.getToken(); // obtiene el token
 
-    if (token == null) return false;
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
 
     // Petición
     final response = await http.delete(
-      Uri.parse('$baseUrl/$patientId'),
+      Uri.parse('$_baseUrl/$patientId'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    return response.statusCode == 200 || response.statusCode == 204;
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200, 204],
+      errorMessage: 'Error eliminando relación',
+    );
   }
 }

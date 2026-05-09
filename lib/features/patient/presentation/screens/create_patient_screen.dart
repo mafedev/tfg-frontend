@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/enums/user/patient/disease_stage.dart';
-import 'package:tfg_frontend/features/patient/data/create_patient_service.dart';
+import 'package:tfg_frontend/features/patient/data/patient_service.dart';
 
 class CreatePatientScreen extends StatefulWidget {
   const CreatePatientScreen({super.key});

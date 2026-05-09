@@ -1,7 +1,9 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
 
 class PrescriptionTrackingService {
@@ -14,6 +16,11 @@ class PrescriptionTrackingService {
     DateTime date,
   ) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
+    
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
 
     final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
@@ -25,13 +32,16 @@ class PrescriptionTrackingService {
       headers: {'Authorization': 'Bearer $token'},
     );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error obteniendo tracking',
+    );
 
-      return data.map((json) => PrescriptionTracking.fromJson(json)).toList();
-    }
+    final List<dynamic> data = jsonDecode(response.body);
 
-    throw Exception('Error GET tracking: ${response.statusCode}');
+    return data.map((json) => PrescriptionTracking.fromJson(json)).toList();
   }
 
   // -------------------- TOGGLE tracking --------------------
@@ -40,10 +50,17 @@ class PrescriptionTrackingService {
     required String scheduledTime,
   }) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
+    
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final url = '$_baseUrl/toggle';
 
     // Petición
     final response = await http.put(
-      Uri.parse('$_baseUrl/toggle'),
+      Uri.parse(url),
       headers: {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json', // indica que el cuerpo es un JSON
@@ -54,8 +71,11 @@ class PrescriptionTrackingService {
       }),
     );
 
-    if (response.statusCode != 200) {
-      throw Exception('Error PUT tracking: ${response.statusCode}');
-    }
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error actualizando tracking',
+    );
   }
 }

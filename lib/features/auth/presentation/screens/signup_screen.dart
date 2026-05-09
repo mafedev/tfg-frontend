@@ -216,23 +216,22 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _signup() async {
     if (_formKey.currentState?.validate() ?? false) {
       final authService = AuthService();
-      final success = await authService.signup(
-        username: nameController.text.trim(),
-        email: emailController.text.trim(),
-        password: passwordController.text,
-        role: selectedRole,
-        phone: phoneController.text,
-      );
 
-      if (success) {
+      try {
+        await authService.signup(
+          username: nameController.text.trim(),
+          email: emailController.text.trim(),
+          password: passwordController.text,
+          role: selectedRole,
+          phone: phoneController.text,
+        );
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cuenta creada correctamente')),
         );
         Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al crear cuenta')),
-        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al crear cuenta')));
       }
     }
   }

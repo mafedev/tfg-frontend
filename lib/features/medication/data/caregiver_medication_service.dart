@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
+import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/enums/medication/medication_type.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
@@ -15,21 +16,21 @@ class CaregiverMedicationService {
     String description,
     MedicationType type,
   ) async {
-    final token = await _secureStorageService.getToken(); // se obtiene el token
+    final token = await _secureStorageService.getToken(); // obtiene el token
 
-    // si el token es nulo, lanza una excepción
+    // verifica que exista el token
     if (token == null) {
       throw Exception('Token no disponible');
     }
 
-    // si está disponible, hace la petición POST al backend
+    // Petición
     final response = await http.post(
-      Uri.parse(_baseUrl), // Endpoint para crear medicamento
+      Uri.parse(_baseUrl),
       headers: {
+        'Authorization': 'Bearer $token',
         'Content-Type': 'application/json', // indica que el cuerpo es JSON
-        'Authorization': 'Bearer $token', // pasa el token en la cabecera
       },
-      body: jsonEncode({ // convierte el cuerpo a JSON
+      body: jsonEncode({ // convierte los objetos Dart en JSON
         'name': name,
         'description': description,
         // enviamos el nombre del enum para que el backend reciba un string válido
@@ -37,22 +38,24 @@ class CaregiverMedicationService {
       }),
     );
 
-    // si la respuesta no es 200, lanza una excepción con el código de estado
-    if (response.statusCode != 200) {
-      throw Exception('Error al crear medicamento: ${response.statusCode} - ${response.body}');
-    }
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200, 201],
+      errorMessage: 'Error al crear medicamento',
+    );
   }
 
   // ---------- Obtener medicamentos ----------
   Future<List<MedicationResponse>> getMedications() async {
-    final token = await _secureStorageService.getToken();
-    
-    // si el token es nulo, lanza una excepción
+    final token = await _secureStorageService.getToken(); // obtiene el token
+
+    // verifica que exista el token
     if (token == null) {
       throw Exception('Token no disponible');
     }
 
-    // si hay token, hace la petición
+    // Petición
     final response = await http.get(
       Uri.parse(_baseUrl),
       headers: {
@@ -61,10 +64,12 @@ class CaregiverMedicationService {
       },
     );
 
-    // si algo sale mal muestra el error
-    if (response.statusCode != 200) {
-      throw Exception('Error al obtener medicamentos: ${response.body}');
-    }
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error al obtener medicamentos',
+    );
 
     final List data = jsonDecode(response.body);
 

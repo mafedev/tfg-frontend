@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/shared/enums/appointment/appointment_status.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_request.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 
@@ -11,8 +12,13 @@ class AppointmentService {
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // -------------------- Crear cita --------------------
-  Future<bool> createAppointment(AppointmentRequest request) async {
+  Future<void> createAppointment(AppointmentRequest request) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
+
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
 
     // Petición
     final response = await http.post(
@@ -21,25 +27,40 @@ class AppointmentService {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json", // indica que el cuerpo de la petición es JSON
       },
-      body: jsonEncode(request.toJson()), // convierte los objetos Dart en JSON para enviarlos 
+      body: jsonEncode(request.toJson()), // convierte los objetos Dart en JSON para enviarlos
     );
 
-    return response.statusCode == 201 || response.statusCode == 200;
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200, 201],
+      errorMessage: 'Error creando cita',
+    );
   }
 
   // -------------------- Obtener citas --------------------
   Future<List<AppointmentResponse>> getAppointmentsByPatient(int patientId) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
-    
+
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final url = '$_baseUrl/patient/$patientId';
+
     // Petición
     final response = await http.get(
-      Uri.parse('$_baseUrl/patient/$patientId'),
+      Uri.parse(url),
       headers: {"Authorization": "Bearer $token"},
     );
 
-    if (response.statusCode != 200) {
-      throw Exception("Error ${response.statusCode}");
-    }
+    // valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error obteniendo citas',
+    );
 
     final List data = jsonDecode(response.body);
 
@@ -51,26 +72,44 @@ class AppointmentService {
   Future<void> deleteAppointment(int id) async {
     final token = await _secureStorageService.getToken();
 
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final url = '$_baseUrl/$id';
+
+    // Petición
     final response = await http.delete(
-      Uri.parse('$_baseUrl/$id'),
+      Uri.parse(url),
       headers: {"Authorization": "Bearer $token"},
     );
 
-    if (response.statusCode != 204) {
-      throw Exception("Error eliminando cita");
-    }
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200, 204],
+      errorMessage: 'Error eliminando cita',
+    );
   }
 
   // -------------------- Editar cita --------------------
-  Future<bool> updateAppointment({
+  Future<void> updateAppointment({
     required int id,
     required AppointmentRequest request,
   }) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
 
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final url = '$_baseUrl/$id';
+
     // Petición
     final response = await http.put(
-      Uri.parse('$_baseUrl/$id'),
+      Uri.parse(url),
       headers: {
         "Authorization": "Bearer $token",
         "Content-Type": "application/json", // indica que el cuerpo es JSON
@@ -78,19 +117,39 @@ class AppointmentService {
       body: jsonEncode(request.toJson()), // convierte el request en un JSON para enviarlo
     );
 
-    return response.statusCode == 200;
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error actualizando cita',
+    );
   }
 
   // -------------------- Cambiar estado --------------------
-  Future<bool> updateStatus({required int id, required AppointmentStatus status}) async {
+  Future<void> updateStatus({
+    required int id,
+    required AppointmentStatus status,
+  }) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
+
+    // verifica que exista el token
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final url = '$_baseUrl/$id/status?status=${status.name}';
 
     // Petición
     final response = await http.patch(
-      Uri.parse('$_baseUrl/$id/status?status=${status.name}'),
+      Uri.parse(url),
       headers: {"Authorization": "Bearer $token"},
     );
 
-    return response.statusCode == 204;
+    // Valida la respuesta HTTP
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200, 204],
+      errorMessage: 'Error actualizando estado de la cita',
+    );
   }
 }

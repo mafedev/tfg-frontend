@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/relation/data/relation_service.dart';
 import 'package:tfg_frontend/features/medication/data/patient_medication_service.dart';
-import 'package:tfg_frontend/features/routines/data/patient_routine_service.dart';
 import 'package:tfg_frontend/core/services/notification_service.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
@@ -23,7 +23,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   final RelationService _relationService = RelationService();
   // Servicio para obtener el tracking de medicamentos del paciente
   final PatientMedicationService _medicationService = PatientMedicationService();
-  final PatientRoutineService _routineService = PatientRoutineService();
+  final RoutineService _routineService = RoutineService();
   // Servicio para programar notificaciones locales
   final NotificationService _notificationService = NotificationService();
   final SecureStorageService _storage = SecureStorageService();
@@ -75,7 +75,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
     final token = await _storage.getToken();
     if (token == null) return;
 
-    final routine = await _routineService.getMyRoutine(token);
+    final routine = await _routineService.getMyRoutine();
     if (routine == null) return;
 
     final now = DateTime.now();
@@ -107,20 +107,18 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   // Función que se ejecuta cuando el paciente presiona el botón de vincular
   Future<void> _link() async {
-    final success = await _relationService.linkPatient(
-      codeController.text.trim(),
-    );
+  try {
+    await _relationService.linkPatient(codeController.text.trim());
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Paciente conectado correctamente'
-              : 'Error conectando el paciente',
-        ),
-      ),
+      const SnackBar(content: Text('Paciente conectado correctamente')),
+    );
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error conectando el paciente')),
     );
   }
+}
 
   @override
   Widget build(BuildContext context) {
