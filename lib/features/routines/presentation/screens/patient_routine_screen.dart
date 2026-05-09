@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
-import 'package:tfg_frontend/features/routines/data/patient_routine_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class PatientRoutineScreen extends StatefulWidget {
@@ -32,7 +32,7 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
     }
 
     // hace la petición para obtener la rutina, y lo guarda en result
-    final result = await PatientRoutineService().getMyRoutine(token);
+    final result = await RoutineService().getMyRoutine();
 
     // actualiza el estado con la rutina obtenida, y pone cargar a false
     setState(() {

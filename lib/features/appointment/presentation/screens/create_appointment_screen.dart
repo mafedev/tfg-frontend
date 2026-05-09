@@ -106,19 +106,23 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
       patientId: widget.patientId,
     );
 
-    if (isEditing) {
-      success = await service.updateAppointment(
-        id: appointmentId!,
-        request: request,
-      );
-    } else {
-      success = await service.createAppointment(request);
-    }
+    try {
+      if (isEditing) {
+        await service.updateAppointment(id: appointmentId!, request: request);
+      } else {
+        await service.createAppointment(request);
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(success ? "Cita guardada" : "Error al guardar cita")),
-    );
-    Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Cita guardada")));
+
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Error al guardar cita")));
+    }
   }
 
   @override

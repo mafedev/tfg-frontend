@@ -88,19 +88,19 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
 
   // Elimina la relación con un paciente
   void _deletePatient(int patientId) async {
-    bool deleted = await _relationService.deleteRelation(patientId);
-    if (deleted) {
-      // refresca la lista
+    try {
+      await _relationService.deleteRelation(patientId);
       _loadPatients();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Paciente eliminado')),
+          const SnackBar(content: Text('Relación eliminada correctamente')),
         );
       }
-    } else {
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo eliminar el paciente')),
+          const SnackBar(content: Text('Error eliminando relación')),
         );
       }
     }
@@ -172,7 +172,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                   return ListView.builder(
                     itemCount: patients.length,
                     itemBuilder: (context, index) {
-                      final patient = patients[index];
+                      final patient = patients[index]; // obtiene el paciente por posición
 
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 7),
