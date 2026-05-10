@@ -3,6 +3,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
 import 'package:tfg_frontend/shared/models/routine_item.dart';
+import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class EditRoutineScreen extends StatefulWidget {
   final Routine routine;
@@ -135,10 +136,12 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Editar rutina"),
+      backgroundColor: AppColors.background,
+      appBar: const AppLogoAppBar(
+        title: 'Editar rutina',
         backgroundColor: AppColors.caregiverAppBar,
       ),
+
       body: Column(
         children: [
           Expanded(
@@ -147,17 +150,70 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
               itemBuilder: (_, i) {
                 final item = items[i];
 
-                return ListTile(
-                  title: Text(item.name),
-                  subtitle: Text(item.time ?? ""),
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
 
-                  // editar
-                  onTap: () => editItemDialog(item),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
 
-                  // borrar
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () => deleteItem(item.id),
+                    leading: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.caregiverAppBar.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.schedule,
+                        color: AppColors.caregiverAppBar,
+                      ),
+                    ),
+
+                    title: Text(
+                      item.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        item.time ?? "Sin hora",
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    ),
+
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.edit,
+                            color: AppColors.caregiverAppBar,
+                          ),
+                          onPressed: () => editItemDialog(item),
+                        ),
+
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => deleteItem(item.id),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },
