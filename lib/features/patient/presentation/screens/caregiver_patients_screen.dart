@@ -149,7 +149,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(title: 'Pacientes vinculados', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
@@ -183,7 +183,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
 
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 7),
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                        decoration: BoxDecoration(color: AppColors.caregiverCard, borderRadius: BorderRadius.circular(12)),
 
                         // Fila
                         child: ListTile(
