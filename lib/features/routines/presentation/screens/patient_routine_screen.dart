@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
@@ -13,138 +12,104 @@ class PatientRoutineScreen extends StatefulWidget {
 }
 
 class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
+  final RoutineService _service = RoutineService();
+
   Routine? routine; // almacena la rutina
-  bool isLoading = true; // es para mostrar si la pantalla está cargando
+  bool loading = true; // es para mostrar si la pantalla está cargando
+
+  String? error;
 
   // Carga la rutina cuando se inicializa
   @override
   void initState() {
     super.initState();
-    loadRoutine();
+    _loadRoutine();
   }
 
-  // carga la rutina
-  Future<void> loadRoutine() async {
-    final token = await SecureStorageService().getToken(); // obtiene el token
-    if (token == null) {
-      setState(() => isLoading = false); // si no hay token, "deja de cargar"
-      return;
+  Future<void> _loadRoutine() async {
+    try {
+      final result = await _service.getMyRoutine();
+      setState(() {
+        routine = result;
+        loading = false;
+        error = null;
+      });
+    } catch (_) {
+      setState(() {
+        routine = null;
+        loading = false;
+        error = 'Error al cargar la rutina';
+      });
     }
+  }
 
-    // hace la petición para obtener la rutina, y lo guarda en result
-    final result = await RoutineService().getMyRoutine();
+  String _formatTime(String? time) {
+    if (time == null || time.isEmpty) return '--:--';
 
-    // actualiza el estado con la rutina obtenida, y pone cargar a false
-    setState(() {
-      routine = result;
-      isLoading = false;
-    });
+    final parts = time.split(':');
+    if (parts.length < 2) return time;
+
+    return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    // si está cargando
-    if (isLoading) {
-      return Scaffold(
-        appBar: const AppLogoAppBar(title: 'Mi Rutina', backgroundColor: AppColors.patientAppBar),
-        body: const Center(
-          child: CircularProgressIndicator(), // un indicador en lugar de solo texto
-        ),
-      );
-    }
-
-    // si no hay rutina
-    if (routine == null) {
-      return Scaffold(
-        appBar: const AppLogoAppBar(title: 'Mi Rutina',backgroundColor: AppColors.patientAppBar),
-        body: const Center(child: Text('No hay rutina')),
-      );
-    }
-
-    // si hay rutina, la muestra
     return Scaffold(
-      appBar: const AppLogoAppBar(title: 'Mi Rutina',backgroundColor: AppColors.patientAppBar),
-      body: Container(
-        color: AppColors.patientBackground,
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Muestra cada elemento de la rutina en una card
-            // _routineCard('Desayuno', formatTime(routine!.breakfastTime)),
-            // _routineCard('Almuerzo', formatTime(routine!.lunchTime)),
-            // _routineCard('Cena', formatTime(routine!.dinnerTime)),
-            // _routineCard('Baño', formatTime(routine!.bathTime)),
-            // _routineCard('Hidratación','Cada ${routine!.hydrationReminderHours} h',
-            // ),
-          ],
-        ),
-      ),
+      appBar: const AppLogoAppBar(title: 'Mi rutina', backgroundColor: AppColors.patientAppBar),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+          ? Center(child: Text(error!))
+          : routine == null
+          ? const Center(child: Text('No tienes rutina asignada'))
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                const SizedBox(height: 10),
+
+                const Text(
+                  'Tu rutina diaria',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+
+                const SizedBox(height: 20),
+
+                if (routine!.items.isEmpty)
+                  const Center(child: Text('No hay elementos en tu rutina'))
+                else
+                  ...routine!.items.map(
+                    (item) => Container(
+                      margin: const EdgeInsets.symmetric(vertical: 6),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: AppColors.patientCard,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.schedule,
+                            color: AppColors.patientPrimary,
+                          ),
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: Text(
+                              item.name,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+
+                          Text(_formatTime(item.time)),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
     );
   }
-
-  // Widget para cada card
-  Widget _routineCard(String title, String value) {
-    IconData icon;
-    Color accentColor;
-
-    // El color e ícono cambia según el tipo de item
-    switch (title) {
-      case 'Desayuno':
-      case 'Almuerzo':
-      case 'Cena':
-      case 'Baño':
-        icon = title == 'Baño' ? Icons.bathtub : Icons.free_breakfast;
-        accentColor = title == 'Baño'
-            ? AppColors.patientSecondary
-            : AppColors.patientAccentGreen;
-        // formatear la hora
-        value = formatTime(value);
-        break;
-      case 'Hidratación':
-      case 'Recordatorio de agua':
-        icon = Icons.local_drink;
-        accentColor = AppColors.patientPrimary;
-        break;
-      default:
-        icon = Icons.check_circle_outline;
-        accentColor = AppColors.patientPrimary;
-    }
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.patientCard,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: accentColor.withOpacity(0.2),
-            child: Icon(icon, color: accentColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          ),
-          Text(value, style: const TextStyle(fontSize: 16)),
-        ],
-      ),
-    );
-  }
-}
-
-// -------------------- Formatea hh:mm:ss -> hh:mm --------------------
-String formatTime(String? time) {
-  if (time == null || time.isEmpty) return '--:--';
-  final parts = time.split(':');
-  return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
 }
