@@ -25,4 +25,11 @@ class AppColors {
   static const Color confirm = Color(0xFF27AE60);
 
   static const Color caregiverCard = Color(0xFFFFFFFF);
+  static const Color caregiverCardLigth =Color(0x16A73ED4);
+
+
+  static const Color routineAction = Color(0xFF49C0FB);
+  static const Color medicationAction = Color(0xFF0FC881);
+  static const Color allergyAction = Color(0xFFE20707);
+  static const Color appointmentAction = Color(0xFFF06B06);
 }

@@ -3,20 +3,14 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/allergies/presentation/screens/allergies_screen.dart';
 import 'package:tfg_frontend/features/appointment/presentation/screens/create_appointment_screen.dart';
 import 'package:tfg_frontend/features/appointment/presentation/screens/view_appointment_screen.dart';
-import 'package:tfg_frontend/features/appointment/data/caregiver_appointment_service.dart';
-import 'package:tfg_frontend/features/patient/data/patient_service.dart';
+import 'package:tfg_frontend/features/patient/presentation/screens/patients_details_controller.dart';
+import 'package:tfg_frontend/features/patient/presentation/widgets/edit_patient_dialog.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/prescription/presentation/screens/create_prescription_screen.dart';
 import 'package:tfg_frontend/features/prescription/presentation/screens/view_prescription_screen.dart';
 import 'package:tfg_frontend/features/routines/presentation/screens/create_routine_screen.dart';
 import 'package:tfg_frontend/features/routines/presentation/screens/view_patient_routine.dart';
-import 'package:tfg_frontend/features/prescription/data/caregiver_prescription_service.dart';
-import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/patient.dart';
-import 'package:tfg_frontend/core/services/secure_storage_service.dart';
-import 'package:tfg_frontend/shared/enums/user/patient/disease_stage.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 
 class PatientDetailsScreen extends StatefulWidget {
   final int patientId;
@@ -45,13 +39,8 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   bool hasAppointments = false;
 
   bool updatingPatient = false;
-  
-  // Servicio encargado de obtener los datos del paciente desde el backend
-  final PatientService _patientService = PatientService();
-  // Servicio para obtener la rutina
-  final RoutineService _routineService = RoutineService();
-
-  final AppointmentService _appointmentService = AppointmentService();
+  // Controlador que maneja la lógica de esta pantalla
+  final PatientDetailsController _controller = PatientDetailsController();
 
   @override
   void initState() {
@@ -63,19 +52,17 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   }
 
   // ---------- Cargar paciente ----------
-  void _loadPatient() async {
-    final result = await _patientService.getPatientDetails(widget.patientId);
-    setState(() {
-      patient = result; // guardamos lo que venga del backend
-    });
+  Future<void> _loadPatient() async {
+    final result = await _controller.loadPatient(widget.patientId);
+    setState(() => patient = result);
   }
 
   // ---------- Cargar rutina ----------
-  void _checkRoutine() async {
+  Future<void> _checkRoutine() async {
     try {
-      final routine = await _routineService.getRoutine(widget.patientId); // intenta obtener la rutina con el id del paciente
+      final result = await _controller.hasRoutine(widget.patientId);
       setState(() {
-        hasRoutine = routine != null; // si la rutina no es nula, entonces tiene rutina
+        hasRoutine = result;
         loadingRoutine = false; // ya no está cargando
       });
     } catch (e) {
@@ -84,19 +71,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   }
 
   // ---------- Cargar medicación ----------
-  void _checkMedication() async {
+  Future<void> _checkMedication() async {
     try {
-      final meds = await CaregiverPrescriptionService().getByPatient(
-        widget.patientId,
-      );
-
-      final activeMeds = meds.where((med) {
-        final status = med['status'] ?? 'ACTIVE';
-        return status != 'CANCELLED';
-      }).toList();
-
+      final result = await _controller.hasMedication(widget.patientId);
       setState(() {
-        hasMedication = activeMeds.isNotEmpty; // si la lista no está vacía, entonces tiene medicación asignada
+        hasMedication = result;
         loadingMedication = false; // ya no está cargando
       });
     } catch (e) {
@@ -104,14 +83,12 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     }
   }
 
-  void _checkAppointments() async {
+  // ---------- Cargar citas ----------
+  Future<void> _checkAppointments() async {
     try {
-      final result = await _appointmentService.getAppointmentsByPatient(
-        widget.patientId,
-      );
-
+      final result = await _controller.hasAppointments(widget.patientId);
       setState(() {
-        hasAppointments = result.isNotEmpty;
+        hasAppointments = result;
         loadingAppointments = false;
       });
     } catch (e) {
@@ -119,153 +96,21 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     }
   }
 
-  // ------------------- Editar paciente -------------------
-  void _editPatient() async {
-    if (patient == null) return;
-
-    final phoneController = TextEditingController(text: patient!.phone);
-    final notesController = TextEditingController(text: patient!.notes);
-    DiseaseStage? diseaseStage = patient!.diseaseStage;
-
-    final _formKey = GlobalKey<FormState>();
-
-    // Muestra un diálogo para editar los datos del paciente
-    // es await porque queremos esperar a que el usuario termine de editar antes de continuar con la ejecución del código
-    await showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('Editar paciente'),
-          content: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Teléfono',
-                      prefixIcon: Icon(Icons.phone),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'El teléfono es obligatorio';
-                      }
-                      if (value.length < 9) {
-                        return 'Número de teléfono no válido';
-                      }
-                      return null;
-                    },
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  TextFormField(
-                    controller: notesController,
-                    decoration: const InputDecoration(
-                      labelText: 'Notas',
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  DropdownButtonFormField<DiseaseStage>(
-                    value: diseaseStage,
-                    decoration: const InputDecoration(
-                      labelText: 'Etapa de la enfermedad',
-                      prefixIcon: Icon(Icons.face),
-                      border: OutlineInputBorder(),
-                    ),
-                    items: DiseaseStage.values
-                        .map((e) => DropdownMenuItem(value: e, child: Text(e.name)))
-                        .toList(),
-                    onChanged: (value) {
-                      setDialogState(() {
-                        diseaseStage = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            // Al presionar cancelar, simplemente cierra el diálogo sin guardar cambios
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: updatingPatient
-                  ? null
-                  : () async {
-                      if (!_formKey.currentState!.validate()) return;
-                      setDialogState(() => updatingPatient = true);
-                      await _updatePatient(
-                        phoneController.text,
-                        notesController.text,
-                        diseaseStage,
-                      );
-                      setDialogState(() => updatingPatient = false);
-                      Navigator.pop(context);
-                    },
-              child: updatingPatient
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('Guardar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ------------------- Llamada al servicio para actualizar -------------------
-  Future<void> _updatePatient(String phone, String notes, DiseaseStage? diseaseStage) async {
-    final token = await SecureStorageService().getToken();
-    final response = await http.put(
-      Uri.parse('http://10.0.2.2:8080/api/patients/${patient!.id}'),
-      headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
-      body: json.encode({
-        'phone': phone,
-        'notes': notes,
-        'diseaseStage': diseaseStage?.name,
-      }),
-    );
-
-    // si sale bien, actualiza los datos
-    if (response.statusCode == 200) {
-      setState(() {
-        patient = Patient(
-          id: patient!.id,
-          username: patient!.username,
-          phone: phone,
-          notes: notes,
-          diseaseStage: diseaseStage,
-        );
-      });
+  // ---------- Mayúscula ----------
+  String capitalize(String text) {
+    if (text.isEmpty) {
+      return text;
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al actualizar paciente')));
+      return text[0].toUpperCase() + text.substring(1);
     }
   }
-
-  String capitalize(String text) {
-  if (text.isEmpty) return text;
-  return text[0].toUpperCase() + text.substring(1);
-}
 
   @override
   Widget build(BuildContext context) {
     // Si patient es null, mostramos un mensaje de carga
     if (patient == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.caregiverBackground,
         appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverAppBar),
         body: const Center(
           child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
@@ -275,87 +120,201 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
     // Cuando el paciente ya cargo, muestra los datos
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(title: 'Detalle del paciente', backgroundColor: AppColors.caregiverAppBar),
 
       // SingleChildScrollView para que se pueda scrollear en pantallas pequeñas
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(30),
+        padding: const EdgeInsets.all(24),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 520),
             child: Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              elevation: 4,
+                color: AppColors.caregiverCard,
+
+              elevation: 3,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(30),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    // ---------- Nombre e id ----------
-                    // obtiene los datos guardados para mostrarlos
-                    Row(
+                    Stack( //para poner unos encima de otros
                       children: [
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              capitalize( patient!.username ?? patient!.name ?? 'Sin nombre'),
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // ---------- Nombre ----------
+                                    Text(
+                                      capitalize( patient!.username ?? patient!.name ?? 'Sin nombre'),
+                                      style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                                    ),
+
+                                    const SizedBox(height: 14),
+
+                                    _statusChip(),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text('ID: ${patient!.id}', style: const TextStyle(color: Colors.black54)),
-                          ],
+                              const SizedBox(width: 10),
+
+                              // ---------- avatar ----------
+                              CircleAvatar(radius: 36,backgroundColor: AppColors.caregiverCardLigth,
+                                child: const Icon(Icons.person, size: 40,color: AppColors.caregiverAppBar),
+                              ),
+                            ],
+                          ),
                         ),
-                        const Icon(Icons.person, size: 80),
+
+                        // ---------- Editar paciente ----------
+                        // El botón de editar se posiciona en la esquina superior derecha del card encima del avatar
+                        Positioned(
+                          top: -8,
+                          right: -10,
+                          child: IconButton(
+                            onPressed: () async {
+                              if (patient == null) return;
+
+                              await showDialog(
+                                context: context,
+                                builder: (_) => EditPatientDialog(
+                                  patient: patient!,
+                                  onUpdated: (updatedPatient) {
+                                    setState(() {
+                                      patient = updatedPatient;
+                                    });
+                                  },
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.edit, size: 22, color: AppColors.caregiverAppBar,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
                     const Divider(),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
 
                     // ---------- Información del paciente ----------
-                    _infoText('Teléfono', patient!.phone),
-                    _infoText('Estado de la enfermedad', patient!.diseaseStage?.name),
-                    _infoText('Notas', patient!.notes),
+                    // ---------- Teléfono ----------
+                    _infoCard('Teléfono', patient!.phone, Icons.phone),
+
+                    const SizedBox(height: 14),
+
+                    // ---------- Notas ----------
+                    _infoCard('Notas', patient!.notes, Icons.notes),
+
+                    const SizedBox(height: 20),
+                    const Divider(),
                     const SizedBox(height: 20),
 
-                    // ---------- Botón para editar paciente ----------
-                    SizedBox(
-                      width: double.infinity, // el botón ocupa todo el ancho disponible
-                      // Al presionar, se llama a la función _editPatient que muestra un diálogo para editar los datos del paciente
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.edit, color: Colors.white),
-                        label: const Text('Editar paciente', style: TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.caregiverAppBar),
-                        onPressed: _editPatient,
-                      ),
+                    // -------------------- Botónes --------------------
+                    Column(
+                      children: [
+                        // ---------- Rutina ----------
+                        _actionTile(
+                          title: hasRoutine ? 'Ver rutina' : 'Crear rutina',
+                          icon: Icons.schedule,
+                          color: AppColors.routineAction,
+                          loading: loadingRoutine,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => hasRoutine
+                                    ? ViewRoutineScreen(patientId: patient!.id)
+                                    : CreateRoutineScreen(
+                                        patientId: patient!.id,
+                                        isEdit: false,
+                                      ),
+                              ),
+                            );
+                            _checkRoutine();
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ---------- Prescripciones ----------
+                        _actionTile(
+                          title: hasMedication
+                              ? 'Ver prescripciones'
+                              : 'Crear prescripciones',
+                          icon: Icons.medication,
+                          color: AppColors.medicationAction,
+                          loading: loadingMedication,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => hasMedication
+                                    ? ViewPrescriptionScreen(
+                                        patientId: patient!.id,
+                                      )
+                                    : CreatePrescriptionScreen(
+                                        patientId: patient!.id,
+                                      ),
+                              ),
+                            );
+                            _checkMedication();
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ---------- Alergias ----------
+                        _actionTile(
+                          title: 'Alergias',
+                          icon: Icons.warning,
+                          color: AppColors.allergyAction,
+                          loading: false,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => PatientAllergiesScreen(
+                                  patientId: patient!.id,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        // ---------- Citas ----------
+                        _actionTile(
+                          title: hasAppointments ? 'Ver citas' : 'Crear cita',
+                          icon: Icons.event,
+                          color: AppColors.appointmentAction,
+                          loading: loadingAppointments,
+                          onTap: () async {
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => hasAppointments
+                                    ? ViewAppointmentsScreen(
+                                        patientId: patient!.id,
+                                      )
+                                    : CreateAppointmentScreen(
+                                        patientId: patient!.id,
+                                      ),
+                              ),
+                            );
+                            _checkAppointments();
+                          },
+                        ),
+                      ],
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // ---------- Botón para crear o ver rutina ----------
-                    _routineButton(),
-
-                    const SizedBox(height: 20),
-
-                    // ---------- Botón prescripción ----------
-                    _medicationButton(),
-                    const SizedBox(height: 20),
-
-                    // Botón alergías
-                    _allergyButton(),
-                    const SizedBox(height: 20),
-
-                    // ---------- Botón citas ----------
-                    const SizedBox(height: 20),
-
-                    _appointmentButton()
                   ],
                 ),
               ),
@@ -366,125 +325,104 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
     );
   }
 
-  // ---------- Widgets modularizados ----------
- Widget _infoText(String label, String? value) {
-  final displayValue =
-      (value == null || value.trim().isEmpty) ? "No especificado" : value;
+  // ---------- Estado enfermedad ----------
+  // Muestra la etapa de al enfermedad del paciente en un chip
+  Widget _statusChip() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.caregiverCardLigth,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Text(
+        patient!.diseaseStage?.name ?? 'Sin estado',
+        style: const TextStyle(
+          color: AppColors.caregiverAppBar,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
 
-  return Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: RichText(
-      text: TextSpan(
-        style: const TextStyle(fontSize: 16, color: Colors.black),
+  // 
+  Widget _infoCard(String title, String? value, IconData icon) {
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: AppColors.caregiverCardLigth, borderRadius: BorderRadius.circular(14)),
+      child: Row(
         children: [
-          TextSpan(
-            text: "$label: ",
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          Icon(icon, color: AppColors.caregiverAppBar),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+                const SizedBox(height: 4),
+                Text(
+                  value ?? 'No especificado',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
           ),
-          TextSpan(text: displayValue),
         ],
       ),
-    ),
-  );
-}
-
-  Widget _routineButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        icon: loadingRoutine
-            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            : Icon(hasRoutine ? Icons.visibility : Icons.schedule, color: Colors.white),
-        label: Text(hasRoutine ? 'Ver rutina' : 'Crear rutina', style: const TextStyle(color: Colors.white)),
-        style: ElevatedButton.styleFrom(backgroundColor: AppColors.caregiverAppBar),
-        onPressed: loadingRoutine
-            ? null
-            : () async {
-                setState(() => loadingRoutine = true);
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => hasRoutine
-                        ? ViewRoutineScreen(patientId: patient!.id)
-                        : CreateRoutineScreen(patientId: patient!.id, isEdit: false),
-                  ),
-                );
-                setState(() => loadingRoutine = false);
-              },
-      ),
     );
   }
 
-  Widget _medicationButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        icon: loadingMedication
-            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-            : Icon(hasMedication ? Icons.visibility : Icons.medication, color: Colors.white),
-        label: Text(hasMedication ? 'Ver prescripción' : 'Crear prescripción', style: const TextStyle(color: Colors.white)),
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
-        onPressed: loadingMedication
-            ? null
-            : () async {
-                setState(() => loadingMedication = true);
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => hasMedication
-                        ? ViewPrescriptionScreen(patientId: patient!.id)
-                        : CreatePrescriptionScreen(patientId: patient!.id),
+  Widget _actionTile({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required bool loading,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: color.withOpacity(0.10),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: loading ? null : onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              loading
+                  ? SizedBox(
+                      width: 26,
+                      height: 26,
+                      child: CircularProgressIndicator(
+                        color: color,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Icon(icon, color: color),
+
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
                   ),
-                );
-                setState(() => loadingMedication = false);
-              },
-      ),
-    );
-  }
+                ),
+              ),
 
-  Widget _appointmentButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        icon: loadingAppointments
-            ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2,color: Colors.white))
-            : Icon(hasAppointments ? Icons.visibility : Icons.event, color: Colors.white),
-        label: Text(hasAppointments ? 'Ver citas' : 'Crear cita', style: const TextStyle(color: Colors.white)),
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-        onPressed: loadingAppointments
-            ? null
-            : () async {
-                setState(() => loadingAppointments = true);
-
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => hasAppointments
-                        ? ViewAppointmentsScreen(patientId: patient!.id)
-                        : CreateAppointmentScreen(patientId: patient!.id),
-                  ),
-                );
-                _checkAppointments(); 
-              },
-      ),
-    );
-  }
-
-  Widget _allergyButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        icon: const Icon(Icons.warning, color: Colors.white),
-        label: const Text('Alergias', style: TextStyle(color: Colors.white)),
-        style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PatientAllergiesScreen(patientId: patient!.id),
-            ),
-          );
-        },
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: Colors.grey.shade600,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
