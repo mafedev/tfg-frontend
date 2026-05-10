@@ -23,4 +23,6 @@ class AppColors {
   // ------------------- ACCIONES -------------------
   static const Color delete = Color(0xFFE74C3C);
   static const Color confirm = Color(0xFF27AE60);
+
+  static const Color caregiverCard = Color(0xFFFFFFFF);
 }
