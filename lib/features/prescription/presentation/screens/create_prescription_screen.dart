@@ -44,6 +44,14 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
     _loadMedications();
   }
 
+  @override
+  void dispose() {
+    _dose.dispose();
+    _frequency.dispose();
+    _notes.dispose();
+    super.dispose();
+  }
+  
   // ---------- Estilo de inputs ----------
   InputDecoration _inputDecoration(String label) {
     return InputDecoration(
@@ -244,12 +252,29 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
               const SizedBox(height: 20),
 
               // ---------- Selector de medicamento ----------
-              DropdownButtonFormField<MedicationResponse>(
-                value: selectedMedication,
-                decoration: _inputDecoration('Medicamento'),
-                items: medications.map((m) => DropdownMenuItem(value: m, child: Text(m.name))).toList(),
+              Autocomplete<MedicationResponse>(
+                optionsBuilder: (value) {
+                  if (value.text.isEmpty) return medications;
 
-                onChanged: (value) => setState(() => selectedMedication = value),
+                  return medications.where(
+                    (m) =>
+                        m.name.toLowerCase().contains(value.text.toLowerCase()),
+                  );
+                },
+                displayStringForOption: (m) => m.name,
+                initialValue: TextEditingValue(
+                  text: selectedMedication?.name ?? '',
+                ),
+                onSelected: (m) {
+                  setState(() => selectedMedication = m);
+                },
+                fieldViewBuilder: (context, controller, focusNode, _) {
+                  return TextField(
+                    controller: controller,
+                    focusNode: focusNode,
+                    decoration: _inputDecoration('Medicamento'),
+                  );
+                },
               ),
               const SizedBox(height: 14),
 
