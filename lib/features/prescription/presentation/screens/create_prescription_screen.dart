@@ -278,6 +278,15 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
               ),
               const SizedBox(height: 14),
 
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  '¿No encuentras el medicamento? Puedes crearlo en la pestaña de Medicación',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
+              ),
+              const SizedBox(height: 14),
+
               // ---------- Selector de unidad de dosis ----------
               DropdownButtonFormField<DoseUnit>(
                 value: selectedDoseUnit,
