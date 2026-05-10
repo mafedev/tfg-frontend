@@ -48,6 +48,49 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
     _loadMedications();
   }
 
+  // ---------- Estilo de inputs ----------
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+
+        borderSide: BorderSide(color: Colors.deepPurple.shade200, width: 1.4),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+
+        borderSide: BorderSide(color: Colors.deepPurple.shade500, width: 2),
+      ),
+
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    );
+  }
+
+  // ---------- Estilo de botones ----------
+  ButtonStyle _buttonStyle() {
+    return ElevatedButton.styleFrom(
+      backgroundColor: AppColors.caregiverPrimary,
+      foregroundColor: Colors.white,
+
+      elevation: 0,
+
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+
+      minimumSize: const Size(double.infinity, 48),
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+      textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+    );
+  }
+
   // ---------- Cargar medicamentos ----------
   // obtiene la lista de medicamentos desde el servicio
   Future<void> _loadMedications() async {
@@ -109,7 +152,8 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
 
   // ---------- Guardar rutina de medicamentos ----------
   Future<void> _savePrescription() async {
-    if (selectedMedication == null || selectedDoseUnit == null) { // si no se ha seleccionado un medicamento o una unidad de dosis, muestra un error
+    // si no se ha seleccionado un medicamento o una unidad de dosis, muestra un error
+    if (selectedMedication == null || selectedDoseUnit == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Faltan datos')));
       return;
     }
@@ -157,119 +201,196 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
     }
 
     return Scaffold(
+      backgroundColor: AppColors.caregiverBackground,
+
       appBar: AppLogoAppBar(
         title: widget.existingPrescription == null ? 'Nueva rutina' : 'Editar rutina',
         backgroundColor: AppColors.caregiverAppBar,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // ---------- Selector de medicamento ----------
-            DropdownButtonFormField<MedicationResponse>(
-              value: selectedMedication,
-              hint: const Text('Selecciona un medicamento'),
-              items: medications.map((m) => DropdownMenuItem(value: m, child: Text(m.name))).toList(),
-              onChanged: (value) => setState(() => selectedMedication = value),
-            ),
-            const SizedBox(height: 12),
 
-            // ---------- Selector de unidad de dosis ----------
-            DropdownButtonFormField<DoseUnit>(
-              value: selectedDoseUnit,
-              hint: const Text('Selecciona unidad de dosis'),
-              items: DoseUnit.values.map((u) => DropdownMenuItem(value: u, child: Text(u.name))).toList(),
-              onChanged: (value) => setState(() => selectedDoseUnit = value),
-            ),
-            const SizedBox(height: 12),
+        child: Container(
+          padding: const EdgeInsets.all(18),
 
-            // ---------- Campo de dosis ----------
-            TextField(
-              controller: _dose,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Dosis'),
-            ),
-            const SizedBox(height: 12),
+          decoration: BoxDecoration(
+            color: AppColors.caregiverCard,
+            borderRadius: BorderRadius.circular(18),
 
-            // ---------- Campo de frecuencia ----------
-            TextField(
-              controller: _frequency,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(labelText: 'Frecuencia (horas)'),
-            ),
-            const SizedBox(height: 12),
-            
-            // ---------- Selector de hora de primera dosis ----------
-            ElevatedButton(
-              onPressed: () async {
-                final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
-                if (picked != null) {
-                  setState(() => selectedHour = picked);
-                }
-              },
-              child: Text(selectedHour == null ? 'Seleccionar primera dosis' : 'Primera dosis: ${selectedHour!.format(context)}'),
-            ),
-            const SizedBox(height: 12),
-
-            // ---------- Selector de fecha de inicio ----------
-            ElevatedButton(
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-                if (picked != null) {
-                  setState(() => startDate = picked);
-                }
-              },
-              child: Text(startDate == null ? 'Fecha inicio' : 'Inicio: ${startDate!.toIso8601String().split('T')[0]}'),
-            ),
-            const SizedBox(height: 12),
-
-            // ---------- Selector de fecha de fin ----------
-            ElevatedButton(
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-                if (picked != null) {
-                  setState(() => endDate = picked);
-                }
-              },
-              child: Text(endDate == null ? 'Fecha fin' : 'Fin: ${endDate!.toIso8601String().split('T')[0]}'),
-            ),
-            const SizedBox(height: 12),
-
-            // ---------- Campo de notas ----------
-            TextField(
-              controller: _notes,
-              maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Notas (opcional)',
-                hintText: 'Ej: Tomar con comida',
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-            ),
-            const SizedBox(height: 12),
+            ],
+          ),
 
-            // ---------- Dropdown de estado ----------
-            DropdownButtonFormField<String>(
-              value: selectedStatus,
-              items: statuses.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-              onChanged: (value) => setState(() => selectedStatus = value!),
-              decoration: const InputDecoration(labelText: 'Estado'),
-            ),
-            const SizedBox(height: 12),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _savePrescription,
-              child: Text(widget.existingPrescription == null ? 'Crear prescripción' : 'Actualizar prescripción'),
-            ),
-          ],
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                widget.existingPrescription == null
+                    ? 'Nueva prescripción'
+                    : 'Editar prescripción',
+
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.caregiverPrimary,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // ---------- Selector de medicamento ----------
+              DropdownButtonFormField<MedicationResponse>(
+                value: selectedMedication,
+                decoration: _inputDecoration('Medicamento'),
+                items: medications.map((m) => DropdownMenuItem(value: m, child: Text(m.name))).toList(),
+
+                onChanged: (value) => setState(() => selectedMedication = value),
+              ),
+              const SizedBox(height: 14),
+
+              // ---------- Selector de unidad de dosis ----------
+              DropdownButtonFormField<DoseUnit>(
+                value: selectedDoseUnit,
+                decoration: _inputDecoration('Unidad de dosis'),
+                items: DoseUnit.values.map((u) => DropdownMenuItem(value: u, child: Text(u.name))).toList(),
+                onChanged: (value) => setState(() => selectedDoseUnit = value),
+              ),
+              const SizedBox(height: 14),
+
+              // ---------- Campo de dosis ----------
+              TextField(
+                controller: _dose,
+                keyboardType: TextInputType.number,
+                decoration: _inputDecoration('Dosis'),
+              ),
+              const SizedBox(height: 14),
+
+              // ---------- Campo de frecuencia ----------
+              TextField(
+                controller: _frequency,
+                keyboardType: TextInputType.number,
+                decoration: _inputDecoration('Frecuencia (horas)'),
+              ),
+              const SizedBox(height: 14),
+              // ---------- Selector de hora de primera dosis ----------
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: _buttonStyle(),
+
+                  onPressed: () async {
+                    final picked = await showTimePicker(context: context, initialTime: TimeOfDay.now());
+
+                    if (picked != null) {
+                      setState(() => selectedHour = picked);
+                    }
+                  },
+
+                  child: Text(selectedHour == null ? 'Seleccionar primera dosis' : 'Primera dosis: ${selectedHour!.format(context)}'),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ---------- Selectores de fechas ----------
+              // ---------- Fecha de inicio ----------
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: _buttonStyle(),
+
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          setState(() => startDate = picked);
+                        }
+                      },
+                      child: Text(startDate == null ? 'Fecha inicio' : 'Inicio: ${startDate!.toIso8601String().split('T')[0]}'),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+              // ---------- Fecha de inicio ----------
+                  Expanded(
+                    child: ElevatedButton(
+                      style: _buttonStyle(),
+
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          setState(() => endDate = picked);
+                        }
+                      },
+                      child: Text(endDate == null ? 'Fecha fin' : 'Fin: ${endDate!.toIso8601String().split('T')[0]}'),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 14),
+
+              // ---------- Campo de notas ----------
+              TextField(
+                controller: _notes,
+                maxLines: 3,
+                decoration: _inputDecoration(
+                  'Notas (opcional)',
+                ).copyWith(hintText: 'Ej: Tomar con comida'),
+              ),
+              const SizedBox(height: 14),
+
+              // ---------- Dropdown de estado ----------
+              DropdownButtonFormField<String>(
+                value: selectedStatus,
+                decoration: _inputDecoration('Estado'),
+                items: statuses.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+                onChanged: (value) => setState(() => selectedStatus = value!),
+              ),
+
+              const SizedBox(height: 26),
+
+              SizedBox(
+                width: double.infinity,
+
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.caregiverAppBar,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+
+                  onPressed: _savePrescription,
+                  child: Text(widget.existingPrescription == null ? 'Crear prescripción' : 'Actualizar prescripción',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
