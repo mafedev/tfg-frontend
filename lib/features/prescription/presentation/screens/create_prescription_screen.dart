@@ -31,16 +31,12 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
   List<MedicationResponse> medications = [];
   MedicationResponse? selectedMedication;
 
-  String selectedStatus = 'ACTIVE'; // estado seleccionado en el Dropdown, por defecto 'ACTIVE'
+  PrescriptionStatus selectedStatus = PrescriptionStatus.ACTIVE; // estado seleccionado en el Dropdown, por defecto 'ACTIVE'
 
   DoseUnit? selectedDoseUnit; // unidad de dosis seleccionada en el Dropdown
 
   bool loading = true;
   int? prescriptionId; // id de la prescripción, debug
-
-
-  // Estados posibles para la prescripción
-  final List<String> statuses = ['ACTIVE', 'SUSPENDED', 'COMPLETED', 'CANCELLED'];
 
   @override
   void initState() {
@@ -114,7 +110,11 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         _dose.text = sched['dose'].toString(); // carga la dosis en el TextField
         _frequency.text = sched['frequencyHours']?.toString() ?? ''; // carga la frecuencia en el TextField, si existe
         _notes.text = sched['notes']?.toString() ?? ''; // carga las notas en el TextField, si existen
-        selectedStatus = sched['status'] ?? 'ACTIVE'; // carga el estado, si existe, o deja 'ACTIVE' por defecto
+        final statusStr = sched['status'] ?? 'ACTIVE';
+        selectedStatus = PrescriptionStatus.values.firstWhere(
+          (s) => s.name.toUpperCase() == statusStr.toUpperCase(),
+          orElse: () => PrescriptionStatus.ACTIVE,
+        );
         startDate = sched['startDate'] != null ? DateTime.parse(sched['startDate']) : null; // carga la fecha de inicio, si existe
         endDate = sched['endDate'] != null ? DateTime.parse(sched['endDate']) : null; // carga la fecha de fin, si existe
         
@@ -176,7 +176,7 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         endDate: endDate?.toIso8601String().split('T')[0],
         firstDoseTime: hour,
         notes: _notes.text.isNotEmpty ? _notes.text : null,
-        status: selectedStatus,
+        status: selectedStatus.name,
       );
 
       if (prescriptionId != null) {
@@ -357,11 +357,19 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
               const SizedBox(height: 14),
 
               // ---------- Dropdown de estado ----------
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<PrescriptionStatus>(
                 value: selectedStatus,
                 decoration: _inputDecoration('Estado'),
-                items: statuses.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
-                onChanged: (value) => setState(() => selectedStatus = value!),
+
+                items: PrescriptionStatus.values.map((status) {
+                  return DropdownMenuItem(value: status, child: Text(status.name));
+                }).toList(),
+
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => selectedStatus = value);
+                  }
+                },
               ),
 
               const SizedBox(height: 26),
