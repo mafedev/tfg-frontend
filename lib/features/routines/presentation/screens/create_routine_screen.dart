@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
+import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class CreateRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente, para crear la rutina
   final bool isEdit; // indica si se está editando una rutina existente
 
   // Constructor
-  const CreateRoutineScreen({super.key, required this.patientId, required this.isEdit,});
+  const CreateRoutineScreen({
+    super.key,
+    required this.patientId,
+    required this.isEdit,
+  });
 
   @override
   State<CreateRoutineScreen> createState() => _CreateRoutineScreenState();
@@ -108,8 +113,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Crear rutina'),
+      appBar: const AppLogoAppBar(title: 'Crear rutina',
         backgroundColor: AppColors.caregiverAppBar,
       ),
       body: Padding(
@@ -119,22 +123,59 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             // ---------------- Actividades ----------------
             Expanded(
               child: items.isEmpty
-                  ? const Center(child: Text('No hay actividades'))
+                  ? const Center(child: Text('No hay actividades', style: TextStyle(color: Colors.grey)))
                   : ListView.builder(
                       itemCount: items.length,
                       itemBuilder: (_, i) {
                         final item = items[i];
 
-                        return Card(
-                          child: ListTile(
-                            title: Text(item['name']),
-                            subtitle: Text(item['time']),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                setState(() => items.removeAt(i));
-                              },
-                            ),
+                        return Container(
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.caregiverAppBar.withOpacity(0.10),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(Icons.schedule, color: AppColors.caregiverAppBar),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['name'],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(item['time'], style: TextStyle(color: Colors.grey.shade600)),
+                                  ],
+                                ),
+                              ),
+
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed: () {
+                                  setState(() => items.removeAt(i));
+                                },
+                              ),
+                            ],
                           ),
                         );
                       },
@@ -144,13 +185,24 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             const SizedBox(height: 10),
 
             // ---------------- Agregar actividad ----------------
-            ElevatedButton.icon(
-              onPressed: _addItem,
-              icon: const Icon(Icons.add),
-              label: const Text('Añadir actividad'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _addItem,
+                icon: const Icon(Icons.add),
+                label: const Text('Añadir actividad'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey.shade200,
+                  foregroundColor: Colors.black87,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             // ---------------- Guardar----------------
             SizedBox(
@@ -159,10 +211,14 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                 onPressed: loading ? null : _saveRoutine,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.caregiverPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                 ),
                 child: loading
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Guardar rutina'),
+                    : const Text('Guardar rutina', style: const TextStyle(color: Colors.white)),
               ),
             ),
           ],
