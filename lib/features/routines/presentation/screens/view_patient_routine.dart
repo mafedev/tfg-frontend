@@ -3,7 +3,7 @@ import 'package:tfg_frontend/shared/enums/routine/routine_tracking_status.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/routines/presentation/screens/edit_routine_item_screen.dart';
+import 'package:tfg_frontend/features/routines/presentation/screens/edit_routine_screen.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
 import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
