@@ -141,32 +141,31 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    setState(() {
-                      _selectedDate = _selectedDate.subtract(
-                        const Duration(days: 1),
-                      );
-                    });
-                    _loadTracking();
+                  icon: const Icon(Icons.calendar_month),
+                  onPressed: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                    );
+
+                    if (picked != null) {
+                      setState(() => _selectedDate = picked);
+                      _loadTracking();
+                    }
                   },
                 ),
+
                 Text(
                   '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: () {
-                    setState(() {
-                      _selectedDate = _selectedDate.add(
-                        const Duration(days: 1),
-                      );
-                    });
-                    _loadTracking();
-                  },
-                ),
+
+                const SizedBox(width: 48), // balance visual
               ],
             ),
 
