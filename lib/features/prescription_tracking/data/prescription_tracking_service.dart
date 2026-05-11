@@ -44,11 +44,6 @@ class PrescriptionTrackingService {
 
     return data.map((json) => PrescriptionTracking.fromJson(json)).toList();
   }
-
-<<<<<<< Updated upstream
-  
-=======
->>>>>>> Stashed changes
   // -------------------- Obtener tracking de medicamentos --------------------
   // Obtiene el tracking de medicamentos del paciente para una fecha específica
   Future<List<PrescriptionTracking>> getPrescriptionTrackingForDate(DateTime date) async {
