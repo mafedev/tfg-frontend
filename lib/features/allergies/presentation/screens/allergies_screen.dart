@@ -160,10 +160,22 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
     );
   }
 
+  // -------------------- Color chips --------------------
+  Color _chipColor(String severity) {
+    switch (severity) {
+      case 'CRITICAL':
+        return Colors.redAccent;
+      case 'HIGH':
+        return Colors.orange;
+      default:
+        return AppColors.patientAccentGreen;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(
         title: 'Alergias',
         backgroundColor: AppColors.caregiverAppBar,
@@ -185,59 +197,118 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: allergies.length,
             itemBuilder: (context, index) {
               final a = allergies[index];
 
+              final name = a['allergy']['name'] ?? 'Sin nombre';
+              final desc = a['allergy']['description'] ?? 'Sin descripción';
+              final severity = a['severity'] ?? 'LOW';
+
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: ListTile(
-                  title: Text(
-                    a['allergy']['name'] ?? 'Sin nombre',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(a['severity'] ?? 'Sin severidad'),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 15,
+                              color: AppColors.caregiverPrimary,
+                            ),
+                          ),
+                        ),
 
-                  // -------- Tres puntos --------
-                  trailing: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert),
+                        // -------- Tres puntos --------
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
 
-                    onSelected: (value) {
-                      if (value == 'edit') {
-                        _editSeverity(a);
-                      }
-                      if (value == 'delete') {
-                        _delete(a['allergy']['id']);
-                      }
-                    },
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _editSeverity(a);
+                            }
+                            if (value == 'delete') {
+                              _delete(a['allergy']['id']);
+                            }
+                          },
 
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: 18),
-                            SizedBox(width: 8),
-                            Text('Editar'),
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit, size: 18),
+                                  SizedBox(width: 8),
+                                  Text('Editar'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete,
+                                    size: 18,
+                                    color: Colors.red,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('Eliminar'),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    Text(
+                      desc,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
                       ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, size: 18, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Eliminar'),
-                          ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Chip(
+                        label: Text(
+                          severity,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
+                        backgroundColor: _chipColor(severity).withOpacity(0.15),
+                        labelStyle: TextStyle(color: _chipColor(severity)),
+                        shape: const StadiumBorder(),
+                        side: BorderSide.none,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },
