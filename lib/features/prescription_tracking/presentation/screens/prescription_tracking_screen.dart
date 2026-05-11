@@ -32,7 +32,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
     setState(() => _loading = true);// al inicio pone cargar a true para mostrar el circulo de carga
     
     try {
-      final result = await _service.getPrescriptionTracking(_selectedDate);
+      final result = await _service.getPrescriptionTracking(widget.patientId, _selectedDate);
 
       setState(() {
         _trackingList = result;
