@@ -4,8 +4,8 @@ import 'package:tfg_frontend/shared/dtos/appointment/appointment_request.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
-  final int patientId;
-  final AppointmentResponse? existingAppointment;
+  final int patientId; // id del paciente
+  final AppointmentResponse? existingAppointment; // es para poder usar la screen para editar la cita
 
   const CreateAppointmentScreen({super.key, required this.patientId, this.existingAppointment});
 
@@ -14,34 +14,36 @@ class CreateAppointmentScreen extends StatefulWidget {
 }
 
 class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
-  final titleController = TextEditingController();
-  final descriptionController = TextEditingController();
+  // ---------- Controladores ----------
+  final titleController = TextEditingController(); // controlador para el título
+  final descriptionController = TextEditingController(); // controlador para la descripción
   final locationController = TextEditingController();
   final dateTimeController = TextEditingController();
 
   final service = AppointmentService();
 
-  bool isEditing = false;
-  int? appointmentId;
-
-  DateTime? selectedDateTime;
+  bool isEditing = false; // indica si se está editando una cita existente o creando una nueva
+  int? appointmentId; // id de la cita que se está editando
+  DateTime? selectedDateTime; // fecha y hora seleccionada para la cita, se usa para mostrarla en el TextField y para enviarla al backend
 
   @override
   void initState() {
     super.initState();
 
+    // si se está editando una cita
     if (widget.existingAppointment != null) {
-      final appt = widget.existingAppointment!;
+      final appt = widget.existingAppointment!; // guarda la cita no nula
+      isEditing = true; // indica que se está editando
+      appointmentId = appt.id; // se obtiene id de la cita para luego poder actualizarla
 
-      isEditing = true;
-      appointmentId = appt.id;
-
+      // Se obtiene la inforamción para luego mostrarla en los TextField
       titleController.text = appt.title;
       descriptionController.text = appt.description;
       locationController.text = appt.location;
-
       selectedDateTime = appt.dateTime;
+
       final dt = selectedDateTime!;
+      // formatea la fecha agregando un 0 a la izquierda, 02/02/2026
       dateTimeController.text =
           "${dt.day.toString().padLeft(2, '0')}/"
           "${dt.month.toString().padLeft(2, '0')}/"
@@ -51,15 +53,18 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     }
   }
 
+  // ---------- Seleccionar fecha y hora ----------
   Future<void> _pickDateTime() async {
     final date = await showDatePicker(
       context: context,
       initialDate: selectedDateTime ?? DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2100),
+      firstDate: DateTime(2020), // fecha mínima
+      lastDate: DateTime(2100), // fecha máxima
     );
 
-    if (date == null) return;
+    if (date == null) {
+      return;
+    }
 
     final time = await showTimePicker(
       context: context,
@@ -90,13 +95,11 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
     });
   }
 
-
+  // ---------- Guardar cita ----------
   void saveAppointment() async {
     bool success = false;
 
-    final DateTime dateTime = selectedDateTime ??
-        DateTime.tryParse(dateTimeController.text) ??
-        DateTime.now();
+    final DateTime dateTime = selectedDateTime ?? DateTime.tryParse(dateTimeController.text) ?? DateTime.now();
 
     final request = AppointmentRequest(
       title: titleController.text,
