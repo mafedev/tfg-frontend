@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/prescription_tracking/presentation/screens/prescription_tracking_screen.dart';
+import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/prescription/presentation/screens/create_prescription_screen.dart';
 import 'package:tfg_frontend/features/prescription/data/caregiver_prescription_service.dart';
@@ -239,8 +240,7 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
       ),
 
       // ---------- Botón para agregar nueva prescripción ----------
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.caregiverAccent,
+      floatingActionButton: AppFAB(
         onPressed: () {
           Navigator.push(
             context,
@@ -250,7 +250,8 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
             ),
           );
         },
-        child: const Icon(Icons.add),
+        icon: Icons.add,
+        isPatient: false, // cuidador
       ),
     );
   }
