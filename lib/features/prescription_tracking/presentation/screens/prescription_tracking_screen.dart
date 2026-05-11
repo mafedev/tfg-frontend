@@ -55,19 +55,11 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
     return _parseStatus(status) == TrackingStatus.TAKEN;
   }
 
-  String _toggleStatus(String status) {
-    final parsed = _parseStatus(status);
-
-    return parsed == TrackingStatus.TAKEN
-        ? TrackingStatus.PENDING.name
-        : TrackingStatus.TAKEN.name;
-  }
-
-  // ----------- Lógica de toggle -----------
-  // Esta función se llama cuando el usuario marca o desmarca una toma
   Future<void> _toggleTracking(PrescriptionTracking med, PrescriptionTrackingTime time) async {
     final oldStatus = time.status;
-    final newStatus = _toggleStatus(oldStatus);
+    final newStatus = _parseStatus(oldStatus) == TrackingStatus.TAKEN
+        ? TrackingStatus.PENDING.name
+        : TrackingStatus.TAKEN.name;
 
     setState(() {
       med.times = med.times.map((t) {
@@ -120,7 +112,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
     // si está cargando, muestra el círculo de carga
     if (_loading) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.caregiverBackground,
         appBar: AppLogoAppBar(title: 'Tomas de hoy', backgroundColor: AppColors.caregiverAppBar),
         body: const Center(child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
         ),
@@ -129,7 +121,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
 
     // si hay tomas para hoy
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: AppLogoAppBar(title: 'Tomas de hoy', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -141,7 +133,8 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.calendar_month),
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  color: AppColors.caregiverPrimary,
                   onPressed: () async {
                     final picked = await showDatePicker(
                       context: context,
@@ -162,16 +155,17 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    color: AppColors.caregiverPrimary,
                   ),
                 ),
 
-                const SizedBox(width: 48), // balance visual
+                const SizedBox(width: 48),
               ],
             ),
 
             const SizedBox(height: 10),
 
-            // Muestra la lista de medicamentos
+            // -------- Lista de medicamentos --------
             Expanded(
               child: _trackingList.isEmpty
                   ? const Center(child: Text('No hay tomas programadas'))
@@ -183,12 +177,14 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
 
                     // -------- Tarjeta ----------
                         return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8), // espacio entre las tarjetas
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // bordes redondeados
-                          elevation: 3, // sombra
+                          color: Colors.white,
+                          elevation: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           child: ExpansionTile(
                             initiallyExpanded: index == 0,
-                            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            iconColor: AppColors.caregiverPrimary,
+                            collapsedIconColor: AppColors.caregiverPrimary,
 
                             // -------- Medicamento nombre --------
                             title: Text(
@@ -196,42 +192,89 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: AppColors.caregiverPrimary,
                               ),
                             ),
 
                             // -------- Dosis --------
                             subtitle: med.dose.isNotEmpty
-                                ? Text('Dosis: ${med.dose}')
+                                ? Text(
+                                    'Dosis: ${med.dose}',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                      fontSize: 13,
+                                    ),
+                                  )
                                 : null,
 
-                            childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+                            childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
 
                             children: [
                               if (med.times.isEmpty)
                                 const Padding(
                                   padding: EdgeInsets.only(bottom: 8),
-                                  child: Text('Sin tomas para hoy'),
+                                  child: Text('Sin tomas programadas'),
                                 ),
 
                               ...med.times.map((t) {
                                 final isTaken = _isTaken(t.status);
 
-                                return Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(_formatTime(t.scheduledTime)),
-                                    ),
-                                    Text(
-                                      t.status,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 10, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: isTaken
+                                        ? AppColors.confirm.withOpacity(0.12)
+                                        : AppColors.background,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.access_time,
+                                        size: 16,
+                                        color: Colors.grey.shade700,
                                       ),
-                                    ),
-                                    Checkbox(
-                                      value: isTaken,
-                                      onChanged: (_) => _toggleTracking(med, t),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 8),
+
+                                      Expanded(
+                                        child: Text(
+                                          _formatTime(t.scheduledTime),
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: isTaken
+                                              ? AppColors.confirm
+                                              : AppColors.caregiverPrimary,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          t.status,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ),
+
+                                      Checkbox(
+                                        value: isTaken,
+                                        activeColor:
+                                            AppColors.caregiverPrimary,
+                                        onChanged: (_) =>
+                                            _toggleTracking(med, t),
+                                      ),
+                                    ],
+                                  ),
                                 );
                               }),
                             ],
