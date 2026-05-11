@@ -216,11 +216,37 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
                       if (med['firstDoseTime'] != null)
                         _infoLine('Primera dosis', med['firstDoseTime']),
 
-                      if (med['startDate'] != null)
-                        _infoLine('Inicio', med['startDate']),
+                      if (med['startDate'] != null || med['endDate'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, bottom: 6),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(
+                                width: 110,
+                                child: Text('Duración',
+                                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
+                                ),
+                              ),
 
-                      if (med['endDate'] != null)
-                        _infoLine('Fin', med['endDate']),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text('${med['startDate'] ?? '--'}   →   ${med['endDate'] ?? '--'}',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey.shade700,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
 
                       if (med['notes'] != null &&
                           med['notes'].toString().isNotEmpty)
