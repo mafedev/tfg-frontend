@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/medication/presentation/screens/caregivers_create_medication_screen.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/prescription/data/caregiver_prescription_service.dart';
 import 'package:tfg_frontend/features/medication/data/caregiver_medication_service.dart';
@@ -280,9 +281,31 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
 
               Align(
                 alignment: Alignment.centerLeft,
-                child: Text(
-                  '¿No encuentras el medicamento? Puedes crearlo en la pestaña de Medicación',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                child: Wrap(
+                  children: [
+                    Text('¿No encuentras el medicamento? ', style: TextStyle(fontSize: 12,color: Colors.grey.shade600)),
+
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CaregiversMedicationScreen(), // redirige a la screen para crear el medicamento
+                          ),
+                        );
+                      },
+
+                      child: Text(
+                        'Créalo aquí',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.caregiverPrimary,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 14),
@@ -356,7 +379,7 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
 
                   const SizedBox(width: 12),
 
-              // ---------- Fecha de inicio ----------
+              // ---------- Fecha fin ----------
                   Expanded(
                     child: ElevatedButton(
                       style: _buttonStyle(),
