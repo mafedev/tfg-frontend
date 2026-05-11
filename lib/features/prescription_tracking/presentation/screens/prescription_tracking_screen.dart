@@ -187,55 +187,55 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
                           margin: const EdgeInsets.symmetric(vertical: 8), // espacio entre las tarjetas
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // bordes redondeados
                           elevation: 3, // sombra
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Nombre del medicamento
-                                Text(
-                                  med.medicationName,
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          child: ExpansionTile(
+                            initiallyExpanded: index == 0,
+                            tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+
+                            // -------- Medicamento nombre --------
+                            title: Text(
+                              med.medicationName,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            // -------- Dosis --------
+                            subtitle: med.dose.isNotEmpty
+                                ? Text('Dosis: ${med.dose}')
+                                : null,
+
+                            childrenPadding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+
+                            children: [
+                              if (med.times.isEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.only(bottom: 8),
+                                  child: Text('Sin tomas para hoy'),
                                 ),
 
-                                if (med.dose.isNotEmpty) Text('Dosis: ${med.dose}'),
+                              ...med.times.map((t) {
+                                final isTaken = _isTaken(t.status);
 
-                                const SizedBox(height: 12),
-
-                                if (med.times.isEmpty) const Text('Sin tomas para hoy'),
-
-                                if (med.times.isNotEmpty)
-                                  Column(
-                                    children: med.times.map((t) {
-                                      final isTaken = _isTaken(t.status);
-
-                                      return Row(
-                                        children: [
-                                          // muestra la hora
-                                          Expanded(child: Text(_formatTime(t.scheduledTime))),
-                                          // Texto según el toggle
-                                          Text(
-                                            t.status,
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-
-                                          const SizedBox(width: 8),
-
-                                          // agrega el checkbox para marcar si lo ha tomado o no
-                                          Checkbox(
-                                            value: isTaken, // el valor del checkbox depende de si la toma ha sido marcada como tomada o no
-                                            onChanged: (_) {
-                                              _toggleTracking(med, t); // al cambiar el estado del checkbox, llama a la función de toggle para actualizar el estado tanto en la interfaz como en el backend
-                                            },
-                                          ),
-                                        ],
-                                      );
-                                    }).toList(), // convierte la lista de tomas a una lista de widgets para mostrar en la interfaz
-                                  ),
-                              ],
-                            ),
+                                return Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(_formatTime(t.scheduledTime)),
+                                    ),
+                                    Text(
+                                      t.status,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Checkbox(
+                                      value: isTaken,
+                                      onChanged: (_) => _toggleTracking(med, t),
+                                    ),
+                                  ],
+                                );
+                              }),
+                            ],
                           ),
                         );
                       },
