@@ -4,14 +4,14 @@ import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tr
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
-class PatientFollowUpScreen extends StatefulWidget {
-  const PatientFollowUpScreen({super.key});
+class PatientPrescriptionTrackingScreen extends StatefulWidget {
+  const PatientPrescriptionTrackingScreen({super.key});
 
   @override
-  State<PatientFollowUpScreen> createState() => _PatientFollowUpScreenState();
+  State<PatientPrescriptionTrackingScreen> createState() => _PatientPrescriptionTrackingScreenState();
 }
 
-class _PatientFollowUpScreenState extends State<PatientFollowUpScreen> {
+class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionTrackingScreen> {
   final PrescriptionTrackingService _service = PrescriptionTrackingService();
 
   List<PrescriptionTracking> _tracking = []; // lista del seguimiento de medicamentos
@@ -44,7 +44,7 @@ class _PatientFollowUpScreenState extends State<PatientFollowUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppLogoAppBar(title: 'Seguimiento',backgroundColor: AppColors.patientAppBar),
+      appBar: const AppLogoAppBar(title: 'Prescripciones',backgroundColor: AppColors.patientAppBar),
       body: ListView.builder(
         itemCount: _tracking.length,
         itemBuilder: (context, i) {
