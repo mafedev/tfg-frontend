@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/appointment/data/caregiver_appointment_service.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_request.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
+import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
   final int patientId; // id del paciente
@@ -51,6 +53,44 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
           "${dt.hour.toString().padLeft(2, '0')}:"
           "${dt.minute.toString().padLeft(2, '0')}";
     }
+  }
+
+  @override
+  void dispose() {
+    titleController.dispose();
+    descriptionController.dispose();
+    locationController.dispose();
+    dateTimeController.dispose();
+    super.dispose();
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: AppColors.caregiverSecondary,
+          width: 1.2,
+        ),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(
+          color: AppColors.caregiverPrimary,
+          width: 2,
+        ),
+      ),
+
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+      ),
+    );
   }
 
   // ---------- Seleccionar fecha y hora ----------
@@ -131,43 +171,163 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? "Editar cita" : "Crear cita")),
-      body: Padding(
+      backgroundColor: AppColors.caregiverBackground,
+      appBar: AppLogoAppBar(title: isEditing ? "Editar cita" : "Crear cita", backgroundColor: AppColors.caregiverAppBar),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: "Título"),
-            ),
 
-            TextField(
-              controller: descriptionController,
-              decoration: const InputDecoration(labelText: "Descripción"),
-            ),
+        child: Container(
+          padding: const EdgeInsets.all(18),
 
-            TextField(
-              controller: locationController,
-              decoration: const InputDecoration(labelText: "Lugar"),
-            ),
+          decoration: BoxDecoration(
+            color: AppColors.caregiverCard,
+            borderRadius: BorderRadius.circular(18),
 
-            TextField(
-              controller: dateTimeController,
-              readOnly: true,
-              onTap: _pickDateTime,
-              decoration: const InputDecoration(
-                labelText: "Fecha y hora",
-                suffixIcon: Icon(Icons.calendar_today),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-            ),
+            ],
+          ),
 
-            const SizedBox(height: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                isEditing ? "Editar cita" : "Nueva cita",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.caregiverPrimary,
+                ),
+              ),
 
-            ElevatedButton(
-              onPressed: saveAppointment,
-              child: Text(isEditing ? "Actualizar" : "Crear"),
-            ),
-          ],
+              const SizedBox(height: 18),
+
+              // ---------- Nombre ----------
+              TextField(
+                controller: titleController,
+                decoration: _inputDecoration("Título"),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ---------- Descripción ----------
+              TextField(
+                controller: descriptionController,
+                decoration: _inputDecoration("Descripción"),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ---------- Lugar ----------
+              TextField(
+                controller: locationController,
+                decoration: _inputDecoration("Lugar"),
+              ),
+
+              const SizedBox(height: 12),
+
+              // ---------- Fecha ----------
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: _pickDateTime,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.caregiverSecondary,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.calendar_month,
+                              color: AppColors.caregiverPrimary,
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Text(
+                              selectedDateTime == null
+                                  ? 'Fecha'
+                                  : '${selectedDateTime!.day.toString().padLeft(2, '0')}/'
+                                        '${selectedDateTime!.month.toString().padLeft(2, '0')}/'
+                                        '${selectedDateTime!.year}',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 12),
+
+                  Expanded(
+                    child: InkWell(
+                      onTap: _pickDateTime,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.caregiverSecondary,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.access_time,
+                              color: AppColors.caregiverPrimary,
+                            ),
+
+                            const SizedBox(height: 6),
+
+                            Text(
+                              selectedDateTime == null
+                                  ? 'Hora'
+                                  : '${selectedDateTime!.hour.toString().padLeft(2, '0')}:'
+                                        '${selectedDateTime!.minute.toString().padLeft(2, '0')}',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 22),
+
+              // ---------- Botón crear ----------
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.caregiverPrimary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+
+                  onPressed: saveAppointment,
+                  child: Text(
+                    isEditing ? "Actualizar cita" : "Crear cita",
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
