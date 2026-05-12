@@ -13,6 +13,7 @@ class PrescriptionTrackingService {
 
   // -------------------- Obtener tracking por fecha --------------------
   Future<List<PrescriptionTracking>> getPrescriptionTracking(
+    int patientId,
     DateTime date,
   ) async {
     final token = await _secureStorageService.getToken(); // obtiene el token
@@ -25,7 +26,7 @@ class PrescriptionTrackingService {
     // formatea la fecha a 'YYYY-MM-DD' para enviarla como parámetro en la URL
     final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
-    final url = '$_baseUrl?date=$formattedDate';
+    final url = '$_baseUrl/patient/$patientId?date=$formattedDate';
 
     // Petición
     final response = await http.get(
@@ -45,10 +46,6 @@ class PrescriptionTrackingService {
     return data.map((json) => PrescriptionTracking.fromJson(json)).toList();
   }
 
-<<<<<<< Updated upstream
-  
-=======
->>>>>>> Stashed changes
   // -------------------- Obtener tracking de medicamentos --------------------
   // Obtiene el tracking de medicamentos del paciente para una fecha específica
   Future<List<PrescriptionTracking>> getPrescriptionTrackingForDate(DateTime date) async {

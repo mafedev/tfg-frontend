@@ -93,15 +93,11 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
       _loadPatients();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Relación eliminada correctamente')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Relación eliminada correctamente')));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error eliminando relación')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error eliminando relación')));
       }
     }
   }
@@ -140,10 +136,20 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     }
   }
 
+  String getPatientTitle(Patient patient) {
+    final text = (patient.username?.isNotEmpty == true)
+        ? patient.username!
+        : (patient.name?.isNotEmpty == true)
+        ? patient.name!
+        : 'Sin nombre';
+
+    return text[0].toUpperCase() + text.substring(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(title: 'Pacientes vinculados', backgroundColor: AppColors.caregiverAppBar),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
@@ -160,10 +166,11 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
 
                   if (patients.isEmpty) {
                     // Si no hay pacientes, se muestra el mensaje
-                    return const Center(
-                      child: Text(
-                        'No tienes pacientes vinculados',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                        child: const Text('No tienes pacientes vinculados', style: TextStyle(fontSize: 16, color: Colors.grey)),
                       ),
                     );
                   }
@@ -176,46 +183,45 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
 
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 7),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                        decoration: BoxDecoration(color: AppColors.caregiverCard, borderRadius: BorderRadius.circular(12)),
+
+                        // Fila
                         child: ListTile(
-                          leading: const Icon(Icons.person),
-                          title: Text(
-                            patient.username?.isNotEmpty == true ? patient.username![0].toUpperCase() + patient.username!.substring(1) : patient.name?.isNotEmpty == true ? patient.name![0].toUpperCase() + patient.name!.substring(1) : 'Sin nombre',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black87,
-                            ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 18,vertical: 8),
+
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.caregiverAppBar.withOpacity(0.10),
+                            child: const Icon(Icons.person, color: AppColors.caregiverAppBar),
                           ),
-                          // id del paciente, (momentáneo)
-                          subtitle: Text(
-                            'ID: ${patient.id}',
-                            style: TextStyle(color: Colors.grey[600]),
+
+                          // ----- Nombre -----
+                          title: Text(
+                            getPatientTitle(patient),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          
+                          // ----- Id del paciente(momentáneo) -----
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text('ID: ${patient.id}', style: TextStyle(color: Colors.grey.shade600)),
                           ),
                           
                           // -------------------- Menú de opciones --------------------
                           trailing: PopupMenuButton(
                             itemBuilder: (ctx) => [
                               // al hacer click, muestra las opciones
-                              // Opción de eliminar paciente
+                              
+                              // ----- Eliminar paciente -----
                               PopupMenuItem(
-                                value: 'delete', // valor asociado a la opción
+                                value: 'delete',
+                                onTap: () => _confirmDelete(patient.id),
                                 child: const Row(
                                   children: [
                                     Icon(Icons.delete, color: AppColors.delete),
                                     SizedBox(width: 8),
-                                    Text(
-                                      'Eliminar',
-                                      style: TextStyle(color: AppColors.delete),
-                                    ),
+                                    Text('Eliminar', style: TextStyle(color: AppColors.delete)),
                                   ],
                                 ),
-                                // -------------------- Eliminar paciente --------------------
-                                // al seleccionar la opción, llama a la función de confirmación
-                                onTap: () => _confirmDelete(patient.id),
                               ),
                             ],
                           ),
@@ -237,58 +243,111 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
               ),
             ),
 
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () async {
-                final created = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const CreatePatientScreen(),
-                  ),
-                );
+            const SizedBox(height: 20),
 
-                if (created == true) {
-                  _loadPatients();
-                }
-              },
-              child: const Text('Crear paciente sin cuenta'),
-            ),
-
-            // -------------------- Botón para generar el código de vinculación --------------------
-            if (generatingCode)
-              ElevatedButton(
-                onPressed: null, // desactivado mientras carga
-                child: const SizedBox( height: 20, width: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                ),
-              )
-            else
-              ElevatedButton(
-                onPressed: _generateCode,
-                child: const Text('Agregar paciente'),
-              ),
-
-            const SizedBox(height: 12),
-
-            // -------------------- Muestra el código generado --------------------
-            if (relationCode != null)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+            // -------------------- Botones --------------------
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(color: Colors.white,borderRadius: BorderRadius.circular(20)),
+              child: Column(
                 children: [
-                  Text(
-                    'Código generado: $relationCode',
-                    style: const TextStyle( fontWeight: FontWeight.bold, fontSize: 16),
+                  // ----- Generar código para vincular -----
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: generatingCode ? null : _generateCode,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.caregiverPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      icon: generatingCode
+                          ? const SizedBox(
+                              height: 18,
+                              width: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.link, color: Colors.white),
+
+                      label: Text(generatingCode? 'Generando código...' : 'Agregar paciente', style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 20),
-                    onPressed: _copyCodeToClipboard,
+
+                  const SizedBox(height: 12),
+
+                  // ----- Crear paciente -----
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final created = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CreatePatientScreen(),
+                          ),
+                        );
+
+                        if (created == true) {
+                          _loadPatients();
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      icon: const Icon(Icons.person_add),
+                      label: const Text('Crear paciente sin cuenta'),
+                    ),
                   ),
+
+                  // ----- Código de vinculación -----
+                  if (relationCode != null) ...[
+                    const SizedBox(height: 18),
+
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.caregiverAppBar.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // ----- Código -----
+                          Text(
+                            relationCode!,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.normal,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          // ----- Botón para copiar -----
+                          InkWell(
+                            onTap: _copyCodeToClipboard,
+                            borderRadius: BorderRadius.circular(6),
+                            child: const Padding(
+                              padding: EdgeInsets.all(4),
+                              child: Icon(Icons.copy, size: 18),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
+            ),
           ],
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/features/emergency/presentation/screens/patient_emergency_screen.dart';
-import 'package:tfg_frontend/features/follow_up/presentation/screens/patient_follow_up_screen.dart';
+import 'package:tfg_frontend/features/appointment/presentation/screens/patient_appointment_screen.dart';
+import 'package:tfg_frontend/features/prescription_tracking/presentation/screens/patient_prescription_tracking_screen.dart';
 import 'package:tfg_frontend/features/home/presentation/patient_home_screen.dart';
 import 'package:tfg_frontend/features/routines/presentation/screens/patient_routine_screen.dart';
 
@@ -18,8 +18,8 @@ class _NavbarPatientState extends State<NavbarPatient> {
   final List<Widget> _pages = [
     PatientHomeScreen(),
     PatientRoutineScreen(),
-    PatientEmergencyScreen(),
-    PatientFollowUpScreen(),
+    PatientPrescriptionTrackingScreen(),
+    PatientAppoinmentScreen(),
     Center(child: Text('Menú')),
   ];
 
@@ -40,9 +40,9 @@ class _NavbarPatientState extends State<NavbarPatient> {
         },
         items: const[
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month),label: 'Mi Rutina'),
-          BottomNavigationBarItem(icon: Icon(Icons.emergency), label: 'Emergencia'),
-          BottomNavigationBarItem(icon: Icon(Icons.handshake_sharp), label: 'Seguimiento'),
+          BottomNavigationBarItem(icon: Icon(Icons.fastfood_outlined),label: 'Rutina'),
+          BottomNavigationBarItem(icon: Icon(Icons.medical_information),label: 'Medicina'),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Citas'),
           BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu')
         ],
       ),
