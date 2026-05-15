@@ -141,9 +141,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       context: context,
       builder: (_) => ConfirmDeleteDialog(
         title: "Eliminar rutina",
-        message:
-            "¿Seguro que quieres eliminar esta rutina? Esta acción no se puede deshacer.",
-
+        message: "¿Seguro que quieres eliminar esta rutina? Esta acción no se puede deshacer.",
         onConfirm: () async {
           await deleteRoutine();
         },

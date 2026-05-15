@@ -4,6 +4,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/allergies/data/caregiver_allergies_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class PatientAllergiesScreen extends StatefulWidget {
   final int patientId; // id del paciente para cargar sus alergias
@@ -244,7 +245,16 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
                               _editSeverity(a);
                             }
                             if (value == 'delete') {
-                              _delete(a['allergy']['id']);
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return ConfirmDeleteDialog(
+                                    title: "Eliminar alergia",
+                                    message: "Esta acción eliminará la alergia del historial del paciente y no se puede deshacer. ¿Desea continuar?",
+                                    onConfirm: () => _delete(a['allergy']['id']),
+                                  );
+                                },
+                              );
                             }
                           },
 

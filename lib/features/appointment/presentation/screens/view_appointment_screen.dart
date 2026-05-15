@@ -6,6 +6,7 @@ import 'package:tfg_frontend/features/appointment/presentation/screens/create_ap
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 import 'package:tfg_frontend/shared/enums/appointment/appointment_status.dart';
 import 'package:tfg_frontend/shared/widgets/app_fab.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class ViewAppointmentsScreen extends StatefulWidget {
   final int patientId;
@@ -300,7 +301,16 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                                             _loadAppointments();
                                           }
                                           if (value == 'delete') {
-                                            _deleteAppointment(a.id);
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return ConfirmDeleteDialog(
+                                                  title: "Eliminar cita",
+                                                  message: "Se eliminará la cita del sistema y el paciente dejará de verla en su agenda. Esta acción es irreversible.",
+                                                  onConfirm: () => _deleteAppointment(a.id),
+                                                );
+                                              },
+                                            );
                                           }
                                         },
                                         itemBuilder: (context) => [

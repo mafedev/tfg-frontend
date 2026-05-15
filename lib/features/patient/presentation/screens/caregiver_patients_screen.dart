@@ -8,6 +8,7 @@ import 'package:tfg_frontend/shared/models/patient.dart';
 import 'package:tfg_frontend/features/relation/data/relation_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_icon_button.dart';
 import 'package:tfg_frontend/shared/widgets/app_secondary_icon_button.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class CaregiverPatientsScreen extends StatefulWidget {
   const CaregiverPatientsScreen({super.key});
@@ -104,30 +105,6 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     }
   }
 
-  // Muestra un diálogo de confirmación antes de eliminar
-  void _confirmDelete(int patientId) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar paciente'),
-        content: const Text('¿Está seguro de que quiere eliminar este paciente?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              _deletePatient(patientId);
-            },
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
-
   // Permite poder copiar el código al portapapeles
   void _copyCodeToClipboard() {
     if (relationCode != null) {
@@ -209,15 +186,23 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                           ),
                           
                           // -------------------- Menú de opciones --------------------
-                          trailing: PopupMenuButton(
-                            itemBuilder: (ctx) => [
-                              // al hacer click, muestra las opciones
-                              
-                              // ----- Eliminar paciente -----
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'delete') {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => ConfirmDeleteDialog(
+                                    title: "Eliminar paciente",
+                                    message: "Se eliminará la relación con este paciente. Sus datos y registros permanecerán intactos. Esta acción es irreversible.",
+                                    onConfirm: () => _deletePatient(patient.id),
+                                  ),
+                                );
+                              }
+                            },
+                            itemBuilder: (ctx) => const [
                               PopupMenuItem(
                                 value: 'delete',
-                                onTap: () => _confirmDelete(patient.id),
-                                child: const Row(
+                                child: Row(
                                   children: [
                                     Icon(Icons.delete, color: AppColors.delete),
                                     SizedBox(width: 8),

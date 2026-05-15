@@ -5,6 +5,7 @@ import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/prescription/presentation/screens/create_prescription_screen.dart';
 import 'package:tfg_frontend/features/prescription/data/caregiver_prescription_service.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class ViewPrescriptionScreen extends StatefulWidget {
   final int patientId;
@@ -54,7 +55,7 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
     // si no hay medicación, muestra un mensaje
     if (medications.isEmpty) {
       return Scaffold(
-        appBar: const AppLogoAppBar(title: 'Medicación', backgroundColor: AppColors.caregiverAppBar),
+        appBar: const AppLogoAppBar(title: 'Prescripciones', backgroundColor: AppColors.caregiverAppBar),
         body: const Center(
           child: Text('Este paciente no tiene medicación asignada'),
         ),
@@ -64,7 +65,7 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
     // si hay medicación, la muestra en una lista
     return Scaffold(
       backgroundColor: AppColors.caregiverBackground,
-      appBar: const AppLogoAppBar(title: 'Medicación', backgroundColor: AppColors.caregiverAppBar),
+      appBar: const AppLogoAppBar(title: 'Prescripciones', backgroundColor: AppColors.caregiverAppBar),
 
       body: Column(
         children: [
@@ -167,8 +168,19 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
 
                         // Ícono de borrar la medicación
                         if (value == 'delete') {
-                          await CaregiverPrescriptionService().deletePrescription(med['id']);
-                          _loadMedication();
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return ConfirmDeleteDialog(
+                                title: "Eliminar prescripción",
+                                message: "Esta prescripción dejará de ser visible, pero los registros de seguimiento asociados no se eliminarán por seguridad.",
+                                onConfirm: () async {
+                                  await CaregiverPrescriptionService().deletePrescription(med['id']);
+                                  _loadMedication();
+                                },
+                              );
+                            },
+                          );
                         }
                       },
 
