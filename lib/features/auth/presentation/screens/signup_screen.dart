@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/auth/data/auth_service.dart';
 import 'package:tfg_frontend/shared/enums/user/user_role.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -180,24 +181,9 @@ class _SignupScreenState extends State<SignupScreen> {
                           const SizedBox(height: 24),
 
                           // Botón de registro
-                          ElevatedButton(
+                          AppPrimaryButton(
+                            text: 'Crear cuenta',
                             onPressed: _signup,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.caregiverPrimary,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 2,
-                            ),
-                            child: const Text(
-                              'Crear cuenta',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
                           ),
                         ],
                       ),
