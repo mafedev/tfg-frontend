@@ -181,9 +181,7 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
         backgroundColor: AppColors.caregiverAppBar,
       ),
       floatingActionButton: AppFAB(
-        onPressed: _create,
-        icon: Icons.add,
-        isPatient: false,
+        onPressed: _create
       ),
 
       body: Builder(

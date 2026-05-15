@@ -330,8 +330,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       ),
 
       floatingActionButton: AppFAB(
-        onPressed: createItemDialog,
-        icon: Icons.add,
+        onPressed: createItemDialog
       ),
 
       body: Column(

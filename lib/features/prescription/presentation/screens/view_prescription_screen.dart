@@ -305,8 +305,6 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
             ),
           );
         },
-        icon: Icons.add,
-        isPatient: false, // cuidador
       ),
     );
   }

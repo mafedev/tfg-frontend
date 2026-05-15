@@ -163,9 +163,6 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
           _loadAppointments();
         },
-
-        icon: Icons.add,
-        isPatient: false,
       ),
 
       body: loading
