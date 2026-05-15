@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
 
 class CreateRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente, para crear la rutina
@@ -205,21 +206,10 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
             const SizedBox(height: 12),
 
             // ---------------- Guardar----------------
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: loading ? null : _saveRoutine,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.caregiverPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Guardar rutina', style: const TextStyle(color: Colors.white)),
-              ),
+            AppPrimaryButton(
+              text: "Guardar rutina",
+              onPressed: _saveRoutine,
+              loading: loading,
             ),
           ],
         ),

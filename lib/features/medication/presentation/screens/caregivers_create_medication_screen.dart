@@ -4,6 +4,7 @@ import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/medication/data/caregiver_medication_service.dart';
 import 'package:tfg_frontend/shared/enums/medication/medication_type.dart';
 import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
 
 class CaregiversMedicationScreen extends StatefulWidget {
   const CaregiversMedicationScreen({super.key});
@@ -153,17 +154,7 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
 
                   const SizedBox(height: 14),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.caregiverPrimary,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: _save,
-                      child: const Text("Guardar"),
-                    ),
-                  ),
+                  AppPrimaryButton(text: "Guardar", onPressed: _save),
                 ],
               ),
             ),

@@ -6,6 +6,8 @@ import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/patient/presentation/screens/patient_details_screen.dart';
 import 'package:tfg_frontend/shared/models/patient.dart';
 import 'package:tfg_frontend/features/relation/data/relation_service.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_icon_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_secondary_icon_button.dart';
 
 class CaregiverPatientsScreen extends StatefulWidget {
   const CaregiverPatientsScreen({super.key});
@@ -253,54 +255,30 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
               child: Column(
                 children: [
                   // ----- Generar código para vincular -----
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: generatingCode ? null : _generateCode,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.caregiverPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      icon: generatingCode
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.link, color: Colors.white),
-
-                      label: Text(generatingCode? 'Generando código...' : 'Agregar paciente', style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
+                  AppPrimaryIconButton(text: generatingCode ? "Generando código..." : "Agregar paciente",
+                    icon: Icons.link,
+                    loading: generatingCode,
+                    onPressed: _generateCode,
                   ),
 
                   const SizedBox(height: 12),
 
                   // ----- Crear paciente -----
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final created = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CreatePatientScreen(),
-                          ),
-                        );
+                  AppSecondaryIconButton(
+                    text: "Crear paciente sin cuenta",
+                    icon: Icons.person_add,
+                    onPressed: () async {
+                      final created = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreatePatientScreen(),
+                        ),
+                      );
 
-                        if (created == true) {
-                          _loadPatients();
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Crear paciente sin cuenta'),
-                    ),
+                      if (created == true) {
+                        _loadPatients();
+                      }
+                    },
                   ),
 
                   // ----- Código de vinculación -----
