@@ -3,6 +3,7 @@ import 'package:tfg_frontend/shared/enums/medication/prescription_tracking_statu
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import '../../data/prescription_tracking_service.dart';
 
 class PrescriptionTrackingScreen extends StatefulWidget {
@@ -38,7 +39,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
         _trackingList = result;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
+      AppSnackBar.showError(context, 'Error cargando tracking');
     } finally {
       setState(() => _loading = false); // luego de intentarlo, sin importar el resultado, pone cargar a false para ocultar el circulo de carga
     }
@@ -91,7 +92,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
         }).toList();
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al actualizar: $e')));
+      AppSnackBar.showError(context, 'Error actualizando el estado');
     }
   }
 

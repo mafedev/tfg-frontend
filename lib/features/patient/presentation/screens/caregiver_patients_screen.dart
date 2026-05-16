@@ -8,6 +8,7 @@ import 'package:tfg_frontend/shared/models/patient.dart';
 import 'package:tfg_frontend/features/relation/data/relation_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_icon_button.dart';
 import 'package:tfg_frontend/shared/widgets/app_secondary_icon_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class CaregiverPatientsScreen extends StatefulWidget {
@@ -50,9 +51,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     });
 
     if (code == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo generar el código')),
-      );
+      AppSnackBar.showError(context, 'Error generando el código');
     }
   }
 
@@ -83,9 +82,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
         loadingPatients = false;
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Error cargando pacientes')));
+      AppSnackBar.showError(context, 'Error cargando pacientes');
     }
   }
 
@@ -96,11 +93,11 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
       _loadPatients();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Relación eliminada correctamente')));
+        AppSnackBar.showSuccess(context, 'Relación eliminada correctamente');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error eliminando relación')));
+        AppSnackBar.showError(context, 'Error eliminando relación');
       }
     }
   }
@@ -109,9 +106,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   void _copyCodeToClipboard() {
     if (relationCode != null) {
       Clipboard.setData(ClipboardData(text: relationCode!));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Código copiado al portapapeles')),
-      );
+      AppSnackBar.showInfo(context, 'Código copiado al portapapeles');
     }
   }
 

@@ -3,6 +3,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/auth/data/auth_service.dart';
 import 'package:tfg_frontend/shared/enums/user/user_role.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -211,13 +212,10 @@ class _SignupScreenState extends State<SignupScreen> {
           role: selectedRole,
           phone: phoneController.text,
         );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Cuenta creada correctamente')),
-        );
+        AppSnackBar.showSuccess(context, 'Cuenta creada correctamente');
         Navigator.pop(context);
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al crear cuenta')));
+        AppSnackBar.showError(context, 'Error al crear cuenta');
       }
     }
   }

@@ -5,6 +5,7 @@ import 'package:tfg_frontend/features/medication/data/caregiver_medication_servi
 import 'package:tfg_frontend/shared/enums/medication/medication_type.dart';
 import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CaregiversMedicationScreen extends StatefulWidget {
   const CaregiversMedicationScreen({super.key});
@@ -40,9 +41,7 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
         medications = data;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error cargando medicamentos: $e")),
-      );
+      AppSnackBar.showError(context, 'Error cargando medicamentos');
     } finally {
       setState(() => loading = false);
     }
@@ -82,13 +81,9 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
 
       await _load();
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Medicamento creado")));
+      AppSnackBar.showSuccess(context, 'Medicamento creado');
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      AppSnackBar.showError(context, 'Error creando medicamento');
     }
   }
 

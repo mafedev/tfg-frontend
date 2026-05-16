@@ -6,6 +6,7 @@ import 'package:tfg_frontend/features/appointment/presentation/screens/create_ap
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 import 'package:tfg_frontend/shared/enums/appointment/appointment_status.dart';
 import 'package:tfg_frontend/shared/widgets/app_fab.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class ViewAppointmentsScreen extends StatefulWidget {
@@ -43,9 +44,7 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
       });
     } catch (e) {
       setState(() => loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error cargando citas: $e")));
+      AppSnackBar.showError(context, 'Error cargando citas');
     }
   }
 
@@ -55,9 +54,7 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
       await service.deleteAppointment(id);
       _loadAppointments();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error eliminando cita")));
+      AppSnackBar.showError(context, 'Error eliminando cita');
     }
   }
 
@@ -72,9 +69,7 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
       await service.updateStatus(id: id, status: statusEnum);
       _loadAppointments();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error actualizando estado")));
+      AppSnackBar.showError(context, 'Error actualizando estado');
     }
   }
 

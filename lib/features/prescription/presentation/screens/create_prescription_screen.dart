@@ -8,6 +8,7 @@ import 'package:tfg_frontend/shared/enums/medication/prescription_status.dart';
 import 'package:tfg_frontend/shared/dtos/medication/prescription_request.dart';
 import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CreatePrescriptionScreen extends StatefulWidget {
   final int patientId; // id del paciente
@@ -154,7 +155,7 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
         setState(() {});
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error cargando medicamentos: $e')));
+      AppSnackBar.showError(context, 'Error cargando medicamento');
     } finally {
       setState(() => loading = false); // indica que ya no está cargando
     }
@@ -164,7 +165,7 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
   Future<void> _savePrescription() async {
     // si no se ha seleccionado un medicamento o una unidad de dosis, muestra un error
     if (selectedMedication == null || selectedDoseUnit == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Faltan datos')));
+      AppSnackBar.showError(context, 'Faltan datos');
       return;
     }
 
@@ -200,7 +201,7 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
 
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      AppSnackBar.showError(context, 'Error creando prescripción');
     }
   }
 

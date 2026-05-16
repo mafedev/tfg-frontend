@@ -4,6 +4,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/allergies/data/caregiver_allergies_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class PatientAllergiesScreen extends StatefulWidget {
@@ -33,7 +34,7 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
     try {
       allergies = await _service.getByPatient(widget.patientId);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error cargando alergias: $e')));
+      AppSnackBar.showError(context, 'Error cargando alergias');
     }
 
     setState(() => loading = false);
@@ -109,10 +110,9 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
           (allergy) => allergy['allergy']['id'] == allergyId,
         );
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Alergia eliminada')));
+      AppSnackBar.showSuccess(context, 'Alergia eliminada');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      AppSnackBar.showError(context, 'Error eliminando alergia');
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:tfg_frontend/shared/dtos/appointment/appointment_request.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
   final int patientId; // id del paciente
@@ -157,15 +158,11 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         await service.createAppointment(request);
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Cita guardada")));
+      AppSnackBar.showSuccess(context, 'Cita guardada');
 
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Error al guardar cita")));
+      AppSnackBar.showError(context, 'Error al guardar cita');
     }
   }
 

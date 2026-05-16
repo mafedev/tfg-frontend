@@ -6,6 +6,7 @@ import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/routines/presentation/screens/edit_routine_screen.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
@@ -53,9 +54,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       setState(() {
         routine = null;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Error al cargar rutina')));
+      AppSnackBar.showError(context, 'Error cargando la rutina');
     } finally {
       setState(() => loading = false); // indica que ya no está cargando
     }
@@ -84,9 +83,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         trackingStatusMap = status;
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
+      AppSnackBar.showError(context, 'Error cargando tracking');
     }
   }
 
@@ -107,9 +104,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         trackingStatusMap[itemId] = s;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error actualizando tracking')),
-      );
+      AppSnackBar.showError(context, 'Error actualizando tracking');
     }
   }
 
@@ -120,9 +115,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       await loadAll();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error borrando item: $e")));
+        AppSnackBar.showError(context, 'Error eliminando actividad');
       }
     }
   }

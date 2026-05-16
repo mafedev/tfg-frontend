@@ -8,6 +8,7 @@ import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/shared/enums/user/user_role.dart';
 import 'package:tfg_frontend/shared/dtos/user/login_response.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -186,9 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final storage = SecureStorageService();
         await storage.saveToken(userData.token);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inicio de sesión correcto')), // muestra un mensaje de éxito
-        );
+        AppSnackBar.showSuccess(context, 'Inicio de sesión correcto'); // muestra un mensaje de éxito
 
         final String roleString = userData.role;
         final UserRole userRole = UserRole.values.firstWhere(
@@ -208,9 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Credenciales incorrectas')), // muestra un mensaje de error
-        );
+        AppSnackBar.showError(context, 'Credenciales incorrectas');
       }
     }
   }
