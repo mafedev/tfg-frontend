@@ -4,6 +4,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/allergies/data/caregiver_allergies_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_search_bar.dart';
 import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
@@ -21,6 +22,9 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
   List<Map<String, dynamic>> allergies = []; // lista de alergias del paciente
   bool loading = true; // indicador de carga
 
+  List<Map<String, dynamic>> filteredAllergies = [];
+  final TextEditingController _searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -33,12 +37,28 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
 
     try {
       allergies = await _service.getByPatient(widget.patientId);
+      filteredAllergies = List.from(allergies);
     } catch (e) {
       AppSnackBar.showError(context, 'Error cargando alergias');
     }
-
     setState(() => loading = false);
   }
+
+  void _filterAllergies(String query) {
+  final text = query.toLowerCase();
+
+  setState(() {
+    filteredAllergies = allergies.where((allergy) {
+      final name =
+          allergy['allergy']['name']?.toString().toLowerCase() ?? '';
+
+      final desc =
+          allergy['allergy']['description']?.toString().toLowerCase() ?? '';
+
+      return name.contains(text) || desc.contains(text);
+    }).toList();
+  });
+}
 
   // -------------------- Crear nueva alergia --------------------
   void _create() async {
@@ -107,6 +127,10 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
 
       setState(() {
         allergies.removeWhere(
+          (allergy) => allergy['allergy']['id'] == allergyId,
+        );
+
+        filteredAllergies.removeWhere(
           (allergy) => allergy['allergy']['id'] == allergyId,
         );
       });
@@ -195,131 +219,147 @@ class _PatientAllergiesScreenState extends State<PatientAllergiesScreen> {
             return const Center(child: Text('Sin alergias'));
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: allergies.length,
-            itemBuilder: (context, index) {
-              final a = allergies[index];
-
-              final name = a['allergy']['name'] ?? 'Sin nombre';
-              final desc = a['allergy']['description'] ?? 'Sin descripción';
-              final severity = a['severity'] ?? 'LOW';
-
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: AppSearchBar(
+                  controller: _searchController,
+                  hintText: 'Buscar alergias...',
+                  onChanged: _filterAllergies,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            name,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15,
-                              color: AppColors.caregiverPrimary,
-                            ),
+              ),
+
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filteredAllergies.length,
+                  itemBuilder: (context, index) {
+                    final a = filteredAllergies[index];
+
+                    final name = a['allergy']['name'] ?? 'Sin nombre';
+                    final desc =
+                        a['allergy']['description'] ?? 'Sin descripción';
+                    final severity = a['severity'] ?? 'LOW';
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
-
-                        // -------- Tres puntos --------
-                        PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert),
-
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _editSeverity(a);
-                            }
-                            if (value == 'delete') {
-                              showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return ConfirmDeleteDialog(
-                                    title: "Eliminar alergia",
-                                    message: "Esta acción eliminará la alergia del historial del paciente y no se puede deshacer. ¿Desea continuar?",
-                                    onConfirm: () => _delete(a['allergy']['id']),
-                                  );
-                                },
-                              );
-                            }
-                          },
-
-                          itemBuilder: (context) => const [
-                            PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit, size: 18),
-                                  SizedBox(width: 8),
-                                  Text('Editar'),
-                                ],
-                              ),
-                            ),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete,
-                                    size: 18,
-                                    color: Colors.red,
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    color: AppColors.caregiverPrimary,
                                   ),
-                                  SizedBox(width: 8),
-                                  Text('Eliminar'),
+                                ),
+                              ),
+
+                              // -------- Tres puntos --------
+                              PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert),
+
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _editSeverity(a);
+                                  }
+                                  if (value == 'delete') {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return ConfirmDeleteDialog(
+                                          title: "Eliminar alergia",
+                                          message: "Esta acción eliminará la alergia del historial del paciente y no se puede deshacer. ¿Desea continuar?",
+                                          onConfirm: () => _delete(a['allergy']['id']),
+                                        );
+                                      },
+                                    );
+                                  }
+                                },
+
+                                itemBuilder: (context) => const [
+                                  PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.edit, size: 18),
+                                        SizedBox(width: 8),
+                                        Text('Editar'),
+                                      ],
+                                    ),
+                                  ),
+                                  PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.delete,
+                                          size: 18,
+                                          color: Colors.red,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text('Eliminar'),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Text(
-                      desc,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Chip(
-                        label: Text(
-                          severity,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            ],
                           ),
-                        ),
-                        backgroundColor: _chipColor(severity).withOpacity(0.15),
-                        labelStyle: TextStyle(color: _chipColor(severity)),
-                        shape: const StadiumBorder(),
-                        side: BorderSide.none,
+
+                          const SizedBox(height: 6),
+
+                          Text(
+                            desc,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: Chip(
+                              label: Text(
+                                severity,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              backgroundColor: _chipColor(severity).withOpacity(0.15),
+                              labelStyle: TextStyle(color: _chipColor(severity)),
+                              shape: const StadiumBorder(),
+                              side: BorderSide.none,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
+              ),
+            ],
           );
         },
       ),
