@@ -21,10 +21,10 @@ class ViewAppointmentsScreen extends StatefulWidget {
 class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
   bool loading = true;
   List<AppointmentResponse> appointments = [];
-
   final service = AppointmentService();
-
   DateTime? selectedDate;
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -122,15 +122,20 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
 
   // ---------- Lista filtrada ----------
   List<AppointmentResponse> _filteredAppointments() {
-    if (selectedDate == null) {
-      return appointments;
-    }
-
     return appointments.where((a) {
-      final date = a.dateTime;
-      return date.year == selectedDate!.year &&
-          date.month == selectedDate!.month &&
-          date.day == selectedDate!.day;
+      final matchesDate =
+          selectedDate == null ||
+          (a.dateTime.year == selectedDate!.year &&
+              a.dateTime.month == selectedDate!.month &&
+              a.dateTime.day == selectedDate!.day);
+
+      final query = searchQuery.toLowerCase();
+
+      final matchesSearch =
+          a.title.toLowerCase().contains(query) ||
+          a.location.toLowerCase().contains(query);
+
+      return matchesDate && matchesSearch;
     }).toList();
   }
 
@@ -168,45 +173,113 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
                 // ---------- Filtro ----------
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: selectedDate != null ? AppColors.caregiverPrimary : AppColors.caregiverSecondary,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
 
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          onChanged: (value) {
+                            setState(() {
+                              searchQuery = value;
+                            });
+                          },
+
+                          decoration: InputDecoration(
+                            hintText: 'Buscar cita...',
+                            prefixIcon: const Icon(Icons.search),
+
+                            filled: true,
+                            fillColor: Colors.white,
+
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 0,
+                            ),
+
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade200,
+                              ),
+                            ),
+
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.caregiverPrimary,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
 
-                      onPressed: selectedDate == null
-                          ? _pickFilterDate
-                          : () {setState(() => selectedDate = null);},
+                      const SizedBox(width: 10),
 
-                      icon: Icon(
-                        selectedDate == null
-                            ? Icons.calendar_month
-                            : Icons.close,
-                      ),
+                      // ---------- Botón calendario ----------
+                      InkWell(
+                        borderRadius: BorderRadius.circular(14),
 
-                      label: Text(
-                        selectedDate == null
-                            ? 'Filtrar por fecha'
-                            : 'Limpiar filtro (${selectedDate!.day.toString().padLeft(2, '0')}/'
-                                  '${selectedDate!.month.toString().padLeft(2, '0')}/'
-                                  '${selectedDate!.year})',
+                        onTap: selectedDate == null
+                            ? _pickFilterDate
+                            : () {
+                                setState(() {
+                                  selectedDate = null;
+                                });
+                              },
 
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+
+                          decoration: BoxDecoration(
+                            color: selectedDate != null
+                                ? AppColors.caregiverPrimary
+                                : Colors.white,
+
+                            borderRadius: BorderRadius.circular(14),
+
+                            border: Border.all(
+                              color: selectedDate != null
+                                  ? AppColors.caregiverPrimary
+                                  : Colors.grey.shade300,
+                            ),
+                          ),
+
+                          child: Icon(
+                            selectedDate != null
+                                ? Icons.close
+                                : Icons.calendar_month,
+
+                            color: selectedDate != null
+                                ? Colors.white
+                                : AppColors.caregiverPrimary,
+                          ),
                         ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                if (selectedDate != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Filtrando por '
+                      '${selectedDate!.day.toString().padLeft(2, '0')}/'
+                      '${selectedDate!.month.toString().padLeft(2, '0')}/'
+                      '${selectedDate!.year}',
+
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                ),
 
                 // ---------- Lista ----------
                 Expanded(
