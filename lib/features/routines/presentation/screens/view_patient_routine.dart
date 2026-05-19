@@ -29,6 +29,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
   DateTime selectedDate = DateTime.now();
 
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
   // Cuando se inicia la pantalla, carga la rutina
   @override
   void initState() {
@@ -227,11 +230,20 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
   }
 
+  List<dynamic> _filteredItems() {
+    final q = searchQuery.toLowerCase();
+
+    return routine!.items.where((item) {
+      return item.name.toLowerCase().contains(q);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
     if (loading) {
       return const Scaffold(
+        backgroundColor: AppColors.caregiverBackground,
         body: Center(
           child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
         ),
@@ -240,7 +252,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
     if (routine == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.caregiverBackground,
         appBar: const AppLogoAppBar(
           title: 'Rutina',
           backgroundColor: AppColors.caregiverAppBar,
@@ -271,7 +283,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: AppLogoAppBar(
         title: 'Rutina',
         backgroundColor: AppColors.caregiverAppBar,
@@ -320,9 +332,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         ],
       ),
 
-      floatingActionButton: AppFAB(
-        onPressed: createItemDialog
-      ),
+      floatingActionButton: AppFAB(onPressed: createItemDialog),
 
       body: Column(
         children: [
@@ -399,9 +409,42 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
               ),
             ),
           ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                onChanged: (value) {
+                  setState(() => searchQuery = value);
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Buscar actividad...',
+                  prefixIcon: Icon(Icons.search),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // -------- LISTA --------
           Expanded(
             child: ListView(
-              children: routine!.items.map((item) {
+              children: (_filteredItems()).map((item) {
                 final current =
                     trackingStatusMap[item.id] ?? TrackingStatus.PENDING;
 
