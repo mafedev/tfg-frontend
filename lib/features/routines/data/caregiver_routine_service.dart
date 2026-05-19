@@ -287,4 +287,27 @@ class RoutineService {
 
     return Routine.fromJson(jsonDecode(response.body));
   }
+
+  Future<List<Map<String, dynamic>>> getMyTracking(DateTime date) async {
+    final token = await _secureStorageService.getToken();
+
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final formattedDate = date.toIso8601String().split('T')[0];
+
+    final response = await http.get(
+      Uri.parse('$_trackingUrl/me?date=$formattedDate'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error obteniendo mi tracking',
+    );
+
+    return List<Map<String, dynamic>>.from(jsonDecode(response.body));
+  }
 }

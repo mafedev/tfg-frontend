@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/shared/enums/routine/routine_tracking_status.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
-import 'package:tfg_frontend/features/routines/presentation/screens/edit_routine_item_screen.dart';
+import 'package:tfg_frontend/features/routines/presentation/screens/edit_routine_screen.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
   final int patientId;
@@ -25,6 +28,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   Map<int, TrackingStatus> trackingStatusMap = {};
 
   DateTime selectedDate = DateTime.now();
+
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   // Cuando se inicia la pantalla, carga la rutina
   @override
@@ -51,7 +57,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       setState(() {
         routine = null;
       });
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al cargar rutina')));
+      AppSnackBar.showError(context, 'Error cargando la rutina');
     } finally {
       setState(() => loading = false); // indica que ya no está cargando
     }
@@ -60,7 +66,10 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   // -------------------- Carga tracking --------------------
   Future<void> _loadTracking() async {
     try {
-      final data = await _routineService.getTracking(patientId: widget.patientId, date: selectedDate);
+      final data = await _routineService.getTracking(
+        patientId: widget.patientId,
+        date: selectedDate,
+      );
 
       final ids = <int, int>{};
       final status = <int, TrackingStatus>{};
@@ -77,9 +86,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         trackingStatusMap = status;
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
+      AppSnackBar.showError(context, 'Error cargando tracking');
     }
   }
 
@@ -100,9 +107,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         trackingStatusMap[itemId] = s;
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Error actualizando tracking')));
+      AppSnackBar.showError(context, 'Error actualizando tracking');
     }
   }
 
@@ -111,13 +116,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     try {
       await _routineService.deleteItem(itemId);
       await loadAll();
-
     } catch (e) {
-
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error borrando item: $e")));
+        AppSnackBar.showError(context, 'Error eliminando actividad');
       }
     }
   }
@@ -129,6 +130,19 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     setState(() {
       routine = null;
     });
+  }
+
+  void confirmDeleteRoutine() {
+    showDialog(
+      context: context,
+      builder: (_) => ConfirmDeleteDialog(
+        title: "Eliminar rutina",
+        message: "¿Seguro que quieres eliminar esta rutina? Esta acción no se puede deshacer.",
+        onConfirm: () async {
+          await deleteRoutine();
+        },
+      ),
+    );
   }
 
   // Editar rutina
@@ -193,10 +207,35 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
               await loadAll();
             },
             child: const Text("Crear"),
-          )
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _pickDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+      });
+
+      await _loadTracking();
+    }
+  }
+
+  List<dynamic> _filteredItems() {
+    final q = searchQuery.toLowerCase();
+
+    return routine!.items.where((item) {
+      return item.name.toLowerCase().contains(q);
+    }).toList();
   }
 
   @override
@@ -204,6 +243,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     // muestra un indicador de carga mientras se obtiene la rutina
     if (loading) {
       return const Scaffold(
+        backgroundColor: AppColors.caregiverBackground,
         body: Center(
           child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
         ),
@@ -211,99 +251,275 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
 
     if (routine == null) {
-      return const Scaffold(body: Center(child: Text("No rutina")));
+      return Scaffold(
+        backgroundColor: AppColors.caregiverBackground,
+        appBar: const AppLogoAppBar(
+          title: 'Rutina',
+          backgroundColor: AppColors.caregiverAppBar,
+        ),
+
+        body: Center(
+          child: Container(
+            margin: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.event_busy, size: 60, color: Colors.grey),
+                SizedBox(height: 16),
+                Text(
+                  "No hay rutina",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const AppLogoAppBar(title: 'Rutina', backgroundColor: AppColors.caregiverAppBar),
-
-      floatingActionButton: FloatingActionButton(
+      backgroundColor: AppColors.caregiverBackground,
+      appBar: AppLogoAppBar(
+        title: 'Rutina',
         backgroundColor: AppColors.caregiverAppBar,
-        onPressed: createItemDialog,
-        child: const Icon(Icons.add),
+
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+
+            onSelected: (value) async {
+              if (value == 'edit') {
+                await editRoutine();
+              }
+
+              if (value == 'delete') {
+                confirmDeleteRoutine();
+              }
+            },
+
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'edit',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, size: 20, color: Colors.black),
+                    SizedBox(width: 10),
+                    Text('Editar rutina'),
+                  ],
+                ),
+              ),
+
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red, size: 20),
+                    SizedBox(width: 10),
+                    Text(
+                      'Eliminar rutina',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
+
+      floatingActionButton: AppFAB(onPressed: createItemDialog),
 
       body: Column(
         children: [
           // -------- SELECTOR DE FECHA --------
           Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () async {
-                    setState(() {
-                      selectedDate = selectedDate.subtract(const Duration(days: 1));
-                    });
-                    await _loadTracking();
-                  },
-                ),
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new),
+                    onPressed: () async {
+                      setState(() {
+                        selectedDate = selectedDate.subtract(
+                          const Duration(days: 1),
+                        );
+                      });
 
-                Text(
-                  "${selectedDate.toLocal()}".split(' ')[0],
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold,
+                      await _loadTracking();
+                    },
                   ),
-                ),
 
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward),
-                  onPressed: () async {
-                    final tomorrow = selectedDate.add(const Duration(days: 1));
+                  Expanded(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: _pickDate,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.calendar_month,
+                              color: AppColors.caregiverAppBar,
+                            ),
 
-                    if (tomorrow.isAfter(DateTime.now())) return;
+                            const SizedBox(width: 10),
 
-                    setState(() {
-                      selectedDate = tomorrow;
-                    });
+                            Text(
+                              "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
 
-                    await _loadTracking();
-                  },
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios),
+                    onPressed: () async {
+                      final tomorrow = selectedDate.add(
+                        const Duration(days: 1),
+                      );
+
+                      if (tomorrow.isAfter(DateTime.now())) return;
+
+                      setState(() {
+                        selectedDate = tomorrow;
+                      });
+
+                      await _loadTracking();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                onChanged: (value) {
+                  setState(() => searchQuery = value);
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Buscar actividad...',
+                  prefixIcon: Icon(Icons.search),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // -------- LISTA --------
           Expanded(
             child: ListView(
-        children: [
-          ...routine!.items.map((item) {
-            final current = trackingStatusMap[item.id] ?? TrackingStatus.PENDING;
+              children: (_filteredItems()).map((item) {
+                final current =
+                    trackingStatusMap[item.id] ?? TrackingStatus.PENDING;
 
-            return ListTile(
-              title: Text(item.name),
-              subtitle: Text(item.time ?? ""),
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
 
-              trailing: DropdownButton(
-                value: current,
-                items: TrackingStatus.values
-                    .map((s) => DropdownMenuItem(value: s, child: Text(s.name)))
-                    .toList(),
-                onChanged: (s) {
-                  if (s != null) _updateTrackingStatus(item.id, s);
-                },
-              ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
 
-              onLongPress: () => deleteItem(item.id),
-            );
-          }),
+                    leading: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.caregiverAppBar.withOpacity(0.10),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.schedule,
+                        color: AppColors.caregiverAppBar,
+                      ),
+                    ),
 
-          const SizedBox(height: 20),
+                    title: Text(
+                      item.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
 
-          ElevatedButton(
-            onPressed: editRoutine,
-            child: const Text("Editar rutina"),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        item.time ?? "Sin hora",
+                        style: TextStyle(color: Colors.grey.shade600),
+                      ),
+                    ),
+
+                    trailing: DropdownButton<TrackingStatus>(
+                      value: current,
+                      underline: const SizedBox(),
+
+                      borderRadius: BorderRadius.circular(12),
+
+                      items: TrackingStatus.values
+                          .map(
+                            (s) =>
+                                DropdownMenuItem(value: s, child: Text(s.name)),
+                          )
+                          .toList(),
+
+                      onChanged: (s) {
+                        if (s != null) {
+                          _updateTrackingStatus(item.id, s);
+                        }
+                      },
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-          // ---------- Botón para eliminar la rutina ----------
-          ElevatedButton(
-            onPressed: deleteRoutine,
-            child: const Text("Eliminar rutina"),
-          ),
-        ],
-      ),
-          ),
+
         ],
       ),
     );

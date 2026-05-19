@@ -7,6 +7,8 @@ import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/shared/enums/user/user_role.dart';
 import 'package:tfg_frontend/shared/dtos/user/login_response.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -128,26 +130,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           obscureText: _obscurePassword,
                         ),
                         const SizedBox(height: 16),
-                        ElevatedButton(
+                        AppPrimaryButton(
+                          text: 'Iniciar sesión',
                           onPressed: _login,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.caregiverPrimary,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 2,
-                          ),
-                          child: const Text(
-                            'Iniciar sesión',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                         ),
-
                         const SizedBox(height: 8),
 
                         // ----------- Enlace a Signup -----------
@@ -201,9 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
         final storage = SecureStorageService();
         await storage.saveToken(userData.token);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Inicio de sesión correcto')), // muestra un mensaje de éxito
-        );
+        AppSnackBar.showSuccess(context, 'Inicio de sesión correcto'); // muestra un mensaje de éxito
 
         final String roleString = userData.role;
         final UserRole userRole = UserRole.values.firstWhere(
@@ -223,9 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Credenciales incorrectas')), // muestra un mensaje de error
-        );
+        AppSnackBar.showError(context, 'Credenciales incorrectas');
       }
     }
   }

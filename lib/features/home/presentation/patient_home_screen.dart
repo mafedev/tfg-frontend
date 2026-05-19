@@ -6,6 +6,7 @@ import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/relation/data/relation_service.dart';
 import 'package:tfg_frontend/core/services/notification_service.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 // Esta pantalla es para el paciente. Permite vincularse con un cuidador usando el código de vinculación
 class PatientHomeScreen extends StatefulWidget {
@@ -110,13 +111,9 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
   try {
     await _relationService.linkPatient(codeController.text.trim());
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Paciente conectado correctamente')),
-    );
+    AppSnackBar.showSuccess(context, 'Paciente conectado correctamente');
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Error conectando el paciente')),
-    );
+    AppSnackBar.showError(context, 'Error conectando el paciente');
   }
 }
 

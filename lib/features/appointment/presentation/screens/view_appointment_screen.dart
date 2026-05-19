@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/appointment/data/caregiver_appointment_service.dart';
+import 'package:tfg_frontend/features/appointment/presentation/screens/create_appointment_screen.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 import 'package:tfg_frontend/shared/enums/appointment/appointment_status.dart';
-import 'create_appointment_screen.dart';
+import 'package:tfg_frontend/shared/widgets/app_fab.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class ViewAppointmentsScreen extends StatefulWidget {
   final int patientId;
@@ -18,10 +21,10 @@ class ViewAppointmentsScreen extends StatefulWidget {
 class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
   bool loading = true;
   List<AppointmentResponse> appointments = [];
-
   final service = AppointmentService();
-
   DateTime? selectedDate;
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -29,6 +32,7 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     _loadAppointments();
   }
 
+  // ---------- Cargar citas ----------
   Future<void> _loadAppointments() async {
     try {
       final result = await service.getAppointmentsByPatient(widget.patientId);
@@ -40,23 +44,21 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
       });
     } catch (e) {
       setState(() => loading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error cargando citas: $e")));
+      AppSnackBar.showError(context, 'Error cargando citas');
     }
   }
 
+  // ---------- Eliminar cita ----------
   Future<void> _deleteAppointment(int id) async {
     try {
       await service.deleteAppointment(id);
       _loadAppointments();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error eliminando cita")));
+      AppSnackBar.showError(context, 'Error eliminando cita');
     }
   }
 
+  // ---------- Actualizar estado ----------
   Future<void> _updateStatus(int id, String status) async {
     try {
       final AppointmentStatus statusEnum = AppointmentStatus.values.firstWhere(
@@ -67,12 +69,11 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
       await service.updateStatus(id: id, status: statusEnum);
       _loadAppointments();
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error actualizando estado")));
+      AppSnackBar.showError(context, 'Error actualizando estado');
     }
   }
 
+  // ---------- Chip de estado ----------
   Widget _buildStatusChip(AppointmentResponse appointment, String value, String label) {
     final isSelected = appointment.status == value;
 
@@ -82,9 +83,28 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
       onSelected: (_) {
         _updateStatus(appointment.id, value);
       },
+
+      showCheckmark: false,
+      selectedColor: AppColors.caregiverPrimary,
+      backgroundColor: Colors.grey.shade100,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: isSelected ? AppColors.caregiverPrimary : Colors.grey.shade300,
+        ),
+      ),
+
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.grey.shade700,
+        fontWeight: FontWeight.w600,
+        fontSize: 12,
+      ),
+
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
     );
   }
 
+  // ---------- Filtrar por fecha ----------
   Future<void> _pickFilterDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -100,14 +120,22 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     }
   }
 
+  // ---------- Lista filtrada ----------
   List<AppointmentResponse> _filteredAppointments() {
-    if (selectedDate == null) return appointments;
-
     return appointments.where((a) {
-      final date = a.dateTime;
-      return date.year == selectedDate!.year &&
-          date.month == selectedDate!.month &&
-          date.day == selectedDate!.day;
+      final matchesDate =
+          selectedDate == null ||
+          (a.dateTime.year == selectedDate!.year &&
+              a.dateTime.month == selectedDate!.month &&
+              a.dateTime.day == selectedDate!.day);
+
+      final query = searchQuery.toLowerCase();
+
+      final matchesSearch =
+          a.title.toLowerCase().contains(query) ||
+          a.location.toLowerCase().contains(query);
+
+      return matchesDate && matchesSearch;
     }).toList();
   }
 
@@ -116,135 +144,14 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
     final filtered = _filteredAppointments();
 
     return Scaffold(
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(
         title: 'Citas',
         backgroundColor: AppColors.caregiverAppBar,
       ),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.calendar_today),
-                        onPressed: _pickFilterDate,
-                      ),
-                      const SizedBox(width: 10),
-                      if (selectedDate != null)
-                        TextButton(
-                          onPressed: () {
-                            setState(() => selectedDate = null);
-                          },
-                          child: const Text("Limpiar"),
-                        ),
-                    ],
-                  ),
-                ),
 
-        Expanded(
-          child: filtered.isEmpty
-          ? const Center(child: Text("No hay citas"))
-          : ListView.builder(
-              itemCount: filtered.length,
-              itemBuilder: (context, index) {
-                final AppointmentResponse a = filtered[index];
-
-                final date = a.dateTime;
-
-                String fecha = '';
-                String hora = '';
-
-                if (date != null) {
-                  fecha =
-                      "${date.day.toString().padLeft(2, '0')}/"
-                      "${date.month.toString().padLeft(2, '0')}/"
-                      "${date.year}";
-
-                  hora =
-                      "${date.hour.toString().padLeft(2, '0')}:"
-                      "${date.minute.toString().padLeft(2, '0')}";
-                }
-
-                return Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  child: ListTile(
-                    title: Text(a.title),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Lugar: ${a.location}"),
-
-                        if (fecha.isNotEmpty) Text("Día: $fecha"),
-
-                        if (hora.isNotEmpty) Text("Hora: $hora"),
-
-                        Text("Descripción: ${a.description}"),
-
-                        const SizedBox(height: 8),
-
-                        Wrap(
-                          spacing: 8,
-                          children: [
-                            _buildStatusChip(
-                                a, 'PENDING', 'Pendiente'),
-                            _buildStatusChip(
-                                a, 'ATTENDED', 'Asistió'),
-                            _buildStatusChip(
-                                a, 'MISSED', 'No asistió'),
-                            _buildStatusChip(
-                                a, 'CANCELLED', 'Cancelada'),
-                          ],
-                        ),
-                      ],
-                    ),
-
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) async {
-                        if (value == 'edit') {
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CreateAppointmentScreen(
-                                patientId: widget.patientId,
-                                existingAppointment: a,
-                              ),
-                            ),
-                          );
-
-                          _loadAppointments();
-                        }
-
-                        
-                        if (value == 'delete') {
-                          _deleteAppointment(a.id);
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Editar'),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Eliminar'),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-                        ),
-                ),
-              ],
-            ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.caregiverAccent,
+      // ---------- FAB ----------
+      floatingActionButton: AppFAB(
         onPressed: () async {
           await Navigator.push(
             context,
@@ -254,10 +161,310 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
               ),
             ),
           );
+
           _loadAppointments();
         },
-        child: const Icon(Icons.add),
       ),
+
+      body: loading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.caregiverPrimary))
+          : Column(
+              children: [
+                // ---------- Filtro ----------
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+
+                          onChanged: (value) {
+                            setState(() {
+                              searchQuery = value;
+                            });
+                          },
+
+                          decoration: InputDecoration(
+                            hintText: 'Buscar cita...',
+                            prefixIcon: const Icon(Icons.search),
+
+                            filled: true,
+                            fillColor: Colors.white,
+
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 0,
+                            ),
+
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(
+                                color: Colors.grey.shade200,
+                              ),
+                            ),
+
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: const BorderSide(
+                                color: AppColors.caregiverPrimary,
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      // ---------- Botón calendario ----------
+                      InkWell(
+                        borderRadius: BorderRadius.circular(14),
+
+                        onTap: selectedDate == null
+                            ? _pickFilterDate
+                            : () {
+                                setState(() {
+                                  selectedDate = null;
+                                });
+                              },
+
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+
+                          decoration: BoxDecoration(
+                            color: selectedDate != null
+                                ? AppColors.caregiverPrimary
+                                : Colors.white,
+
+                            borderRadius: BorderRadius.circular(14),
+
+                            border: Border.all(
+                              color: selectedDate != null
+                                  ? AppColors.caregiverPrimary
+                                  : Colors.grey.shade300,
+                            ),
+                          ),
+
+                          child: Icon(
+                            selectedDate != null
+                                ? Icons.close
+                                : Icons.calendar_month,
+
+                            color: selectedDate != null
+                                ? Colors.white
+                                : AppColors.caregiverPrimary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                if (selectedDate != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      'Filtrando por '
+                      '${selectedDate!.day.toString().padLeft(2, '0')}/'
+                      '${selectedDate!.month.toString().padLeft(2, '0')}/'
+                      '${selectedDate!.year}',
+
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                // ---------- Lista ----------
+                Expanded(
+                  child: filtered.isEmpty
+                      ? Center(child: Text("No hay citas",
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 15,
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                            right: 16,
+                            bottom: 100,
+                          ),
+
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final AppointmentResponse a = filtered[index];
+
+                            final date = a.dateTime;
+
+                            String fecha = '';
+                            String hora = '';
+
+                            fecha =
+                                "${date.day.toString().padLeft(2, '0')}/"
+                                "${date.month.toString().padLeft(2, '0')}/"
+                                "${date.year}";
+
+                            hora =
+                                "${date.hour.toString().padLeft(2, '0')}:"
+                                "${date.minute.toString().padLeft(2, '0')}";
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          a.title,
+
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.caregiverPrimary,
+                                          ),
+                                        ),
+                                      ),
+
+                                      PopupMenuButton<String>(
+                                        icon: const Icon(
+                                          Icons.more_vert,
+                                        ),
+
+                                        onSelected: (value) async {
+                                          if (value == 'edit') {
+                                            await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) => CreateAppointmentScreen(
+                                                  patientId: widget.patientId,
+                                                  existingAppointment: a,
+                                                ),
+                                              ),
+                                            );
+
+                                            _loadAppointments();
+                                          }
+                                          if (value == 'delete') {
+                                            showDialog(
+                                              context: context,
+                                              builder: (context) {
+                                                return ConfirmDeleteDialog(
+                                                  title: "Eliminar cita",
+                                                  message: "Se eliminará la cita del sistema y el paciente dejará de verla en su agenda. Esta acción es irreversible.",
+                                                  onConfirm: () => _deleteAppointment(a.id),
+                                                );
+                                              },
+                                            );
+                                          }
+                                        },
+                                        itemBuilder: (context) => [
+                                          const PopupMenuItem(
+                                            value: 'edit',
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.edit,size: 18),
+                                                SizedBox(width: 8),
+                                                Text('Editar'),
+                                              ],
+                                            ),
+                                          ),
+
+                                          const PopupMenuItem(
+                                            value: 'delete',
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.delete, size: 18, color:AppColors.delete),
+                                                SizedBox(width: 8),
+                                                Text('Eliminar'),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 14),
+
+                                  // ---------- Fecha y hora ----------
+                                  Row(
+                                    children: [
+                                      // Fecha
+                                      const Icon(Icons.calendar_today, size: 18, color:AppColors.caregiverPrimary),
+                                      const SizedBox(width: 8),
+
+                                      Text(fecha, style: TextStyle(color:Colors.grey.shade800, fontWeight: FontWeight.w500)),
+                                      const SizedBox(width: 18),
+
+                                      // Hora
+                                      const Icon(Icons.access_time, size: 18, color:AppColors.caregiverPrimary),
+                                      const SizedBox(width: 8),
+
+                                      Text(hora, style: TextStyle(color:Colors.grey.shade800, fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 12),
+
+                                  // ---------- Lugar ----------
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(Icons.location_on_outlined, size: 18, color:AppColors.caregiverPrimary),
+                                      const SizedBox(width: 8),
+                                      Expanded(child: Text(a.location,style: TextStyle(color:Colors.grey.shade700))),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  // ---------- Descripción ----------
+                                  Text(a.description, style: TextStyle(color: Colors.grey.shade700, height: 1.4)),
+                                  const SizedBox(height: 16),
+
+                                  // ---------- Estados ----------
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: [
+                                      _buildStatusChip(a, 'PENDING', 'Pendiente'),
+                                      _buildStatusChip(a, 'ATTENDED', 'Asistió'),
+                                      _buildStatusChip(a, 'MISSED', 'No asistió'),
+                                      _buildStatusChip(a, 'CANCELLED', 'Cancelada'),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
     );
   }
 }

@@ -3,6 +3,9 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/medication/data/caregiver_medication_service.dart';
 import 'package:tfg_frontend/shared/enums/medication/medication_type.dart';
+import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CaregiversMedicationScreen extends StatefulWidget {
   const CaregiversMedicationScreen({super.key});
@@ -19,62 +22,290 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
 
   // tipo seleccionado en el Dropdown
   MedicationType _selectedType = MedicationType.TABLET;
+  final service = CaregiverMedicationService();
+
+  List<MedicationResponse> medications = [];
+  bool loading = true;
+
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  // ---------- Cargar medicamentos ----------
+  Future<void> _load() async {
+    try {
+      final data = await service.getMedications();
+      setState(() {
+        medications = data;
+      });
+    } catch (e) {
+      AppSnackBar.showError(context, 'Error cargando medicamentos');
+    } finally {
+      setState(() => loading = false);
+    }
+  }
+
+  // ---------- Input style ----------
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: AppColors.caregiverSecondary, width: 1.2),
+      ),
+
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: BorderSide(color: AppColors.caregiverPrimary, width: 2),
+      ),
+    );
+  }
+
+  // ---------- Guardar ----------
+  Future<void> _save() async {
+    try {
+      await service.createMedication(
+        _name.text,
+        _description.text,
+        _selectedType,
+      );
+
+      _name.clear();
+      _description.clear();
+
+      await _load();
+
+      AppSnackBar.showSuccess(context, 'Medicamento creado');
+    } catch (e) {
+      AppSnackBar.showError(context, 'Error creando medicamento');
+    }
+  }
+
+  String _capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  List<MedicationResponse> _filtered() {
+    final q = searchQuery.toLowerCase();
+
+    return medications.where((m) {
+      return m.name.toLowerCase().contains(q) ||
+          (m.description ?? '').toLowerCase().contains(q) ||
+          m.type.toLowerCase().contains(q);
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(title: 'Medicamentos', backgroundColor: AppColors.caregiverAppBar),
+
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18.0),
         child: Column(
           children: [
-            // ----------- Campos de texto ---------
-            TextField(
-              controller: _name,
-              decoration: const InputDecoration(labelText: 'Nombre'),
-            ),
-            TextField(
-              controller: _description,
-              decoration: const InputDecoration(labelText: 'Descripción'),
-            ),
+            // -------------------- Crear medicamento --------------------
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Crear medicamento",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.caregiverPrimary,),
+                  ),
 
-            const SizedBox(height: 12),
-            // ---------- Dropdown para el tipo de medicamento ----------
-            DropdownButton<MedicationType>(
-              value: _selectedType,
-              isExpanded: true,
-              items: MedicationType.values
-                  .map((t) => DropdownMenuItem(
-                        value: t,
-                        child: Text(t.name.replaceAll('_', ' ').toLowerCase()),
-                      ))
-                  .toList(),
-              onChanged: (t) {
-                if (t != null) setState(() => _selectedType = t);
-              },
+                  const SizedBox(height: 14),
+
+                  TextField(
+                    controller: _name,
+                    decoration: _inputDecoration("Nombre"),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  TextField(
+                    controller: _description,
+                    maxLines: 2,
+                    decoration: _inputDecoration("Descripción"),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  DropdownButtonFormField<MedicationType>(
+                    value: _selectedType,
+                    decoration: _inputDecoration("Tipo"),
+                    items: MedicationType.values
+                        .map(
+                          (t) => DropdownMenuItem(value: t, child: Text(t.name)),
+                        )
+                        .toList(),
+                    onChanged: (t) {
+                      if (t != null) setState(() => _selectedType = t);
+                    },
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  AppPrimaryButton(text: "Guardar", onPressed: _save),
+                ],
+              ),
             ),
 
             const SizedBox(height: 20),
 
-            // ----------- Botón guardar medicamento ---------
-            ElevatedButton(
-              onPressed: () async {
-                try {
-                  // al presionarlo, intenta crear el medicamento
-                  await CaregiverMedicationService().createMedication(
-                      _name.text, _description.text, _selectedType);
-                  // si sale bien, muestra el mensaje
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text('Medicamento creado con éxito')));
-                  _name.clear(); // se limpian los campos
-                  _description.clear();
-                } catch (e) { // si sale mal, muestra el error
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text('Error: $e')));
-                }
+            const Divider(),
+
+            const SizedBox(height: 10),
+
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                "Medicamentos existentes",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.caregiverPrimary,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: searchController,
+
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
               },
-              child: const Text('Guardar'),
+
+              decoration: InputDecoration(
+                hintText: 'Buscar medicamento...',
+                prefixIcon: const Icon(Icons.search),
+
+                filled: true,
+                fillColor: Colors.white,
+
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.caregiverPrimary,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // -------------------- Medicamentos existentes --------------------
+            Expanded(
+              child: Builder(
+                builder: (context) {
+                  if (loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (medications.isEmpty) {
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const Text(
+                          'No hay medicamentos creados',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final list = _filtered();
+                  return ListView.builder(
+                    itemCount: list.length,
+                    itemBuilder: (context, index) {
+                      final m = list[index];
+
+                      return Card(
+                        color: Colors.white,
+                        margin: const EdgeInsets.only(bottom: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _capitalize(m.name),
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.caregiverPrimary,
+                                ),
+                              ),
+
+                              const SizedBox(height: 6),
+
+                              Text(
+                                m.type,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              Text(
+                                m.description ?? 'Sin descripción',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.black87,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
