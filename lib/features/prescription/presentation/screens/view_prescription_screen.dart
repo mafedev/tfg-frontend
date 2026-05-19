@@ -66,7 +66,10 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
   Widget build(BuildContext context) {
     // si está cargando, muestra un indicador de carga
     if (loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: AppColors.caregiverBackground,
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     // si no hay medicación, muestra un mensaje

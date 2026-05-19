@@ -5,6 +5,7 @@ import 'package:tfg_frontend/shared/models/routine.dart';
 import 'package:tfg_frontend/shared/models/routine_item.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class EditRoutineScreen extends StatefulWidget {
   final Routine routine;
@@ -137,92 +138,109 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(
         title: 'Editar rutina',
         backgroundColor: AppColors.caregiverAppBar,
       ),
 
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: items.length,
-              itemBuilder: (_, i) {
-                final item = items[i];
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (_, i) {
+                    final item = items[i];
 
-                return Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
-                    ),
-
-                    leading: Container(
-                      padding: const EdgeInsets.all(10),
+                    return Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppColors.caregiverAppBar.withOpacity(0.10),
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
                       ),
-                      child: const Icon(
-                        Icons.schedule,
-                        color: AppColors.caregiverAppBar,
-                      ),
-                    ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
 
-                    title: Text(
-                      item.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    subtitle: Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        item.time ?? "Sin hora",
-                        style: TextStyle(color: Colors.grey.shade600),
-                      ),
-                    ),
-
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(
-                            Icons.edit,
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.caregiverAppBar.withOpacity(0.10),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.schedule,
                             color: AppColors.caregiverAppBar,
                           ),
-                          onPressed: () => editItemDialog(item),
                         ),
 
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => deleteItem(item.id),
+                        title: Text(
+                          item.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
+
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            item.time ?? "Sin hora",
+                            style: TextStyle(color: Colors.grey.shade600),
+                          ),
+                        ),
+
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(
+                                Icons.edit,
+                                color: AppColors.caregiverAppBar,
+                              ),
+                              onPressed: () => editItemDialog(item),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return ConfirmDeleteDialog(
+                                      title: "Eliminar actividad",
+                                      message:
+                                          "¿Seguro que quieres eliminar esta actividad?",
+                                      onConfirm: () => deleteItem(item.id),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: AppPrimaryButton(text: "Guardar cambios", onPressed: saveChanges),
+              ),
+            ],
           ),
-
-          AppPrimaryButton(text: "Guardar cambios", onPressed: saveChanges),
-        ],
+        ),
       ),
     );
   }

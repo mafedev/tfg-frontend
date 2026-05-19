@@ -4,6 +4,7 @@ import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.da
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
 import 'package:tfg_frontend/shared/widgets/app_secondary_icon_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CreateRoutineScreen extends StatefulWidget {
   final int patientId; // id del paciente, para crear la rutina
@@ -104,7 +105,7 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
       // si todo va bien, muestra un mensaje y vuelve atrás
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      AppSnackBar.showError(context, 'Error creando rutina');
     }
 
     setState(() => loading = false);
@@ -114,94 +115,97 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: const AppLogoAppBar(title: 'Crear rutina',
         backgroundColor: AppColors.caregiverAppBar,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // ---------------- Actividades ----------------
-            Expanded(
-              child: items.isEmpty
-                  ? const Center(child: Text('No hay actividades', style: TextStyle(color: Colors.grey)))
-                  : ListView.builder(
-                      itemCount: items.length,
-                      itemBuilder: (_, i) {
-                        final item = items[i];
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Column(
+            children: [
+              // ---------------- Actividades ----------------
+              Expanded(
+                child: items.isEmpty
+                    ? const Center(child: Text('No hay actividades', style: TextStyle(color: Colors.grey)))
+                    : ListView.builder(
+                        itemCount: items.length,
+                        itemBuilder: (_, i) {
+                          final item = items[i];
 
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppColors.caregiverAppBar.withOpacity(0.10),
-                                  borderRadius: BorderRadius.circular(12),
+                          return Container(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.caregiverAppBar.withOpacity(0.10),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(Icons.schedule, color: AppColors.caregiverAppBar),
                                 ),
-                                child: const Icon(Icons.schedule, color: AppColors.caregiverAppBar),
-                              ),
 
-                              const SizedBox(width: 14),
+                                const SizedBox(width: 14),
 
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item['name'],
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item['name'],
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(item['time'], style: TextStyle(color: Colors.grey.shade600)),
-                                  ],
+                                      const SizedBox(height: 4),
+                                      Text(item['time'], style: TextStyle(color: Colors.grey.shade600)),
+                                    ],
+                                  ),
                                 ),
-                              ),
 
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                  onPressed: () =>
+                                      setState(() => items.removeAt(i)),
                                 ),
-                                onPressed: () {
-                                  setState(() => items.removeAt(i));
-                                },
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
 
-            const SizedBox(height: 10),
+              const SizedBox(height: 10),
 
-            // ---------------- Agregar actividad ----------------
-            AppSecondaryIconButton(
+              // ---------------- Agregar actividad ----------------
+              AppSecondaryIconButton(
                 text: 'Añadir actividad',
                 icon: Icons.add,
                 onPressed: _addItem,
               ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
-            // ---------------- Guardar----------------
-            AppPrimaryButton(
-              text: "Guardar rutina",
-              onPressed: _saveRoutine,
-              loading: loading,
-            ),
-          ],
+              // ---------------- Guardar ----------------
+              AppPrimaryButton(
+                text: "Guardar rutina",
+                onPressed: _saveRoutine,
+                loading: loading,
+              ),
+
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
