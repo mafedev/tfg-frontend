@@ -1,19 +1,21 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConfig {
   // URL base del backend
-  static const String baseUrl = 'http://10.0.2.2:8080/api';
+  static String get baseUrl => dotenv.env['API_BASE_URL']!;
 
   // Endpoints
-  static const String authEndpoint = '$baseUrl/auth';
-  static const String patientsEndpoint = '$baseUrl/patients';
-  static const String prescriptionsEndpoint = '$baseUrl/prescriptions';
-  static const String relationsEndpoint = '$baseUrl/relations';
-  static const String medicationsEndpoint = '$baseUrl/medications';
-  static const String routineEndpoint = '$baseUrl/routine';
-  static const String appointmentEndpoint = '$baseUrl/appointments';
+  static String get authEndpoint => '$baseUrl/auth';
+  static String get patientsEndpoint => '$baseUrl/patients';
+  static String get prescriptionsEndpoint => '$baseUrl/prescriptions';
+  static String get relationsEndpoint => '$baseUrl/relations';
+  static String get medicationsEndpoint => '$baseUrl/medications';
+  static String get routineEndpoint => '$baseUrl/routine';
+  static String get appointmentEndpoint => '$baseUrl/appointments';
   
   // Endpoints para tracking
-  static const String prescriptionTrackingEndpoint = '$baseUrl/prescription-tracking';
-  static const String routineTrackingEndpoint = '$baseUrl/routine-tracking';
+  static String get prescriptionTrackingEndpoint => '$baseUrl/prescription-tracking';
+  static String get routineTrackingEndpoint => '$baseUrl/routine-tracking';
 
-  static const String patientAllergies = '$baseUrl/patients';
+  static String get patientAllergies => '$baseUrl/patients';
 }

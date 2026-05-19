@@ -7,7 +7,7 @@ import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
 
 class CaregiverMedicationService {
-  static const String _baseUrl = ApiConfig.medicationsEndpoint;
+  static String get _baseUrl => ApiConfig.medicationsEndpoint;
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ------------- Crear medicamento -------------

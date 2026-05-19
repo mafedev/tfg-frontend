@@ -8,7 +8,7 @@ import 'package:tfg_frontend/shared/enums/user/patient/disease_stage.dart';
 import 'package:tfg_frontend/shared/models/patient.dart';
 
 class PatientService {
-  static const String _baseUrl = ApiConfig.patientsEndpoint;
+  static String get _baseUrl => ApiConfig.patientsEndpoint;
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // CAREGIVER
