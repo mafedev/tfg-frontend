@@ -51,6 +51,9 @@ app.*.map.json
 /ios/Pods/
 /ios/.symlinks/
 
+# Environment files
+.env
+
 # Generated files
 **/*.cmake
 **/*.swift

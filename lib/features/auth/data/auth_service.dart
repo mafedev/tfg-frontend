@@ -6,7 +6,7 @@ import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/dtos/user/login_response.dart';
 
 class AuthService {
-  static const String _baseUrl = ApiConfig.authEndpoint;
+  static String get _baseUrl => ApiConfig.authEndpoint;
 
   // ------------------- Crear un nuevo usuario -------------------
   Future<void> signup({

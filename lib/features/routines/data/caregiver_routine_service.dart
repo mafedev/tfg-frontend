@@ -6,9 +6,9 @@ import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
 
 class RoutineService {
-  static const String _baseUrl = ApiConfig.routineEndpoint;
-  static const String _itemsUrl = '$_baseUrl/items';
-  static const String _trackingUrl = '$_baseUrl/tracking';
+  static String get _baseUrl => ApiConfig.routineEndpoint;
+  static String get _itemsUrl => '$_baseUrl/items';
+  static String get _trackingUrl => '$_baseUrl/tracking';
 
   final SecureStorageService _secureStorageService = SecureStorageService();
 

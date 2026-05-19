@@ -6,7 +6,7 @@ import 'package:tfg_frontend/shared/enums/allergies/allergies_severity.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 
 class AllergyService {
-  static const String _baseUrl = ApiConfig.patientAllergies;
+  static String get _baseUrl => ApiConfig.patientAllergies;
   final SecureStorageService _storage = SecureStorageService(); // instancia del servicio de almacenamiento seguro
 
   // -------------------- Crear alergia --------------------

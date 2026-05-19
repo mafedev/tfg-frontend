@@ -6,7 +6,7 @@ import 'package:tfg_frontend/shared/dtos/medication/prescription_request.dart';
 import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 
 class CaregiverPrescriptionService {
-  static const String _baseUrl = ApiConfig.prescriptionsEndpoint;
+  static String get _baseUrl => ApiConfig.prescriptionsEndpoint;
 
   final SecureStorageService _secureStorageService = SecureStorageService();
 

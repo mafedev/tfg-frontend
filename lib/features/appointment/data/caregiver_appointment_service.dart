@@ -8,7 +8,7 @@ import 'package:tfg_frontend/shared/dtos/appointment/appointment_request.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 
 class AppointmentService {
-  static const String _baseUrl = ApiConfig.appointmentEndpoint;
+  static String get _baseUrl => ApiConfig.appointmentEndpoint;
   final SecureStorageService _secureStorageService = SecureStorageService();
 
   // -------------------- Crear cita --------------------

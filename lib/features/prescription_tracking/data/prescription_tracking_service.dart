@@ -7,7 +7,7 @@ import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
 
 class PrescriptionTrackingService {
-  static const String _baseUrl = ApiConfig.prescriptionTrackingEndpoint;
+  static String get _baseUrl => ApiConfig.prescriptionTrackingEndpoint;
 
   final SecureStorageService _secureStorageService = SecureStorageService();
 
