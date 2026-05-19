@@ -4,6 +4,8 @@ import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/medication/data/caregiver_medication_service.dart';
 import 'package:tfg_frontend/shared/enums/medication/medication_type.dart';
 import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CaregiversMedicationScreen extends StatefulWidget {
   const CaregiversMedicationScreen({super.key});
@@ -25,6 +27,9 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
   List<MedicationResponse> medications = [];
   bool loading = true;
 
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -39,9 +44,7 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
         medications = data;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error cargando medicamentos: $e")),
-      );
+      AppSnackBar.showError(context, 'Error cargando medicamentos');
     } finally {
       setState(() => loading = false);
     }
@@ -81,19 +84,25 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
 
       await _load();
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Medicamento creado")));
+      AppSnackBar.showSuccess(context, 'Medicamento creado');
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      AppSnackBar.showError(context, 'Error creando medicamento');
     }
   }
 
   String _capitalize(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  List<MedicationResponse> _filtered() {
+    final q = searchQuery.toLowerCase();
+
+    return medications.where((m) {
+      return m.name.toLowerCase().contains(q) ||
+          (m.description ?? '').toLowerCase().contains(q) ||
+          m.type.toLowerCase().contains(q);
+    }).toList();
   }
 
   @override
@@ -153,17 +162,7 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
 
                   const SizedBox(height: 14),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.caregiverPrimary,
-                        foregroundColor: Colors.white,
-                      ),
-                      onPressed: _save,
-                      child: const Text("Guardar"),
-                    ),
-                  ),
+                  AppPrimaryButton(text: "Guardar", onPressed: _save),
                 ],
               ),
             ),
@@ -182,6 +181,46 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: AppColors.caregiverPrimary,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: searchController,
+
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
+
+              decoration: InputDecoration(
+                hintText: 'Buscar medicamento...',
+                prefixIcon: const Icon(Icons.search),
+
+                filled: true,
+                fillColor: Colors.white,
+
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.caregiverPrimary,
+                    width: 1.5,
+                  ),
                 ),
               ),
             ),
@@ -212,10 +251,11 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
                     );
                   }
 
+                  final list = _filtered();
                   return ListView.builder(
-                    itemCount: medications.length,
+                    itemCount: list.length,
                     itemBuilder: (context, index) {
-                      final m = medications[index];
+                      final m = list[index];
 
                       return Card(
                         color: Colors.white,

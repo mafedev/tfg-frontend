@@ -4,6 +4,7 @@ import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.da
 import 'package:tfg_frontend/shared/models/routine.dart';
 import 'package:tfg_frontend/shared/models/routine_item.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
 
 class EditRoutineScreen extends StatefulWidget {
   final Routine routine;
@@ -220,10 +221,7 @@ class _EditRoutineScreenState extends State<EditRoutineScreen> {
             ),
           ),
 
-          ElevatedButton(
-            onPressed: saveChanges,
-            child: const Text("Guardar cambios"),
-          ),
+          AppPrimaryButton(text: "Guardar cambios", onPressed: saveChanges),
         ],
       ),
     );

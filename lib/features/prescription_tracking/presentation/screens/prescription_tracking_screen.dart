@@ -3,6 +3,7 @@ import 'package:tfg_frontend/shared/enums/medication/prescription_tracking_statu
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import '../../data/prescription_tracking_service.dart';
 
 class PrescriptionTrackingScreen extends StatefulWidget {
@@ -20,6 +21,8 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
   bool _loading = true; // maneja el círculo de carga
   List<PrescriptionTracking> _trackingList = []; // lista local con el tracking
   DateTime _selectedDate = DateTime.now(); // fecha seleccionada para mostrar el tracking
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -38,7 +41,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
         _trackingList = result;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
+      AppSnackBar.showError(context, 'Error cargando tracking');
     } finally {
       setState(() => _loading = false); // luego de intentarlo, sin importar el resultado, pone cargar a false para ocultar el circulo de carga
     }
@@ -91,7 +94,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
         }).toList();
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al actualizar: $e')));
+      AppSnackBar.showError(context, 'Error actualizando el estado');
     }
   }
 
@@ -105,6 +108,15 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
     } catch (_) {
       return '--:--';
     }
+  }
+
+  List<PrescriptionTracking> _filteredTracking() {
+    final q = searchQuery.toLowerCase();
+
+    return _trackingList.where((med) {
+      return med.medicationName.toLowerCase().contains(q) ||
+          med.dose.toLowerCase().contains(q);
+    }).toList();
   }
 
   @override
@@ -165,123 +177,161 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
 
             const SizedBox(height: 10),
 
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                onChanged: (value) {
+                  setState(() => searchQuery = value);
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Buscar medicamento...',
+                  prefixIcon: Icon(Icons.search),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
             // -------- Lista de medicamentos --------
             Expanded(
-              child: _trackingList.isEmpty
-                  ? const Center(child: Text('No hay tomas programadas'))
-                  : ListView.builder(
-                      itemCount: _trackingList.length, // el número de medicamentos a mostrar es el largo de la lista de tracking
-                      // para cada medicamento, construye una tarjeta con la info
-                      itemBuilder: (context, index) {
-                        final med = _trackingList[index];
+              child: Builder(
+                builder: (context) {
+                  if (_loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final filtered = _filteredTracking();
+
+                  if (filtered.isEmpty) {
+                    return const Center(
+                      child: Text('No hay tomas programadas'),
+                    );
+                  }
+
+                  return ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final med = filtered[index];
 
                     // -------- Tarjeta ----------
-                        return Card(
-                          color: Colors.white,
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                          child: ExpansionTile(
-                            initiallyExpanded: index == 0,
-                            iconColor: AppColors.caregiverPrimary,
-                            collapsedIconColor: AppColors.caregiverPrimary,
+                      return Card(
+                        color: Colors.white,
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        child: ExpansionTile(
+                          initiallyExpanded: index == 0,
+                          iconColor: AppColors.caregiverPrimary,
+                          collapsedIconColor: AppColors.caregiverPrimary,
 
                             // -------- Medicamento nombre --------
-                            title: Text(
-                              med.medicationName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.caregiverPrimary,
-                              ),
+                          title: Text(
+                            med.medicationName,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.caregiverPrimary,
                             ),
+                          ),
 
                             // -------- Dosis --------
-                            subtitle: med.dose.isNotEmpty
-                                ? Text(
-                                    'Dosis: ${med.dose}',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      fontSize: 13,
-                                    ),
-                                  )
-                                : null,
+                          subtitle: med.dose.isNotEmpty
+                              ? Text(
+                                  'Dosis: ${med.dose}',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 13,
+                                  ),
+                                )
+                              : null,
 
-                            childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          childrenPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
 
-                            children: [
-                              if (med.times.isEmpty)
-                                const Padding(
-                                  padding: EdgeInsets.only(bottom: 8),
-                                  child: Text('Sin tomas programadas'),
+                          children: [
+                            if (med.times.isEmpty)
+                              const Padding(
+                                padding: EdgeInsets.only(bottom: 8),
+                                child: Text('Sin tomas programadas'),
+                              ),
+
+                            ...med.times.map((t) {
+                              final isTaken = _isTaken(t.status);
+
+                              return Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isTaken
+                                      ? AppColors.confirm.withOpacity(0.12)
+                                      : AppColors.background,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      size: 16,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                    const SizedBox(width: 8),
 
-                              ...med.times.map((t) {
-                                final isTaken = _isTaken(t.status);
-
-                                return Container(
-                                  margin: const EdgeInsets.symmetric(vertical: 4),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: isTaken
-                                        ? AppColors.confirm.withOpacity(0.12)
-                                        : AppColors.background,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.access_time,
-                                        size: 16,
-                                        color: Colors.grey.shade700,
-                                      ),
-                                      const SizedBox(width: 8),
-
-                                      Expanded(
-                                        child: Text(
-                                          _formatTime(t.scheduledTime),
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                                    Expanded(
+                                      child: Text(
+                                        _formatTime(t.scheduledTime),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
+                                    ),
 
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: isTaken
-                                              ? AppColors.confirm
-                                              : AppColors.caregiverPrimary,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                        ),
-                                        child: Text(
-                                          t.status,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 11,
-                                          ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: isTaken
+                                            ? AppColors.confirm
+                                            : AppColors.caregiverPrimary,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        t.status,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
                                         ),
                                       ),
+                                    ),
 
-                                      Checkbox(
-                                        value: isTaken,
-                                        activeColor:
-                                            AppColors.caregiverPrimary,
-                                        onChanged: (_) =>
-                                            _toggleTracking(med, t),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                                    Checkbox(
+                                      value: isTaken,
+                                      activeColor: AppColors.caregiverPrimary,
+                                      onChanged: (_) => _toggleTracking(med, t),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

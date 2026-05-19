@@ -6,6 +6,10 @@ import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/patient/presentation/screens/patient_details_screen.dart';
 import 'package:tfg_frontend/shared/models/patient.dart';
 import 'package:tfg_frontend/features/relation/data/relation_service.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_icon_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_secondary_icon_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
+import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class CaregiverPatientsScreen extends StatefulWidget {
   const CaregiverPatientsScreen({super.key});
@@ -23,6 +27,9 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   String? relationCode;
   final RelationService _relationService = RelationService();
   List<Patient> patients = []; // lista de pacientes por cuidador
+
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -47,9 +54,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     });
 
     if (code == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo generar el código')),
-      );
+      AppSnackBar.showError(context, 'Error generando el código');
     }
   }
 
@@ -80,9 +85,7 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
         loadingPatients = false;
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Error cargando pacientes')));
+      AppSnackBar.showError(context, 'Error cargando pacientes');
     }
   }
 
@@ -93,46 +96,20 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
       _loadPatients();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Relación eliminada correctamente')));
+        AppSnackBar.showSuccess(context, 'Relación eliminada correctamente');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error eliminando relación')));
+        AppSnackBar.showError(context, 'Error eliminando relación');
       }
     }
-  }
-
-  // Muestra un diálogo de confirmación antes de eliminar
-  void _confirmDelete(int patientId) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Eliminar paciente'),
-        content: const Text('¿Está seguro de que quiere eliminar este paciente?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              _deletePatient(patientId);
-            },
-            child: const Text('Eliminar', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
   }
 
   // Permite poder copiar el código al portapapeles
   void _copyCodeToClipboard() {
     if (relationCode != null) {
       Clipboard.setData(ClipboardData(text: relationCode!));
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Código copiado al portapapeles')),
-      );
+      AppSnackBar.showInfo(context, 'Código copiado al portapapeles');
     }
   }
 
@@ -146,6 +123,17 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     return text[0].toUpperCase() + text.substring(1);
   }
 
+  List<Patient> _filteredPatients() {
+    final q = searchQuery.toLowerCase();
+
+    return patients.where((p) {
+      final name = getPatientTitle(p).toLowerCase();
+      final id = p.id.toString();
+
+      return name.contains(q) || id.contains(q);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,6 +143,47 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
         padding: const EdgeInsets.all(18.0),
         child: Column(
           children: [
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: searchController,
+
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
+
+              decoration: InputDecoration(
+                hintText: 'Buscar paciente...',
+                prefixIcon: const Icon(Icons.search),
+
+                filled: true,
+                fillColor: Colors.white,
+
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.caregiverPrimary,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
             Expanded(
             // -------------------- Lista de pacientes --------------------
               child: Builder(
@@ -176,10 +205,11 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                   }
 
                   // Si hay pacientes, se muestra la lista
+                  final list = _filteredPatients();
                   return ListView.builder(
-                    itemCount: patients.length,
+                    itemCount: list.length,
                     itemBuilder: (context, index) {
-                      final patient = patients[index]; // obtiene el paciente por posición
+                      final patient = list[index]; // obtiene el paciente por posición
 
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 7),
@@ -207,15 +237,23 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                           ),
                           
                           // -------------------- Menú de opciones --------------------
-                          trailing: PopupMenuButton(
-                            itemBuilder: (ctx) => [
-                              // al hacer click, muestra las opciones
-                              
-                              // ----- Eliminar paciente -----
+                          trailing: PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == 'delete') {
+                                showDialog(
+                                  context: context,
+                                  builder: (_) => ConfirmDeleteDialog(
+                                    title: "Eliminar paciente",
+                                    message: "Se eliminará la relación con este paciente. Sus datos y registros permanecerán intactos. Esta acción es irreversible.",
+                                    onConfirm: () => _deletePatient(patient.id),
+                                  ),
+                                );
+                              }
+                            },
+                            itemBuilder: (ctx) => const [
                               PopupMenuItem(
                                 value: 'delete',
-                                onTap: () => _confirmDelete(patient.id),
-                                child: const Row(
+                                child: Row(
                                   children: [
                                     Icon(Icons.delete, color: AppColors.delete),
                                     SizedBox(width: 8),
@@ -253,54 +291,30 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
               child: Column(
                 children: [
                   // ----- Generar código para vincular -----
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: generatingCode ? null : _generateCode,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.caregiverPrimary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      icon: generatingCode
-                          ? const SizedBox(
-                              height: 18,
-                              width: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.link, color: Colors.white),
-
-                      label: Text(generatingCode? 'Generando código...' : 'Agregar paciente', style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
+                  AppPrimaryIconButton(text: generatingCode ? "Generando código..." : "Agregar paciente",
+                    icon: Icons.link,
+                    loading: generatingCode,
+                    onPressed: _generateCode,
                   ),
 
                   const SizedBox(height: 12),
 
                   // ----- Crear paciente -----
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () async {
-                        final created = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const CreatePatientScreen(),
-                          ),
-                        );
+                  AppSecondaryIconButton(
+                    text: "Crear paciente sin cuenta",
+                    icon: Icons.person_add,
+                    onPressed: () async {
+                      final created = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const CreatePatientScreen(),
+                        ),
+                      );
 
-                        if (created == true) {
-                          _loadPatients();
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      icon: const Icon(Icons.person_add),
-                      label: const Text('Crear paciente sin cuenta'),
-                    ),
+                      if (created == true) {
+                        _loadPatients();
+                      }
+                    },
                   ),
 
                   // ----- Código de vinculación -----

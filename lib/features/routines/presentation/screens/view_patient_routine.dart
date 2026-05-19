@@ -6,6 +6,7 @@ import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/routines/presentation/screens/edit_routine_screen.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/models/routine.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 import 'package:tfg_frontend/shared/widgets/confirm_delete_dialog.dart';
 
 class ViewRoutineScreen extends StatefulWidget {
@@ -27,6 +28,9 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
   Map<int, TrackingStatus> trackingStatusMap = {};
 
   DateTime selectedDate = DateTime.now();
+
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
 
   // Cuando se inicia la pantalla, carga la rutina
   @override
@@ -53,9 +57,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       setState(() {
         routine = null;
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Error al cargar rutina')));
+      AppSnackBar.showError(context, 'Error cargando la rutina');
     } finally {
       setState(() => loading = false); // indica que ya no está cargando
     }
@@ -84,9 +86,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         trackingStatusMap = status;
       });
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al cargar tracking: $e')));
+      AppSnackBar.showError(context, 'Error cargando tracking');
     }
   }
 
@@ -107,9 +107,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         trackingStatusMap[itemId] = s;
       });
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error actualizando tracking')),
-      );
+      AppSnackBar.showError(context, 'Error actualizando tracking');
     }
   }
 
@@ -120,9 +118,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       await loadAll();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Error borrando item: $e")));
+        AppSnackBar.showError(context, 'Error eliminando actividad');
       }
     }
   }
@@ -141,9 +137,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
       context: context,
       builder: (_) => ConfirmDeleteDialog(
         title: "Eliminar rutina",
-        message:
-            "¿Seguro que quieres eliminar esta rutina? Esta acción no se puede deshacer.",
-
+        message: "¿Seguro que quieres eliminar esta rutina? Esta acción no se puede deshacer.",
         onConfirm: () async {
           await deleteRoutine();
         },
@@ -236,11 +230,20 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
   }
 
+  List<dynamic> _filteredItems() {
+    final q = searchQuery.toLowerCase();
+
+    return routine!.items.where((item) {
+      return item.name.toLowerCase().contains(q);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     // muestra un indicador de carga mientras se obtiene la rutina
     if (loading) {
       return const Scaffold(
+        backgroundColor: AppColors.caregiverBackground,
         body: Center(
           child: CircularProgressIndicator(color: AppColors.caregiverAppBar),
         ),
@@ -249,7 +252,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
     if (routine == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.caregiverBackground,
         appBar: const AppLogoAppBar(
           title: 'Rutina',
           backgroundColor: AppColors.caregiverAppBar,
@@ -280,7 +283,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.caregiverBackground,
       appBar: AppLogoAppBar(
         title: 'Rutina',
         backgroundColor: AppColors.caregiverAppBar,
@@ -329,10 +332,7 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
         ],
       ),
 
-      floatingActionButton: AppFAB(
-        onPressed: createItemDialog,
-        icon: Icons.add,
-      ),
+      floatingActionButton: AppFAB(onPressed: createItemDialog),
 
       body: Column(
         children: [
@@ -409,9 +409,42 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
               ),
             ),
           ),
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                onChanged: (value) {
+                  setState(() => searchQuery = value);
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Buscar actividad...',
+                  prefixIcon: Icon(Icons.search),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // -------- LISTA --------
           Expanded(
             child: ListView(
-              children: routine!.items.map((item) {
+              children: (_filteredItems()).map((item) {
                 final current =
                     trackingStatusMap[item.id] ?? TrackingStatus.PENDING;
 

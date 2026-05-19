@@ -3,6 +3,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/enums/user/patient/disease_stage.dart';
 import 'package:tfg_frontend/features/patient/data/patient_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CreatePatientScreen extends StatefulWidget {
   const CreatePatientScreen({super.key});
@@ -39,13 +40,10 @@ class _CreatePatientScreenState extends State<CreatePatientScreen> {
 
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Paciente creado correctamente')),
-      );
-
+      AppSnackBar.showSuccess(context, 'Paciente creado correctamente');
       Navigator.pop(context, true);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      AppSnackBar.showError(context, 'Error creando paciente');
     } finally {
       if (mounted) {
         setState(() => loading = false);

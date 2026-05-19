@@ -4,6 +4,8 @@ import 'package:tfg_frontend/features/appointment/data/caregiver_appointment_ser
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_request.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CreateAppointmentScreen extends StatefulWidget {
   final int patientId; // id del paciente
@@ -156,15 +158,11 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
         await service.createAppointment(request);
       }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Cita guardada")));
+      AppSnackBar.showSuccess(context, 'Cita guardada');
 
       Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Error al guardar cita")));
+      AppSnackBar.showError(context, 'Error al guardar cita');
     }
   }
 
@@ -307,24 +305,9 @@ class _CreateAppointmentScreenState extends State<CreateAppointmentScreen> {
               const SizedBox(height: 22),
 
               // ---------- Botón crear ----------
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.caregiverPrimary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-
-                  onPressed: saveAppointment,
-                  child: Text(
-                    isEditing ? "Actualizar cita" : "Crear cita",
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
+              AppPrimaryButton(
+                text: isEditing ? "Actualizar cita" : "Crear cita",
+                onPressed: saveAppointment,
               ),
             ],
           ),

@@ -15,44 +15,28 @@ class ConfirmDeleteDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-      ),
-
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       title: Row(
         children: [
-          const Icon(
-            Icons.warning_rounded,
-            color: Colors.red,
-          ),
-
+          const Icon(Icons.warning_rounded, color: Colors.red),
           const SizedBox(width: 10),
-
-          Expanded(
-            child: Text(title),
-          ),
+          Expanded(child: Text(title)),
         ],
       ),
-
       content: Text(message),
-
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text("Cancelar"),
+          child: const Text("Cancelar", style: TextStyle( color:Colors.black)),
         ),
 
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-          ),
-
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
           onPressed: () {
             Navigator.pop(context);
             onConfirm();
           },
-
-          child: const Text("Eliminar"),
+          child: const Text("Eliminar", style: TextStyle( color:Colors.white)),
         ),
       ],
     );
