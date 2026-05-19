@@ -27,6 +27,9 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
   List<MedicationResponse> medications = [];
   bool loading = true;
 
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -90,6 +93,16 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
   String _capitalize(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1).toLowerCase();
+  }
+
+  List<MedicationResponse> _filtered() {
+    final q = searchQuery.toLowerCase();
+
+    return medications.where((m) {
+      return m.name.toLowerCase().contains(q) ||
+          (m.description ?? '').toLowerCase().contains(q) ||
+          m.type.toLowerCase().contains(q);
+    }).toList();
   }
 
   @override
@@ -174,6 +187,46 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
 
             const SizedBox(height: 10),
 
+            TextField(
+              controller: searchController,
+
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
+
+              decoration: InputDecoration(
+                hintText: 'Buscar medicamento...',
+                prefixIcon: const Icon(Icons.search),
+
+                filled: true,
+                fillColor: Colors.white,
+
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.caregiverPrimary,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
             // -------------------- Medicamentos existentes --------------------
             Expanded(
               child: Builder(
@@ -198,10 +251,11 @@ class _CaregiversMedicationScreenState extends State<CaregiversMedicationScreen>
                     );
                   }
 
+                  final list = _filtered();
                   return ListView.builder(
-                    itemCount: medications.length,
+                    itemCount: list.length,
                     itemBuilder: (context, index) {
-                      final m = medications[index];
+                      final m = list[index];
 
                       return Card(
                         color: Colors.white,

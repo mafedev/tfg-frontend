@@ -28,6 +28,9 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
   final RelationService _relationService = RelationService();
   List<Patient> patients = []; // lista de pacientes por cuidador
 
+  final TextEditingController searchController = TextEditingController();
+  String searchQuery = '';
+
   @override
   void initState() {
     super.initState();
@@ -120,6 +123,17 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
     return text[0].toUpperCase() + text.substring(1);
   }
 
+  List<Patient> _filteredPatients() {
+    final q = searchQuery.toLowerCase();
+
+    return patients.where((p) {
+      final name = getPatientTitle(p).toLowerCase();
+      final id = p.id.toString();
+
+      return name.contains(q) || id.contains(q);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -129,6 +143,47 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
         padding: const EdgeInsets.all(18.0),
         child: Column(
           children: [
+            const SizedBox(height: 10),
+
+            TextField(
+              controller: searchController,
+
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
+              },
+
+              decoration: InputDecoration(
+                hintText: 'Buscar paciente...',
+                prefixIcon: const Icon(Icons.search),
+
+                filled: true,
+                fillColor: Colors.white,
+
+                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide(color: Colors.grey.shade200),
+                ),
+
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.caregiverPrimary,
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
             Expanded(
             // -------------------- Lista de pacientes --------------------
               child: Builder(
@@ -150,10 +205,11 @@ class _CaregiverPatientsScreenState extends State<CaregiverPatientsScreen> {
                   }
 
                   // Si hay pacientes, se muestra la lista
+                  final list = _filteredPatients();
                   return ListView.builder(
-                    itemCount: patients.length,
+                    itemCount: list.length,
                     itemBuilder: (context, index) {
-                      final patient = patients[index]; // obtiene el paciente por posición
+                      final patient = list[index]; // obtiene el paciente por posición
 
                       return Container(
                         margin: const EdgeInsets.symmetric(vertical: 7),
