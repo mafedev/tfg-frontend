@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/auth/data/auth_service.dart';
 import 'package:tfg_frontend/features/auth/presentation/screens/login_screen.dart';
@@ -23,6 +22,10 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
 
   bool loading = true;
 
+  final TextEditingController _currentPass = TextEditingController();
+  final TextEditingController _newPass = TextEditingController();
+  final TextEditingController _confirmPass = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -34,9 +37,9 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
       final data = await _profileService.getMyProfile();
 
       setState(() {
-        username = data['username'];
-        email = data['email'];
-        phone = data['phone'];
+        username = data['username'] ?? '';
+        email = data['email'] ?? '';
+        phone = data['phone'] ?? '';
         loading = false;
       });
     } catch (e) {
@@ -49,6 +52,32 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
       username: username,
       email: email,
       phone: phone,
+    );
+  }
+
+  Future<void> _changePassword() async {
+    if (_newPass.text != _confirmPass.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Las contraseñas no coinciden')),
+      );
+      return;
+    }
+
+    await _profileService.changePassword(
+      currentPassword: _currentPass.text,
+      newPassword: _newPass.text,
+    );
+
+    _currentPass.clear();
+    _newPass.clear();
+    _confirmPass.clear();
+
+    if (!mounted) return;
+
+    Navigator.pop(context);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Contraseña actualizada')),
     );
   }
 
@@ -94,6 +123,47 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                 setState(() {});
                 Navigator.pop(context);
               },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _openChangePasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Cambiar contraseña'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _currentPass,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Contraseña actual'),
+              ),
+              TextField(
+                controller: _newPass,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Nueva contraseña'),
+              ),
+              TextField(
+                controller: _confirmPass,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: 'Confirmar contraseña'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: _changePassword,
               child: const Text('Guardar'),
             ),
           ],
@@ -190,6 +260,14 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                   ),
                 ],
               ),
+            ),
+
+            const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.lock),
+              title: const Text("Cambiar contraseña"),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: _openChangePasswordDialog,
             ),
 
             const Spacer(),

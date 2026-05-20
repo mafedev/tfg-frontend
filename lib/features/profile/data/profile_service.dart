@@ -61,4 +61,33 @@ class ProfileService {
       errorMessage: 'Error actualizando perfil',
     );
   }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final token = await _secureStorageService.getToken();
+
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final response = await http.put(
+      Uri.parse('$_baseUrl/me/password'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      }),
+    );
+
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error cambiando contraseña',
+    );
+  }
 }
