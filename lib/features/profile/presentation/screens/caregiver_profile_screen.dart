@@ -3,6 +3,7 @@ import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/auth/data/auth_service.dart';
 import 'package:tfg_frontend/features/auth/presentation/screens/login_screen.dart';
+import 'package:tfg_frontend/features/profile/data/profile_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class CaregiverProfileScreen extends StatefulWidget {
@@ -14,9 +15,13 @@ class CaregiverProfileScreen extends StatefulWidget {
 
 class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
   final AuthService _authService = AuthService();
-  final SecureStorageService _storage = SecureStorageService();
+  final ProfileService _profileService = ProfileService();
 
-  String username = 'Usuario';
+  String username = '';
+  String email = '';
+  String phone = '';
+
+  bool loading = true;
 
   @override
   void initState() {
@@ -25,11 +30,26 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
   }
 
   Future<void> _loadUser() async {
-    final savedUsername = await _storage.getUsername();
+    try {
+      final data = await _profileService.getMyProfile();
 
-    setState(() {
-      username = savedUsername ?? 'Cuidador';
-    });
+      setState(() {
+        username = data['username'];
+        email = data['email'];
+        phone = data['phone'];
+        loading = false;
+      });
+    } catch (e) {
+      setState(() => loading = false);
+    }
+  }
+
+  Future<void> _updateProfile() async {
+    await _profileService.updateMyProfile(
+      username: username,
+      email: email,
+      phone: phone,
+    );
   }
 
   Future<void> _logout() async {
@@ -44,8 +64,50 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
     );
   }
 
+  void _editField({
+    required String title,
+    required String currentValue,
+    required Function(String) onSave,
+  }) {
+    final controller = TextEditingController(text: currentValue);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Editar $title'),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(labelText: title),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                onSave(controller.text);
+
+                await _updateProfile();
+
+                setState(() {});
+                Navigator.pop(context);
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
     return Scaffold(
       backgroundColor: AppColors.caregiverBackground,
 
@@ -85,46 +147,58 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
+              child: Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.person),
+                    title: const Text('Nombre de usuario'),
+                    subtitle: Text(username),
+                    trailing: const Icon(Icons.edit),
+                    onTap: () => _editField(
+                      title: 'Username',
+                      currentValue: username,
+                      onSave: (val) => username = val,
+                    ),
+                  ),
 
+                  const Divider(height: 0),
+
+                  ListTile(
+                    leading: const Icon(Icons.email),
+                    title: const Text('Email'),
+                    subtitle: Text(email),
+                    trailing: const Icon(Icons.edit),
+                    onTap: () => _editField(
+                      title: 'Email',
+                      currentValue: email,
+                      onSave: (val) => email = val,
+                    ),
+                  ),
+
+                  const Divider(height: 0),
+
+                  ListTile(
+                    leading: const Icon(Icons.phone),
+                    title: const Text('Teléfono'),
+                    subtitle: Text(phone),
+                    trailing: const Icon(Icons.edit),
+                    onTap: () => _editField(
+                      title: 'Teléfono',
+                      currentValue: phone,
+                      onSave: (val) => phone = val,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Spacer(),
+
+            Card(
               child: ListTile(
                 leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text(
-                  'Cerrar sesión',
-                  style: TextStyle(fontWeight: FontWeight.w600),
-                ),
-
-                trailing: const Icon(Icons.chevron_right),
-
-                onTap: () async {
-                  final confirm = await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        title: const Text('Cerrar sesión'),
-                        content: const Text('¿Deseas cerrar sesión?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context, false);
-                            },
-                            child: const Text('Cancelar'),
-                          ),
-
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pop(context, true);
-                            },
-                            child: const Text('Salir'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-
-                  if (confirm == true) {
-                    _logout();
-                  }
-                },
+                title: const Text('Cerrar sesión'),
+                onTap: _logout,
               ),
             ),
           ],
