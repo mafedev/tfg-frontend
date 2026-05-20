@@ -189,7 +189,11 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        appBar: const AppLogoAppBar(title: 'Inicio', backgroundColor: AppColors.caregiverAppBar),
+        backgroundColor: AppColors.caregiverBackground,
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
@@ -277,7 +281,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
           const SizedBox(height: 8),
 
           const Text(
-            'Resumen de actividad de hoy',
+            'Revisa tus tareas del día y mantén todo bajo control',
             style: TextStyle(fontSize: 15, color: Colors.white70),
           ),
 
