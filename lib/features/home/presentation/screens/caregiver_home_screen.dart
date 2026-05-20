@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/features/home/presentation/data/caregiver_home_service.dart';
+import 'package:tfg_frontend/features/home/data/caregiver_home_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class CaregiverHomeScreen extends StatefulWidget {

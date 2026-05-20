@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
-import 'package:tfg_frontend/features/home/presentation/caregiver_home_screen.dart';
+import 'package:tfg_frontend/features/home/presentation/screens/caregiver_home_screen.dart';
 import 'package:tfg_frontend/features/patient/presentation/screens/caregiver_patients_screen.dart';
 import 'package:tfg_frontend/features/medication/presentation/screens/caregivers_create_medication_screen.dart';
 

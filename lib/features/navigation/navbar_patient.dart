@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/appointment/presentation/screens/patient_appointment_screen.dart';
 import 'package:tfg_frontend/features/prescription_tracking/presentation/screens/patient_prescription_tracking_screen.dart';
-import 'package:tfg_frontend/features/home/presentation/patient_home_screen.dart';
+import 'package:tfg_frontend/features/home/presentation/screens/patient_home_screen.dart';
 import 'package:tfg_frontend/features/routines/presentation/screens/patient_routine_screen.dart';
 
 class NavbarPatient extends StatefulWidget {
