@@ -186,6 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userData != null) {
         final storage = SecureStorageService();
         await storage.saveToken(userData.token);
+        await storage.saveUsername(userData.username);
 
         AppSnackBar.showSuccess(context, 'Inicio de sesión correcto'); // muestra un mensaje de éxito
 
