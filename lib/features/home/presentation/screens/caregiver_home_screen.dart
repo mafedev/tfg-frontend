@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/home/data/caregiver_home_service.dart';
 import 'package:tfg_frontend/features/home/presentation/widgets/appointment_calendar_widget.dart';
@@ -15,9 +16,11 @@ class CaregiverHomeScreen extends StatefulWidget {
 // Estado de la pantalla principal del cuidador
 class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   final CaregiverHomeService _service = CaregiverHomeService();
+  final SecureStorageService _storage = SecureStorageService();
   final PageController _pageController = PageController(viewportFraction: .86);
 
   bool loading = true;
+  String caregiverName = 'cuidador';
   List<dynamic> prescriptions = [];
   List<DateTime> appointmentDays = [];
 
@@ -29,10 +32,12 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
 
   Future<void> _load() async {
     try {
+      final username = await _storage.getUsername();
       final prescriptionData = await _service.getHomePrescriptions();
       final calendarData = await _service.getCalendarDays();
 
       setState(() {
+        caregiverName = username?.isNotEmpty == true ? username! : 'cuidador';
         prescriptions = prescriptionData;
         appointmentDays = calendarData;
         loading = false;
@@ -123,14 +128,54 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Hola',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            Text(
+              'Hola, $caregiverName',
+              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 8),
+            const Text(
+              'Revisa tus tareas del día y mantén todo bajo control.',
+              style: TextStyle(fontSize: 16, color: Colors.black54),
+            ),
+            const SizedBox(height: 24),
+
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(.05),
+                    blurRadius: 14,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _infoCard('Tomas pendientes', prescriptions.length.toString()),
+                    _infoCard('Días con citas', appointmentDays.length.toString()),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)),
+            const SizedBox(height: 24),
+
             const Text(
               'Próximas medicaciones',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Desliza para ver las próximas tomas programadas',
+              style: TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 15),
 
@@ -140,10 +185,21 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
             ),
 
             const SizedBox(height: 30),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)),
+            const SizedBox(height: 24),
 
-            const Text(
-              'Calendario',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Calendario',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Toca un día para ver citas',
+                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+              ],
             ),
 
             const SizedBox(height: 15),
@@ -154,6 +210,25 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _infoCard(String label, String value) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(fontSize: 14, color: Colors.black54),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+        ],
       ),
     );
   }
