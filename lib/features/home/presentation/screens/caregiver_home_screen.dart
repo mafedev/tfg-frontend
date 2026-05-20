@@ -45,6 +45,69 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     }
   }
 
+  Future<void> _loadAppointmentsByDay(DateTime date) async {
+    try {
+      final data = await _service.getAppointmentsByDate(date);
+
+      _showAppointmentsBottomSheet(date, data);
+    } catch (e) {
+      debugPrint("Error loading appointments: $e");
+    }
+  }
+
+  void _showAppointmentsBottomSheet(DateTime date, List<dynamic> appointments) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.5,
+          maxChildSize: 0.85,
+          minChildSize: 0.3,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                const SizedBox(height: 10),
+
+                Text(
+                  "${date.day}/${date.month}/${date.year}",
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: appointments.length,
+                    itemBuilder: (context, index) {
+                      final a = appointments[index];
+
+                      return ListTile(
+                        leading: const Icon(Icons.event),
+                        title: Text(a['title'] ?? 'Cita'),
+                        subtitle: Text(
+                          "${a['patientName']} • ${(a['dateTime'])}",
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (loading) {
@@ -71,7 +134,10 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
             ),
             const SizedBox(height: 15),
 
-            NextMedicationsWidget(prescriptions: prescriptions, pageController: _pageController),
+            NextMedicationsWidget(
+              prescriptions: prescriptions,
+              pageController: _pageController,
+            ),
 
             const SizedBox(height: 30),
 
@@ -82,7 +148,10 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
 
             const SizedBox(height: 15),
 
-            AppointmentCalendarWidget(appointmentDays: appointmentDays),
+            AppointmentCalendarWidget(
+              appointmentDays: appointmentDays,
+              onDaySelected: _loadAppointmentsByDay,
+            ),
           ],
         ),
       ),

@@ -3,8 +3,13 @@ import 'package:table_calendar/table_calendar.dart';
 
 class AppointmentCalendarWidget extends StatelessWidget {
   final List<DateTime> appointmentDays;
+  final Function(DateTime selectedDay) onDaySelected;
 
-  const AppointmentCalendarWidget({super.key, required this.appointmentDays});
+  const AppointmentCalendarWidget({
+    super.key,
+    required this.appointmentDays,
+    required this.onDaySelected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +29,11 @@ class AppointmentCalendarWidget extends StatelessWidget {
           firstDay: DateTime.now(),
           lastDay: DateTime.now().add(const Duration(days: 365)),
           focusedDay: DateTime.now(),
+
+          onDaySelected: (selectedDay, focusedDay) {
+            onDaySelected(selectedDay);
+          },
+
           calendarBuilders: CalendarBuilders(
             markerBuilder: (context, date, events) {
               final hasAppointment = appointmentDays.any(

@@ -64,4 +64,35 @@ class CaregiverHomeService {
 
     return data.map((e) => DateTime.parse(e['date'])).toList();
   }
+
+  Future<List<dynamic>> getAppointmentsByDate(DateTime date) async {
+    final token = await _secureStorageService.getToken();
+
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final formattedDate =
+        "${date.year.toString().padLeft(4, '0')}-"
+        "${date.month.toString().padLeft(2, '0')}-"
+        "${date.day.toString().padLeft(2, '0')}";
+
+    final response = await http.get(
+      Uri.parse(
+        "${ApiConfig.caregiverHomeEndpoint}/calendar/details?date=$formattedDate",
+      ),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error cargando citas del día',
+    );
+
+    return json.decode(response.body);
+  }
 }
