@@ -4,6 +4,9 @@ import 'package:tfg_frontend/features/auth/data/auth_service.dart';
 import 'package:tfg_frontend/features/auth/presentation/screens/login_screen.dart';
 import 'package:tfg_frontend/features/profile/data/profile_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_primary_icon_button.dart';
+import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
 
 class CaregiverProfileScreen extends StatefulWidget {
   const CaregiverProfileScreen({super.key});
@@ -21,6 +24,9 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
   String phone = '';
 
   bool loading = true;
+  bool _obscureCurrentPass = true;
+  bool _obscureNewPass = true;
+  bool _obscureConfirmPass = true;
 
   final TextEditingController _currentPass = TextEditingController();
   final TextEditingController _newPass = TextEditingController();
@@ -57,9 +63,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
 
   Future<void> _changePassword() async {
     if (_newPass.text != _confirmPass.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Las contraseñas no coinciden')),
-      );
+      AppSnackBar.showError(context, 'Las contraseñas no coinciden');
       return;
     }
 
@@ -76,9 +80,16 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
 
     Navigator.pop(context);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Contraseña actualizada')),
-    );
+    AppSnackBar.showSuccess(context, 'Contraseña actualizada');
+  }
+
+  String _capitalizeName(String value) {
+    return value
+        .trim()
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .map((word) => word[0].toUpperCase() + word.substring(1).toLowerCase())
+        .join(' ');
   }
 
   Future<void> _logout() async {
@@ -114,16 +125,19 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancelar'),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                onSave(controller.text);
+            SizedBox(
+              width: 120,
+              child: AppPrimaryButton(
+                text: 'Guardar',
+                onPressed: () async {
+                  onSave(controller.text);
 
-                await _updateProfile();
+                  await _updateProfile();
 
-                setState(() {});
-                Navigator.pop(context);
-              },
-              child: const Text('Guardar'),
+                  setState(() {});
+                  Navigator.pop(context);
+                },
+              ),
             ),
           ],
         );
@@ -132,41 +146,88 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
   }
 
   void _openChangePasswordDialog() {
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Cambiar contraseña'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _currentPass,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Contraseña actual'),
+        return StatefulBuilder(
+          builder: (context, dialogSetState) {
+            return AlertDialog(
+              title: const Text('Cambiar contraseña'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _currentPass,
+                    obscureText: obscureCurrent,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña actual',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureCurrent ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          dialogSetState(() {
+                            obscureCurrent = !obscureCurrent;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: _newPass,
+                    obscureText: obscureNew,
+                    decoration: InputDecoration(
+                      labelText: 'Nueva contraseña',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureNew ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          dialogSetState(() {
+                            obscureNew = !obscureNew;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                  TextField(
+                    controller: _confirmPass,
+                    obscureText: obscureConfirm,
+                    decoration: InputDecoration(
+                      labelText: 'Confirmar contraseña',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        onPressed: () {
+                          dialogSetState(() {
+                            obscureConfirm = !obscureConfirm;
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              TextField(
-                controller: _newPass,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Nueva contraseña'),
-              ),
-              TextField(
-                controller: _confirmPass,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Confirmar contraseña'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: _changePassword,
-              child: const Text('Guardar'),
-            ),
-          ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                ),
+                SizedBox(
+                  width: 120,
+                  child: AppPrimaryButton(
+                    text: 'Guardar',
+                    onPressed: _changePassword,
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -178,6 +239,8 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final displayName = _capitalizeName(username);
+
     return Scaffold(
       backgroundColor: AppColors.caregiverBackground,
 
@@ -187,45 +250,65 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
       ),
 
       body: Padding(
-        padding: const EdgeInsets.all(20),
-
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         child: Column(
           children: [
             const SizedBox(height: 20),
 
             CircleAvatar(
-              radius: 45,
-              backgroundColor: AppColors.caregiverAccent.withOpacity(.2),
-              child: const Icon(
+              radius: 50,
+              backgroundColor: AppColors.caregiverAppBar.withOpacity(.12),
+              child: Icon(
                 Icons.person,
-                size: 50,
-                color: AppColors.caregiverAccent,
+                size: 52,
+                color: AppColors.caregiverAppBar,
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
             Text(
-              username,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              displayName.isEmpty ? 'Cuidador' : displayName,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.2,
+              ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 8),
+            Text(
+              email,
+              style: TextStyle(color: Colors.grey.shade700, fontSize: 14),
+            ),
+
+            const SizedBox(height: 32),
 
             Card(
-              elevation: 2,
+              elevation: 3,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(18),
               ),
+              clipBehavior: Clip.antiAlias,
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.person),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    leading: Icon(
+                      Icons.person,
+                      color: AppColors.caregiverAppBar,
+                    ),
                     title: const Text('Nombre de usuario'),
-                    subtitle: Text(username),
-                    trailing: const Icon(Icons.edit),
+                    subtitle: Text(displayName),
+                    trailing: Icon(
+                      Icons.edit,
+                      color: AppColors.caregiverPrimary,
+                    ),
                     onTap: () => _editField(
-                      title: 'Username',
+                      title: 'Nombre de usuario',
                       currentValue: username,
                       onSave: (val) => username = val,
                     ),
@@ -234,10 +317,20 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                   const Divider(height: 0),
 
                   ListTile(
-                    leading: const Icon(Icons.email),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    leading: Icon(
+                      Icons.email,
+                      color: AppColors.caregiverAppBar,
+                    ),
                     title: const Text('Email'),
                     subtitle: Text(email),
-                    trailing: const Icon(Icons.edit),
+                    trailing: Icon(
+                      Icons.edit,
+                      color: AppColors.caregiverPrimary,
+                    ),
                     onTap: () => _editField(
                       title: 'Email',
                       currentValue: email,
@@ -248,10 +341,20 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                   const Divider(height: 0),
 
                   ListTile(
-                    leading: const Icon(Icons.phone),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    leading: Icon(
+                      Icons.phone,
+                      color: AppColors.caregiverAppBar,
+                    ),
                     title: const Text('Teléfono'),
                     subtitle: Text(phone),
-                    trailing: const Icon(Icons.edit),
+                    trailing: Icon(
+                      Icons.edit,
+                      color: AppColors.caregiverPrimary,
+                    ),
                     onTap: () => _editField(
                       title: 'Teléfono',
                       currentValue: phone,
@@ -263,21 +366,25 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
             ),
 
             const SizedBox(height: 20),
-            ListTile(
-              leading: const Icon(Icons.lock),
-              title: const Text("Cambiar contraseña"),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: _openChangePasswordDialog,
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ListTile(
+                leading: Icon(Icons.lock, color: AppColors.caregiverAppBar),
+                title: const Text('Cambiar contraseña'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _openChangePasswordDialog,
+              ),
             ),
 
             const Spacer(),
 
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('Cerrar sesión'),
-                onTap: _logout,
-              ),
+            AppPrimaryIconButton(
+              text: 'Cerrar sesión',
+              icon: Icons.logout,
+              onPressed: _logout,
             ),
           ],
         ),
