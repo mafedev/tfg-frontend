@@ -27,4 +27,9 @@ class SecureStorageService {
   Future<String?> getUsername() async {
     return await _storage.read(key: _usernameKey);
   }
+
+  // Limpia todo logout
+  Future<void> clearAll() async {
+    await _storage.deleteAll();
+  }
 }

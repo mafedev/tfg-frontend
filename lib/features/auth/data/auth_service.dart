@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:tfg_frontend/core/config/api_config.dart';
+import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/shared/enums/user/user_role.dart';
 import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/dtos/user/login_response.dart';
 
 class AuthService {
   static String get _baseUrl => ApiConfig.authEndpoint;
+  final SecureStorageService _secureStorageService = SecureStorageService();
 
   // ------------------- Crear un nuevo usuario -------------------
   Future<void> signup({
@@ -71,4 +73,8 @@ class AuthService {
 
     return LoginResponse.fromJson(data);
   }
+
+  Future<void> logout() async {
+  await _secureStorageService.clearAll();
+}
 }

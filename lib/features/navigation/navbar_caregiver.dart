@@ -3,6 +3,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/home/presentation/screens/caregiver_home_screen.dart';
 import 'package:tfg_frontend/features/patient/presentation/screens/caregiver_patients_screen.dart';
 import 'package:tfg_frontend/features/medication/presentation/screens/caregivers_create_medication_screen.dart';
+import 'package:tfg_frontend/features/profile/presentation/screens/caregiver_profile_screen.dart';
 
 class NavbarCaregiver extends StatefulWidget {
   const NavbarCaregiver({super.key});
@@ -15,10 +16,10 @@ class _NavbarCaregiverState extends State<NavbarCaregiver> {
   int _currentPage = 0; // saber la página actual
 
   final List<Widget> _pages = [
-    CaregiverHomeScreen(),
-    CaregiverPatientsScreen(),
-    CaregiversMedicationScreen(),
-    Center(child: Text('Menú')),
+  const CaregiverHomeScreen(),
+  const CaregiverPatientsScreen(),
+  const CaregiversMedicationScreen(),
+  const CaregiverProfileScreen(),
   ];
   // páginas / screens
 
@@ -41,7 +42,7 @@ class _NavbarCaregiverState extends State<NavbarCaregiver> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.people_alt),label: 'Pacientes'),
           BottomNavigationBarItem(icon: Icon(Icons.medical_services), label: 'Medicamentos'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu')
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
     );
