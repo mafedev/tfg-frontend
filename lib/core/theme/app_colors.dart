@@ -23,6 +23,8 @@ class AppColors {
   // ------------------- ACCIONES -------------------
   static const Color delete = Color(0xFFE74C3C);
   static const Color confirm = Color(0xFF27AE60);
+  static const Color alert = Color.fromARGB(255, 182, 32, 32);
+  static const Color dangerCard = Color(0xFFF7CFCF);
 
   static const Color caregiverCard = Color(0xFFFFFFFF);
   static const Color caregiverCardLigth =Color(0x16A73ED4);

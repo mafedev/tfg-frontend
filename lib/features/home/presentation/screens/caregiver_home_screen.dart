@@ -4,6 +4,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/home/data/caregiver_home_service.dart';
 import 'package:tfg_frontend/features/home/presentation/widgets/appointment_calendar_widget.dart';
 import 'package:tfg_frontend/features/home/presentation/widgets/next_medications_widget.dart';
+import 'package:tfg_frontend/features/home/presentation/widgets/pending_medications_widget.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class CaregiverHomeScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   bool loading = true;
   String caregiverName = 'cuidador';
   List<dynamic> prescriptions = [];
+  List<dynamic> pendingMedications = [];
   List<DateTime> appointmentDays = [];
 
   @override
@@ -34,12 +36,14 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     try {
       final username = await _storage.getUsername();
       final prescriptionData = await _service.getHomePrescriptions();
+      final pendingData = await _service.getPendingPrescriptions();
       final calendarData = await _service.getCalendarDays();
 
       setState(() {
         final rawName = username?.trim() ?? '';
         caregiverName = rawName.isNotEmpty ? _capitalize(rawName) : 'Cuidador';
         prescriptions = prescriptionData;
+        pendingMedications = pendingData;
         appointmentDays = calendarData;
         loading = false;
       });
@@ -207,12 +211,14 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
           children: [
             _headerCard(),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 40),
+            _sectionDivider("Medicaciones no tomadas"),
+            const SizedBox(height: 10),
 
-            const Divider(),
-            const SizedBox(height: 25),
+            PendingMedicationsWidget(pending: pendingMedications),
+
+            const SizedBox(height: 40),
             _sectionDivider("Próximas medicaciones"),
-
             const SizedBox(height: 10),
 
             NextMedicationsWidget(
@@ -220,12 +226,71 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
               pageController: _pageController,
             ),
 
-            const SizedBox(height: 25),
-
-            const Divider(),
-            const SizedBox(height: 25),
+            const SizedBox(height: 40),
 
             _sectionDivider("Calendario"),
+
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.caregiverPrimary, AppColors.caregiverSecondary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.caregiverPrimary.withOpacity(0.2),
+                    blurRadius: 18,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.18),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.event_available,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Citas programadas',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          appointmentDays.length.toString(),
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
             const SizedBox(height: 10),
 
@@ -290,11 +355,18 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
           Row(
             children: [
               Expanded(
-                child: _statCard('Tomas', prescriptions.length.toString()),
+                child: _statCard(
+                  'Tomas programadas',
+                  prescriptions.length.toString(),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _statCard('Citas', appointmentDays.length.toString()),
+                child: _statCard(
+                  'Tomas pendientes',
+                  pendingMedications.length.toString(),
+                  valueColor: Colors.redAccent,
+                ),
               ),
             ],
           ),
@@ -342,7 +414,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     );
   }
 
-  Widget _statCard(String title, String value) {
+  Widget _statCard(String title, String value, {Color? valueColor}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       decoration: BoxDecoration(
@@ -362,10 +434,10 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
           const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: valueColor ?? Colors.white,
             ),
           ),
         ],
