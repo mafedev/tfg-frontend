@@ -18,4 +18,5 @@ class ApiConfig {
   static String get routineTrackingEndpoint => '$baseUrl/routine-tracking';
 
   static String get patientAllergies => '$baseUrl/patients';
+  static String get caregiverHomeEndpoint => '$baseUrl/caregiver/home';
 }
