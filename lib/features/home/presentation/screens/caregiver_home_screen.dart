@@ -37,7 +37,8 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
       final calendarData = await _service.getCalendarDays();
 
       setState(() {
-        caregiverName = username?.isNotEmpty == true ? username! : 'cuidador';
+        final rawName = username?.trim() ?? '';
+        caregiverName = rawName.isNotEmpty ? _capitalize(rawName) : 'Cuidador';
         prescriptions = prescriptionData;
         appointmentDays = calendarData;
         loading = false;
@@ -48,6 +49,11 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
         loading = false;
       });
     }
+  }
+
+  String _capitalize(String value) {
+    if (value.isEmpty) return value;
+    return value[0].toUpperCase() + value.substring(1);
   }
 
   Future<void> _loadAppointmentsByDay(DateTime date) async {
@@ -64,9 +70,7 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (_) {
         return DraggableScrollableSheet(
           expand: false,
@@ -74,38 +78,107 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
           maxChildSize: 0.85,
           minChildSize: 0.3,
           builder: (context, scrollController) {
-            return Column(
-              children: [
-                const SizedBox(height: 10),
-
-                Text(
-                  "${date.day}/${date.month}/${date.year}",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+            return Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 16,
                 ),
-
-                const SizedBox(height: 10),
-
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: appointments.length,
-                    itemBuilder: (context, index) {
-                      final a = appointments[index];
-
-                      return ListTile(
-                        leading: const Icon(Icons.event),
-                        title: Text(a['title'] ?? 'Cita'),
-                        subtitle: Text(
-                          "${a['patientName']} • ${(a['dateTime'])}",
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 48,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: AppColors.caregiverPrimary.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Text(
+                      "${date.day}/${date.month}/${date.year}",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 6),
+
+                    Text(
+                      '${appointments.length} cita${appointments.length == 1 ? '' : 's'} programada${appointments.length == 1 ? '' : 's'}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.caregiverPrimary.withOpacity(0.75),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: appointments.length,
+                        itemBuilder: (context, index) {
+                          final a = appointments[index];
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: AppColors.caregiverPrimary.withOpacity(
+                                0.05,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: ListTile(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              leading: Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: AppColors.caregiverPrimary.withOpacity(
+                                    0.16,
+                                  ),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: const Icon(
+                                  Icons.event,
+                                  color: AppColors.caregiverPrimary,
+                                ),
+                              ),
+                              title: Text(
+                                a['title'] ?? 'Cita',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              subtitle: Text(
+                                "${a['patientName']} • ${a['dateTime']}",
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         );
@@ -128,105 +201,168 @@ class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Hola, $caregiverName',
-              style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Revisa tus tareas del día y mantén todo bajo control.',
-              style: TextStyle(fontSize: 16, color: Colors.black54),
-            ),
-            const SizedBox(height: 24),
+            _headerCard(),
 
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(.05),
-                    blurRadius: 14,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _infoCard('Tomas pendientes', prescriptions.length.toString()),
-                    _infoCard('Días con citas', appointmentDays.length.toString()),
-                  ],
-                ),
-              ),
-            ),
+            const SizedBox(height: 25),
 
-            const SizedBox(height: 30),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)),
-            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 25),
+            _sectionDivider("Próximas medicaciones"),
 
-            const Text(
-              'Próximas medicaciones',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Desliza para ver las próximas tomas programadas',
-              style: TextStyle(fontSize: 14, color: Colors.black54),
-            ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 10),
 
             NextMedicationsWidget(
               prescriptions: prescriptions,
               pageController: _pageController,
             ),
 
+            const SizedBox(height: 25),
+
+            const Divider(),
+            const SizedBox(height: 25),
+
+            _sectionDivider("Calendario"),
+
+            const SizedBox(height: 10),
+
+            Container(
+              decoration: _cardDecoration(),
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: AppointmentCalendarWidget(
+                  appointmentDays: appointmentDays,
+                  onDaySelected: _loadAppointmentsByDay,
+                ),
+              ),
+            ),
+
             const SizedBox(height: 30),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFECECEC)),
-            const SizedBox(height: 24),
-
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Calendario',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'Toca un día para ver citas',
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 15),
-
-            AppointmentCalendarWidget(
-              appointmentDays: appointmentDays,
-              onDaySelected: _loadAppointmentsByDay,
-            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _infoCard(String label, String value) {
-    return Expanded(
+  Widget _headerCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.caregiverPrimary, AppColors.caregiverSecondary],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.caregiverPrimary.withOpacity(0.18),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
-            style: const TextStyle(fontSize: 14, color: Colors.black54),
+            '¡Hola, $caregiverName!',
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
+
           const SizedBox(height: 8),
+
+          const Text(
+            'Resumen de actividad de hoy',
+            style: TextStyle(fontSize: 15, color: Colors.white70),
+          ),
+
+          const SizedBox(height: 18),
+
+          Row(
+            children: [
+              Expanded(
+                child: _statCard('Tomas', prescriptions.length.toString()),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _statCard('Citas', appointmentDays.length.toString()),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionDivider(String title) {
+    return Row(
+      children: [
+        Container(
+          width: 6,
+          height: 22,
+          decoration: BoxDecoration(
+            color: AppColors.caregiverPrimary,
+            borderRadius: BorderRadius.circular(5),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.caregiverPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  BoxDecoration _cardDecoration() {
+    return BoxDecoration(
+      color: AppColors.caregiverCard,
+      borderRadius: BorderRadius.circular(22),
+      border: Border.all(color: AppColors.caregiverPrimary.withOpacity(0.12)),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.caregiverPrimary.withOpacity(0.08),
+          blurRadius: 16,
+          offset: const Offset(0, 8),
+        ),
+      ],
+    );
+  }
+
+  Widget _statCard(String title, String value) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.white.withOpacity(0.85),
+            ),
+          ),
+          const SizedBox(height: 10),
           Text(
             value,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ],
       ),

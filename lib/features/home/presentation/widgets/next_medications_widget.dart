@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
 
 class NextMedicationsWidget extends StatelessWidget {
   final List<dynamic> prescriptions;
@@ -20,7 +21,7 @@ class NextMedicationsWidget extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 150,
+      height: 140,
       child: PageView.builder(
         controller: pageController,
         itemCount: prescriptions.length,
@@ -35,68 +36,102 @@ class NextMedicationsWidget extends StatelessWidget {
             padding: const EdgeInsets.only(right: 14),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
                 borderRadius: BorderRadius.circular(18),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFAF6FF), Color(0xFFFFFFFF)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                border: Border.all(color: const Color(0xFFDDD3F0)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
+                    color: AppColors.caregiverPrimary.withOpacity(.1),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.caregiverPrimary.withOpacity(.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.person, size: 18, color: AppColors.caregiverPrimary),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            patient,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF4B2E83),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     Text(
                       medication,
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF2F1F62),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-
-                    const SizedBox(height: 10),
-
+                    const Spacer(),
                     Row(
                       children: [
-                        const Icon(Icons.access_time, size: 16),
-                        const SizedBox(width: 5),
-                        Text(
-                          time,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.caregiverSecondary.withOpacity(.14),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.access_time, size: 14, color: AppColors.caregiverPrimary),
+                              const SizedBox(width: 6),
+                              Text(
+                                time,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.caregiverPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-
-                        const SizedBox(width: 15),
-                        const Icon(Icons.person, size: 16),
-                        const SizedBox(width: 5),
-                        Expanded(child: Text(patient, overflow: TextOverflow.ellipsis)),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppColors.caregiverAccent.withOpacity(.16),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Text(
+                            'PENDIENTE',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.caregiverPrimary,
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-
-                    const Spacer(),
-
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-
-                      child: const Text(
-                        'PENDIENTE',
-                        style: TextStyle(
-                          color: Colors.orange,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
                     ),
                   ],
                 ),
