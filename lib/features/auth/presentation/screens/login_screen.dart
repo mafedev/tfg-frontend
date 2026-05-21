@@ -5,6 +5,7 @@ import 'package:tfg_frontend/features/auth/presentation/screens/signup_screen.da
 import 'package:tfg_frontend/features/navigation/navbar_caregiver.dart';
 import 'package:tfg_frontend/features/navigation/navbar_patient.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
+import 'package:tfg_frontend/features/relation/data/relation_service.dart';
 import 'package:tfg_frontend/shared/enums/user/user_role.dart';
 import 'package:tfg_frontend/shared/dtos/user/login_response.dart';
 import 'package:tfg_frontend/shared/widgets/app_primary_button.dart';
@@ -188,20 +189,28 @@ class _LoginScreenState extends State<LoginScreen> {
         await storage.saveToken(userData.token);
         await storage.saveUsername(userData.username);
 
-        AppSnackBar.showSuccess(context, 'Inicio de sesión correcto'); // muestra un mensaje de éxito
+        AppSnackBar.showSuccess(context, 'Inicio de sesión correcto');
 
-        final String roleString = userData.role;
         final UserRole userRole = UserRole.values.firstWhere(
-          (role) => role.name == roleString,
+          (role) => role.name == userData.role,
           orElse: () => UserRole.PATIENT,
         );
-        
+
+        if (userRole == UserRole.PATIENT) {
+         
+          try {
+            await RelationService().saveCaregiverPhones();
+          } catch (e) {
+           AppSnackBar.showError(context, 'Error iniciando llamada');
+          }
+        }
+
         if (userRole == UserRole.CAREGIVER) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => NavbarCaregiver()),
           );
-        } else if (userRole == UserRole.PATIENT) {
+        } else {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => NavbarPatient()),

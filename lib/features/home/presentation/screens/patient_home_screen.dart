@@ -7,6 +7,7 @@ import 'package:tfg_frontend/features/relation/data/relation_service.dart';
 import 'package:tfg_frontend/core/services/notification_service.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
+import 'package:tfg_frontend/shared/widgets/emergency_call_fab.dart';
 
 // Esta pantalla es para el paciente. Permite vincularse con un cuidador usando el código de vinculación
 class PatientHomeScreen extends StatefulWidget {
@@ -108,14 +109,14 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   // Función que se ejecuta cuando el paciente presiona el botón de vincular
   Future<void> _link() async {
-  try {
-    await _relationService.linkPatient(codeController.text.trim());
+    try {
+      await _relationService.linkPatient(codeController.text.trim());
 
-    AppSnackBar.showSuccess(context, 'Paciente conectado correctamente');
-  } catch (e) {
-    AppSnackBar.showError(context, 'Error conectando el paciente');
+      AppSnackBar.showSuccess(context, 'Paciente conectado correctamente');
+    } catch (e) {
+      AppSnackBar.showError(context, 'Error conectando el paciente');
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +146,9 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
           ),
         ),
       ),
+
+      // FAB de llamada de emergencia
+      floatingActionButton: const EmergencyCallFAB(),
     );
   }
 }
