@@ -109,31 +109,72 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
 
   @override
   Widget build(BuildContext context) {
-    Widget body;
-
+    // Si está cargando
     if (loading) {
-      body = const Center(child: CircularProgressIndicator());
-    } else if (error != null) {
-      body = Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            error!,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
+      return Scaffold(
+        backgroundColor: AppColors.patientBackground,
+        appBar: const AppLogoAppBar(
+          title: 'Mis medicamentos',
+          backgroundColor: AppColors.patientAppBar,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppColors.patientAppBar),
+        ),
+        floatingActionButton: const EmergencyCallFAB(),
+      );
+    }
+
+    // Si hubo error
+    if (error != null) {
+      return Scaffold(
+        backgroundColor: AppColors.patientBackground,
+        appBar: const AppLogoAppBar(
+          title: 'Mis medicamentos',
+          backgroundColor: AppColors.patientAppBar,
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              error!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
+        floatingActionButton: const EmergencyCallFAB(),
       );
-    } else if (_tracking.isEmpty) {
-      body = const Center(
-        child: Text(
-          'No tienes medicación hoy',
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
+    }
+
+    // Si no hay medicación
+    if (_tracking.isEmpty) {
+      return Scaffold(
+        backgroundColor: AppColors.patientBackground,
+        appBar: const AppLogoAppBar(
+          title: 'Mis medicamentos',
+          backgroundColor: AppColors.patientAppBar,
         ),
+        body: const Center(
+          child: Text(
+            'No tienes medicación hoy',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+        ),
+        floatingActionButton: const EmergencyCallFAB(),
       );
-    } else {
-      body = ListView.builder(
+    }
+
+    // Pantalla principal
+    return Scaffold(
+      backgroundColor: AppColors.patientBackground,
+      appBar: const AppLogoAppBar(
+        title: 'Mis medicamentos',
+        backgroundColor: AppColors.patientAppBar,
+      ),
+      floatingActionButton: const EmergencyCallFAB(),
+
+      body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: _tracking.length,
         itemBuilder: (context, i) {
@@ -167,9 +208,16 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
                         ),
                       ),
                     ),
+
                     IconButton(
-                      icon: const Icon(Icons.volume_up, size: 30),
-                      onPressed: () => _readMedication(med),
+                      icon: const Icon(
+                        Icons.volume_up,
+                        size: 34,
+                        color: AppColors.patientPrimary,
+                      ),
+                      onPressed: () {
+                        _readMedication(med);
+                      },
                     ),
                   ],
                 ),
@@ -234,19 +282,7 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
             ),
           );
         },
-      );
-    }
-
-    return Scaffold(
-      backgroundColor: AppColors.patientBackground,
-      appBar: const AppLogoAppBar(
-        title: 'Mis medicamentos',
-        backgroundColor: AppColors.patientAppBar,
       ),
-      body: body,
-      
-      // FAB de llamada de emergencia
-      floatingActionButton: const EmergencyCallFAB(),
     );
   }
 }
