@@ -48,7 +48,7 @@ class PrescriptionTrackingService {
 
   // -------------------- Obtener tracking de medicamentos --------------------
   // Obtiene el tracking de medicamentos del paciente para una fecha específica
-  Future<List<PrescriptionTracking>> getPrescriptionTrackingForDate(DateTime date) async {
+  Future<List<PrescriptionTracking>> getMyPrescriptionTracking(DateTime date) async {
     final token = await _secureStorageService.getToken();
 
     // verifica que exista el token
@@ -59,7 +59,7 @@ class PrescriptionTrackingService {
     // formatea la fecha en formato YYYY-MM-DD para enviarla como parámetro en la URL
     final formattedDate = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
-    final url = '$_baseUrl?date=$formattedDate';
+    final url = '$_baseUrl/me?date=$formattedDate';
 
     // Petición
     final response = await http.get(
