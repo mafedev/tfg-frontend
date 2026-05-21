@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/services/tts_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tracking_service.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
@@ -15,6 +16,7 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
   final PrescriptionTrackingService _service = PrescriptionTrackingService();
 
   List<PrescriptionTracking> _tracking = []; // lista del seguimiento de medicamentos
+  final TtsService _tts = TtsService();
   bool loading = true;
   String? error;
 
@@ -34,12 +36,44 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
         loading = false;
         error = null;
       });
+
+      // lectura automática
+      if (_tracking.isNotEmpty) {
+        final allText = StringBuffer();
+
+        allText.write("Hoy tienes medicación. ");
+
+        for (final med in _tracking) {
+          allText.write("Medicamento ${med.medicationName}. ");
+        }
+
+        _tts.speak(allText.toString());
+      }
     } catch (e) {
       setState(() {
         loading = false;
         error = 'Error cargando prescripciones';
       });
     }
+  }
+
+  void _readMedication(PrescriptionTracking med) {
+    final buffer = StringBuffer();
+
+    buffer.write("Medicamento ${med.medicationName}. ");
+    buffer.write("Dosis ${med.dose}. ");
+
+    for (final t in med.times) {
+      final dt = DateTime.parse(t.scheduledTime);
+      final time =
+          "${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}";
+
+      buffer.write(
+        "A las $time está ${t.status == 'TAKEN' ? 'tomado' : 'pendiente'}. ",
+      );
+    }
+
+    _tts.speak(buffer.toString());
   }
 
   // Formatea la hora como 14:30
@@ -98,113 +132,134 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
     );
   }
 
-  Widget _buildList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: _tracking.length,
-      itemBuilder: (context, i) {
-        final med = _tracking[i];
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.patientCard,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // NOMBRE MEDICAMENTO
-              Text(
-                med.medicationName,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // DOSIS
-              Text('Dosis: ${med.dose}', style: const TextStyle(fontSize: 18)),
-
-              const SizedBox(height: 12),
-
-              // TOMAS
-              ...med.times.map((t) {
-                final color = _statusColor(t.status);
-                final text = _statusText(t.status);
-
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        t.status == 'TAKEN'
-                            ? Icons.check_circle
-                            : Icons.schedule,
-                        color: color,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 12),
-
-                      Expanded(
-                        child: Text(
-                          _formatTime(t.scheduledTime),
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-
-                      Text(
-                        text,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: color,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     Widget body;
 
     if (loading) {
-      body = _buildLoading();
+      body = const Center(child: CircularProgressIndicator());
     } else if (error != null) {
-      body = _buildError();
+      body = Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            error!,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
     } else if (_tracking.isEmpty) {
-      body = _buildEmpty();
+      body = const Center(
+        child: Text(
+          'No tienes medicación hoy',
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+      );
     } else {
-      body = _buildList();
+      body = ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _tracking.length,
+        itemBuilder: (context, i) {
+          final med = _tracking[i];
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppColors.patientCard,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        med.medicationName,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.volume_up, size: 30),
+                      onPressed: () => _readMedication(med),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Dosis: ${med.dose}',
+                  style: const TextStyle(fontSize: 18),
+                ),
+
+                const SizedBox(height: 12),
+
+                ...med.times.map((t) {
+                  final color = _statusColor(t.status);
+                  final text = _statusText(t.status);
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          t.status == 'TAKEN'
+                              ? Icons.check_circle
+                              : Icons.schedule,
+                          color: color,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 12),
+
+                        Expanded(
+                          child: Text(
+                            _formatTime(t.scheduledTime),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        Text(
+                          text,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ),
+          );
+        },
+      );
     }
 
     return Scaffold(
