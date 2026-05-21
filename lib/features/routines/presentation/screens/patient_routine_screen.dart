@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/services/tts_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/routines/data/caregiver_routine_service.dart';
 import 'package:tfg_frontend/shared/enums/routine/routine_tracking_status.dart';
@@ -15,6 +16,7 @@ class PatientRoutineScreen extends StatefulWidget {
 
 class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
   final RoutineService _service = RoutineService();
+  final TtsService _tts = TtsService();
 
   Routine? routine; // almacena la rutina
   bool loading = true; // es para mostrar si la pantalla está cargando
@@ -49,6 +51,10 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
         loading = false;
         error = null;
       });
+
+      if (routineResult.items.isNotEmpty) {
+        _readRoutine();
+      }
     } catch (e) {
       setState(() {
         loading = false;
@@ -116,6 +122,34 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
 
     final parts = time.split(':');
     return '${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}';
+  }
+
+  Future<void> _readRoutine() async {
+    if (routine == null || routine!.items.isEmpty) {
+      await _tts.speak('No tienes rutina asignada para hoy.');
+      return;
+    }
+
+    final buffer = StringBuffer();
+    buffer.write('Esta es tu rutina de hoy. ');
+
+    for (final item in routine!.items) {
+      final status = _getStatus(item.id);
+      final statusText = status == TrackingStatus.DONE
+          ? 'hecho'
+          : status == TrackingStatus.SKIPPED
+          ? 'omitido'
+          : 'pendiente';
+      final time = item.time == null || item.time!.isEmpty
+          ? 'sin hora definida'
+          : '${item.time}';
+
+      buffer.write('Actividad: ${item.name}. ');
+      buffer.write('Hora: $time. ');
+      buffer.write('Estado: $statusText. ');
+    }
+
+    await _tts.speak(buffer.toString());
   }
 
   @override
@@ -195,7 +229,26 @@ class _PatientRoutineScreenState extends State<PatientRoutineScreen> {
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+
+          ElevatedButton.icon(
+            onPressed: _readRoutine,
+            icon: const Icon(Icons.volume_up, size: 24),
+            label: const Text(
+              'Leer rutina en voz alta',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.patientPrimary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size.fromHeight(52),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 22),
 
           ...routine!.items.map((item) {
             final status = _getStatus(item.id);
