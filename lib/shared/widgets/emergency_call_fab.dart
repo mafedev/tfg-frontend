@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/shared/widgets/app_snack_bar.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyCallFAB extends StatelessWidget {
   const EmergencyCallFAB({super.key});
+
+  static const platform = MethodChannel('android_permission_service');
 
   // Normaliza el número de teléfono removiendo caracteres especiales
   String _normalizePhoneNumber(String phone) {
@@ -34,16 +36,19 @@ class EmergencyCallFAB extends StatelessWidget {
         AppSnackBar.showError(context, 'Número de teléfono inválido');
         return;
       }
-      final Uri uri = Uri(scheme: 'tel', path: phone);
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
 
-      if (launched) {
+      final bool success = await platform.invokeMethod<bool>(
+        'makeCall',
+        {'phoneNumber': phone},
+      ) ?? false;
+
+      if (success) {
+        AppSnackBar.showSuccess(context, 'Llamada iniciada');
       } else {
         AppSnackBar.showError(context, 'No se pudo iniciar la llamada');
       }
+    } on PlatformException catch (e) {
+      AppSnackBar.showError(context, 'Error: ${e.message}');
     } catch (e) {
       AppSnackBar.showError(context, 'Error iniciando llamada: ${e.toString()}');
     }
@@ -59,3 +64,4 @@ class EmergencyCallFAB extends StatelessWidget {
     );
   }
 }
+

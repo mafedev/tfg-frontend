@@ -17,7 +17,11 @@ class MainActivity: FlutterActivity() {
     // Canal para comunicar Flutter con el código nativo de Android
     private val CHANNEL = "android_permission_service"
     private val PERMISSION_REQUEST_CODE = 100 // código que se usará para identificar la solicitud de permisos
+    private val CALL_PERMISSION_CODE = 101
     private lateinit var alarmScheduler: AlarmScheduler // instancia de la clase que maneja las alarmas
+    
+    // Variables para manejar callbacks de permisos de llamada
+    private var callPermissionResult: ((Boolean) -> Unit)? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -99,7 +103,60 @@ class MainActivity: FlutterActivity() {
                     alarmScheduler.cancelAlarm(id)
                     result.success(true)
                 }
+                // Hace una llamada automática
+                "makeCall" -> {
+                    val phoneNumber = call.argument<String>("phoneNumber")
+                    if (phoneNumber != null) {
+                        val callService = CallService(this)
+                        
+                        // Verificar si ya tiene permiso
+                        if (callService.canMakeCall()) {
+                            android.util.Log.d("MainActivity", "Permiso CALL_PHONE concedido, iniciando llamada")
+                            val success = callService.makeCall(phoneNumber)
+                            result.success(success)
+                        } else {
+                            // Solicitar permiso
+                            android.util.Log.d("MainActivity", "Permiso CALL_PHONE no concedido, solicitando...")
+                            callPermissionResult = { hasPermission ->
+                                if (hasPermission) {
+                                    val success = callService.makeCall(phoneNumber)
+                                    result.success(success)
+                                } else {
+                                    result.error("PERMISSION_DENIED", "Permiso de llamada denegado", null)
+                                }
+                                callPermissionResult = null
+                            }
+                            ActivityCompat.requestPermissions(
+                                this,
+                                arrayOf(Manifest.permission.CALL_PHONE),
+                                CALL_PERMISSION_CODE
+                            )
+                        }
+                    } else {
+                        result.error("INVALID_ARGUMENT", "Número de teléfono no proporcionado", null)
+                    }
+                }
                 else -> result.notImplemented()
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        when (requestCode) {
+            CALL_PERMISSION_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    android.util.Log.d("MainActivity", "Permiso CALL_PHONE concedido")
+                    callPermissionResult?.invoke(true)
+                } else {
+                    android.util.Log.d("MainActivity", "Permiso CALL_PHONE denegado")
+                    callPermissionResult?.invoke(false)
+                }
             }
         }
     }
