@@ -4,6 +4,7 @@ import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tracking_service.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
+import 'package:tfg_frontend/shared/widgets/emergency_call_fab.dart';
 
 class PatientPrescriptionTrackingScreen extends StatefulWidget {
   const PatientPrescriptionTrackingScreen({super.key});
@@ -104,32 +105,6 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
       default:
         return 'PENDIENTE';
     }
-  }
-
-  Widget _buildLoading() {
-    return const Center(child: CircularProgressIndicator());
-  }
-
-  Widget _buildError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Text(
-          error ?? '',
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmpty() {
-    return const Center(
-      child: Text(
-        'No tienes medicación hoy',
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-      ),
-    );
   }
 
   @override
@@ -269,6 +244,9 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
         backgroundColor: AppColors.patientAppBar,
       ),
       body: body,
+      
+      // FAB de llamada de emergencia
+      floatingActionButton: const EmergencyCallFAB(),
     );
   }
 }
