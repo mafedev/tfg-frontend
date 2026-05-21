@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tracking_service.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
+import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class PatientPrescriptionTrackingScreen extends StatefulWidget {
   const PatientPrescriptionTrackingScreen({super.key});
@@ -30,11 +32,12 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
       setState(() {
         _tracking = data; // actualiza la lista con la información que devuelve
         loading = false;
+        error = null;
       });
     } catch (e) {
       setState(() {
         loading = false;
-        error = 'Error cargando';
+        error = 'Error cargando prescripciones';
       });
     }
   }
@@ -43,44 +46,174 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
   String _formatTime(String iso) {
     try {
       final dt = DateTime.parse(iso);
-      return '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+      final hh = dt.hour.toString().padLeft(2, '0');
+      final mm = dt.minute.toString().padLeft(2, '0');
+      return '$hh:$mm';
     } catch (_) {
       return '--:--';
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Prescripciones')),
+  Color _statusColor(String status) {
+    switch (status) {
+      case 'TAKEN':
+        return AppColors.patientAccentGreen;
+      default:
+        return AppColors.patientAccent;
+    }
+  }
 
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-          ? Center(child: Text(error!))
-          : _tracking.isEmpty
-          ? const Center(child: Text('Sin prescripciones'))
-          : ListView.builder(
-              itemCount: _tracking.length,
-              itemBuilder: (context, i) {
-                final med = _tracking[i];
+  String _statusText(String status) {
+    switch (status) {
+      case 'TAKEN':
+        return 'TOMADO';
+      default:
+        return 'PENDIENTE';
+    }
+  }
 
-                return ListTile(
-                  title: Text(med.medicationName),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildLoading() {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(
+          error ?? '',
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return const Center(
+      child: Text(
+        'No tienes medicación hoy',
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  Widget _buildList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _tracking.length,
+      itemBuilder: (context, i) {
+        final med = _tracking[i];
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.patientCard,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // NOMBRE MEDICAMENTO
+              Text(
+                med.medicationName,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // DOSIS
+              Text('Dosis: ${med.dose}', style: const TextStyle(fontSize: 18)),
+
+              const SizedBox(height: 12),
+
+              // TOMAS
+              ...med.times.map((t) {
+                final color = _statusColor(t.status);
+                final text = _statusText(t.status);
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
                     children: [
-                      Text('Dosis: ${med.dose}'),
-                      ...med.times.map(
-                        (t) => Text(
-                          '${_formatTime(t.scheduledTime)} - ${t.status}',
+                      Icon(
+                        t.status == 'TAKEN'
+                            ? Icons.check_circle
+                            : Icons.schedule,
+                        color: color,
+                        size: 28,
+                      ),
+                      const SizedBox(width: 12),
+
+                      Expanded(
+                        child: Text(
+                          _formatTime(t.scheduledTime),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+
+                      Text(
+                        text,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: color,
                         ),
                       ),
                     ],
                   ),
                 );
-              },
-            ),
+              }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget body;
+
+    if (loading) {
+      body = _buildLoading();
+    } else if (error != null) {
+      body = _buildError();
+    } else if (_tracking.isEmpty) {
+      body = _buildEmpty();
+    } else {
+      body = _buildList();
+    }
+
+    return Scaffold(
+      backgroundColor: AppColors.patientBackground,
+      appBar: const AppLogoAppBar(
+        title: 'Mis medicamentos',
+        backgroundColor: AppColors.patientAppBar,
+      ),
+      body: body,
     );
   }
 }
