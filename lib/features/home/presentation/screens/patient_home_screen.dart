@@ -52,7 +52,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   // ---------------- MEDICAMENTOS ----------------
   Future<void> _scheduleMedicationNotifications() async {
-    final tracking = await _medicationService.getPrescriptionTrackingForDate(
+    final tracking = await _medicationService.getMyPrescriptionTracking(
       DateTime.now(),
     );
 

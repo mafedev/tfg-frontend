@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tracking_service.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
-import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 
 class PatientPrescriptionTrackingScreen extends StatefulWidget {
   const PatientPrescriptionTrackingScreen({super.key});
@@ -15,6 +13,8 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
   final PrescriptionTrackingService _service = PrescriptionTrackingService();
 
   List<PrescriptionTracking> _tracking = []; // lista del seguimiento de medicamentos
+  bool loading = true;
+  String? error;
 
   @override
   void initState() {
@@ -25,53 +25,62 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
   // Carga el seguimiento de medicamentos para hoy
   Future<void> _load() async {
     try {
-      final data = await _service.getPrescriptionTrackingForDate(DateTime.now()); // obtiene el seguimiento de medicamentos para hoy
+      final data = await _service.getMyPrescriptionTracking(DateTime.now());
 
       setState(() {
         _tracking = data; // actualiza la lista con la información que devuelve
+        loading = false;
       });
     } catch (e) {
-      print(e);
+      setState(() {
+        loading = false;
+        error = 'Error cargando';
+      });
     }
   }
 
   // Formatea la hora como 14:30
   String _formatTime(String iso) {
-    final dt = DateTime.parse(iso);
-    return '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    try {
+      final dt = DateTime.parse(iso);
+      return '${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '--:--';
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const AppLogoAppBar(title: 'Prescripciones',backgroundColor: AppColors.patientAppBar),
-      body: ListView.builder(
-        itemCount: _tracking.length,
-        itemBuilder: (context, i) {
-          final med = _tracking[i];
+      appBar: AppBar(title: const Text('Prescripciones')),
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Nombre medicamento
-              Text('Medicamento: ${med.medicationName}'),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : error != null
+          ? Center(child: Text(error!))
+          : _tracking.isEmpty
+          ? const Center(child: Text('Sin prescripciones'))
+          : ListView.builder(
+              itemCount: _tracking.length,
+              itemBuilder: (context, i) {
+                final med = _tracking[i];
 
-              // Dosis
-              Text('Dosis: ${med.dose}'),
-
-              // Horas
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: med.times.map((t) {
-                  return Text('- ${_formatTime(t.scheduledTime)}');
-                }).toList(),
-              ),
-
-              const Divider(),
-            ],
-          );
-        },
-      ),
+                return ListTile(
+                  title: Text(med.medicationName),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Dosis: ${med.dose}'),
+                      ...med.times.map(
+                        (t) => Text(
+                          '${_formatTime(t.scheduledTime)} - ${t.status}',
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
     );
   }
 }
