@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/core/services/tts_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/appointment/data/caregiver_appointment_service.dart';
 import 'package:tfg_frontend/shared/models/appointment.dart';
@@ -15,6 +16,7 @@ class PatientAppointmentScreen extends StatefulWidget {
 
 class _PatientAppointmentScreenState extends State<PatientAppointmentScreen> {
   final AppointmentService _service = AppointmentService();
+  final TtsService _tts = TtsService();
 
   List<Appointment> appointments = [];
 
@@ -36,6 +38,10 @@ class _PatientAppointmentScreenState extends State<PatientAppointmentScreen> {
         loading = false;
         error = null;
       });
+
+      if (appointments.isNotEmpty) {
+        _readAppointments();
+      }
     } catch (e) {
       print(e);
 
@@ -114,6 +120,28 @@ class _PatientAppointmentScreenState extends State<PatientAppointmentScreen> {
     }
   }
 
+  Future<void> _readAppointments() async {
+    if (appointments.isEmpty) {
+      await _tts.speak('No tienes citas.');
+      return;
+    }
+
+    final buffer = StringBuffer();
+    buffer.write(
+      'Tienes ${appointments.length} cita${appointments.length == 1 ? '' : 's'} programada${appointments.length == 1 ? '' : 's'}. ',
+    );
+
+    for (final appointment in appointments) {
+      final date = _formatDate(appointment.dateTime);
+      final time = _formatTime(appointment.dateTime);
+      buffer.write(
+        'Cita: ${appointment.title}. Fecha: $date. Hora: $time. Lugar: ${appointment.location}. ',
+      );
+    }
+
+    await _tts.speak(buffer.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     // si está cargando
@@ -170,17 +198,42 @@ class _PatientAppointmentScreenState extends State<PatientAppointmentScreen> {
     return Scaffold(
       backgroundColor: AppColors.patientBackground,
 
-      appBar: const AppLogoAppBar(title: 'Mis citas', backgroundColor: AppColors.patientAppBar),
+      appBar: const AppLogoAppBar(
+        title: 'Mis citas',
+        backgroundColor: AppColors.patientAppBar,
+      ),
 
       floatingActionButton: const EmergencyCallFAB(),
 
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
 
-        itemCount: appointments.length,
+        itemCount: appointments.length + 1,
 
         itemBuilder: (context, index) {
-          final appointment = appointments[index];
+          if (index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ElevatedButton.icon(
+                onPressed: _readAppointments,
+                icon: const Icon(Icons.volume_up, size: 24),
+                label: const Text(
+                  'Leer citas en voz alta',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.patientPrimary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          final appointment = appointments[index - 1];
 
           final color = _statusColor(appointment.status);
           final formattedDate = _formatDate(appointment.dateTime);
