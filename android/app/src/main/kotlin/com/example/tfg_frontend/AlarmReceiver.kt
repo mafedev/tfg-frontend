@@ -10,27 +10,25 @@ import android.net.Uri
 import androidx.core.app.NotificationCompat
 import android.util.Log
 
-// Este BroadcastReceiver se dispara cuando llega la hora de la alarma
-// Su trabajo es mostrar la notificación con sonido y vibración
+// este receiver se ejecuta cuando salta la alarma del recordatorio
 class AlarmReceiver : BroadcastReceiver() {
     companion object {
-        private const val TAG = "AlarmReceiver"
+        private const val TAG = "AlarmReceiver" // para ver logs en depuracion
     }
 
-    // Se llama cuando la alarma se dispara
-    // aquí extraemos los datos y mostramos la notificación
+    // se llama automaticamente cuando se dispara la alarma
     override fun onReceive(context: Context, intent: Intent) {
-        // Se extraen los datos que enviamos desde AlarmScheduler
+        // datos que vienen desde el scheduler de alarmas
         val notificationId = intent.getIntExtra("notification_id", 0)
         val title = intent.getStringExtra("notification_title") ?: "Recordatorio"
         val body = intent.getStringExtra("notification_body") ?: "Es hora de tomar tu medicamento"
 
-        // Crear un Intent para abrir la app cuando el usuario toca la notificación
+        // intent para abrir la app cuando el usuario toque la notificación
         val clickIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
-        // se empaca el Intent en un PendingIntent
+        // pending intent porque la notificación se ejecuta fuera de la app
         val clickPendingIntent = PendingIntent.getActivity(
             context,
             notificationId,
@@ -38,33 +36,32 @@ class AlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // sonido personalizado
+        // sonido personalizado de la notificación
         val notificationSound = Uri.parse("android.resource://${context.packageName}/raw/alarm_sound")
 
-        // construye la notificación con todos los efectos
+        // construcción de la notificación
         val notification = NotificationCompat.Builder(context, "med_channel")
-            .setContentTitle(title)
-            .setContentText(body)
-            .setSmallIcon(R.drawable.notification_logo_blanco)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_MAX)  // prioridad alta para que se vea rápido
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setContentIntent(clickPendingIntent)  // que ocurre cuando se toca
-            .setSound(notificationSound)  // Sonido personalizado
-            .setVibrate(longArrayOf(0, 500, 250, 500))  //vibra 500ms, para, vibra 500ms
-            .setLights(0xFF0000FF.toInt(), 500, 500)  // luz led
-            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setContentTitle(title) // titulo visible
+            .setContentText(body) // texto principal
+            .setSmallIcon(R.drawable.notification_logo_blanco) // icono obligatorio
+            .setAutoCancel(true) // se quita al tocarla
+            .setPriority(NotificationCompat.PRIORITY_MAX) // prioridad alta por ser recordatorio
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // visible en pantalla bloqueo
+            .setContentIntent(clickPendingIntent) // abre app al tocar
+            .setSound(notificationSound) // sonido personalizado
+            .setVibrate(longArrayOf(0, 500, 250, 500)) // patrón de vibración
+            .setLights(0xFF0000FF.toInt(), 500, 500) // luz led si el móvil lo soporta
+            .setCategory(NotificationCompat.CATEGORY_REMINDER) // tipo de notificación
             .build()
 
         try {
-            // muestra la notificación al usuario
+            // mostramos la notificación en el sistema
             val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             notificationManager.notify(notificationId, notification)
-            Log.d(TAG, "Notification displayed: ID=$notificationId")
+            Log.d(TAG, "notificación mostrada id=$notificationId")
         } catch (e: Exception) {
-            Log.e(TAG, "Error displaying notification: ${e.message}")
+            Log.e(TAG, "error mostrando notificación: ${e.message}")
         }
     }
 }
-
