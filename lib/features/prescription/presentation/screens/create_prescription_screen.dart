@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/medication/presentation/screens/caregivers_create_medication_screen.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
@@ -169,6 +170,19 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
       return;
     }
 
+    // valida frecuencia
+    if (_frequency.text.isNotEmpty) {
+      final frequency = int.tryParse(_frequency.text);
+
+      if (frequency == null || frequency <= 0) {
+        AppSnackBar.showError(
+          context,
+          'La frecuencia debe ser un número mayor que 0',
+        );
+        return;
+      }
+    }
+
     // Formatear la hora seleccionada
     final hour = selectedHour != null
         ? '${selectedHour!.hour.toString().padLeft(2, '0')}:${selectedHour!.minute.toString().padLeft(2, '0')}'
@@ -200,11 +214,15 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
       }
 
       Navigator.pop(context);
-    } catch (e) {
-      if (e.toString().contains('409')) {
+    } catch (e, stack) {
+      final errorText = e.toString();
+
+      if (errorText.contains('409')) {
         AppSnackBar.showError(context,'Ya existe una prescripción con este medicamento');
+      } else if (errorText.contains('403')) {
+        AppSnackBar.showError(context, 'Error en los datos enviados. Revisa fechas y campos obligatorios');
       } else {
-        AppSnackBar.showError(context, 'Error creando prescripción');
+        AppSnackBar.showError(context, 'Error creando/actualizando prescripción');
       }
     }
   }
@@ -329,6 +347,9 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
               TextField(
                 controller: _dose,
                 keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                ],
                 decoration: _inputDecoration('Dosis'),
               ),
               const SizedBox(height: 14),
@@ -337,7 +358,13 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
               TextField(
                 controller: _frequency,
                 keyboardType: TextInputType.number,
-                decoration: _inputDecoration('Frecuencia (horas)'),
+
+                // Solo permite números
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+
+                decoration: _inputDecoration(
+                  'Frecuencia en horas',
+                ).copyWith(hintText: 'Ej: 8'),
               ),
               const SizedBox(height: 14),
               // ---------- Selector de hora de primera dosis ----------
@@ -424,9 +451,15 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
                 value: selectedStatus,
                 decoration: _inputDecoration('Estado'),
 
-                items: PrescriptionStatus.values.map((status) {
-                  return DropdownMenuItem(value: status, child: Text(status.name));
-                }).toList(),
+                items: PrescriptionStatus.values
+                    .where((status) => status != PrescriptionStatus.CANCELLED)
+                    .map((status) {
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(status.name),
+                      );
+                    })
+                    .toList(),
 
                 onChanged: (value) {
                   if (value != null) {
