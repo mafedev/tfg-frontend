@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Flutter / build
+/build/
+/android/.gradle/
+/android/app/build/
+/ios/Pods/
+/ios/.symlinks/
+
+# Environment files
+.env
+
+# Generated files
+**/*.cmake
+**/*.swift
+**/generated_plugin*.cc

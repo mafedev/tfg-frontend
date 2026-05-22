@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tfg_frontend/core/app_colors.dart';
-import 'package:tfg_frontend/features/patient/patient_emergency_screen.dart';
-import 'package:tfg_frontend/features/patient/patient_follow_up_screen.dart';
-import 'package:tfg_frontend/features/patient/patient_home_screen.dart';
-import 'package:tfg_frontend/features/patient/patient_routine_screen.dart';
+import 'package:tfg_frontend/core/theme/app_colors.dart';
+import 'package:tfg_frontend/features/appointment/presentation/screens/patient_appointment_screen.dart';
+import 'package:tfg_frontend/features/prescription_tracking/presentation/screens/patient_prescription_tracking_screen.dart';
+import 'package:tfg_frontend/features/home/presentation/screens/patient_home_screen.dart';
+import 'package:tfg_frontend/features/profile/presentation/screens/patient_profile_screen.dart';
+import 'package:tfg_frontend/features/routines/presentation/screens/patient_routine_screen.dart';
 
 class NavbarPatient extends StatefulWidget {
   const NavbarPatient({super.key});
@@ -16,11 +17,11 @@ class _NavbarPatientState extends State<NavbarPatient> {
   int _currentPage = 0;
 
   final List<Widget> _pages = [
-    PatientHomeScreen(),
-    PatientRoutineScreen(),
-    PatientEmergencyScreen(),
-    PatientFollowUpScreen(),
-    Center(child: Text('Menú')),
+    const PatientHomeScreen(),
+    const PatientRoutineScreen(),
+    const PatientPrescriptionTrackingScreen(),
+    const PatientAppointmentScreen(),
+    const PatientProfileScreen(),
   ];
 
   @override
@@ -29,24 +30,23 @@ class _NavbarPatientState extends State<NavbarPatient> {
       body: _pages[_currentPage],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed, // asegura que los colores se apliquen correctamente
-        selectedItemColor: AppColors.primary, // color para cuando está seleccionado
+        selectedItemColor: AppColors.patientAccent, // color para cuando está seleccionado
         unselectedItemColor: Colors.grey[600], // si no está seleccionado
         showUnselectedLabels: true,
         currentIndex: _currentPage,
-        onTap: (index){
+        onTap: (index) {
           setState(() {
             _currentPage = index;
           });
         },
-        items: const[
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month),label: 'Mi Rutina'),
-          BottomNavigationBarItem(icon: Icon(Icons.emergency), label: 'Emergencia'),
-          BottomNavigationBarItem(icon: Icon(Icons.handshake_sharp), label: 'Seguimiento'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Menu')
+          BottomNavigationBarItem(icon: Icon(Icons.fastfood_outlined), label: 'Rutina'),
+          BottomNavigationBarItem(icon: Icon(Icons.medical_information), label: 'Medicina'),
+          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Citas'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
         ],
       ),
-
     );
   }
 }
