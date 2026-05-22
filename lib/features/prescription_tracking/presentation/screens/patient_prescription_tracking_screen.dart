@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/services/tts_service.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/prescription_tracking/data/prescription_tracking_service.dart';
+import 'package:tfg_frontend/shared/enums/medication/prescription_tracking_status.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/shared/widgets/emergency_call_fab.dart';
@@ -58,11 +59,28 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
     }
   }
 
+  String _translateDoseString(String dose) {
+    final replacements = {
+      'CAPSULE': 'cápsula',
+      'TABLET': 'tableta',
+      'DROP': 'gota',
+      'INHALATION': 'inhalación',
+      'PATCH': 'parche',
+      'MG': 'mg',
+      'ML': 'ml',
+    };
+    var result = dose;
+    replacements.forEach((english, spanish) {
+      result = result.replaceAll(RegExp(r'\b' + english + r'\b', caseSensitive: false), spanish);
+    });
+    return result;
+  }
+
   void _readMedication(PrescriptionTracking med) {
     final buffer = StringBuffer();
 
     buffer.write("Medicamento ${med.medicationName}. ");
-    buffer.write("Dosis ${med.dose}. ");
+    buffer.write("Dosis ${_translateDoseString(med.dose)}. ");
 
     for (final t in med.times) {
       final dt = DateTime.parse(t.scheduledTime);
@@ -225,7 +243,7 @@ class _PatientPrescriptionTrackingScreenState extends State<PatientPrescriptionT
                 const SizedBox(height: 8),
 
                 Text(
-                  'Dosis: ${med.dose}',
+                  'Dosis: ${_translateDoseString(med.dose)}',
                   style: const TextStyle(fontSize: 18),
                 ),
 

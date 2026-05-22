@@ -5,6 +5,8 @@ import 'package:tfg_frontend/features/medication/presentation/screens/caregivers
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/prescription/data/caregiver_prescription_service.dart';
 import 'package:tfg_frontend/features/medication/data/caregiver_medication_service.dart';
+import 'package:tfg_frontend/shared/enums/extensions/dose_unit_extension.dart';
+import 'package:tfg_frontend/shared/enums/extensions/prescription_status_extension.dart';
 import 'package:tfg_frontend/shared/enums/medication/prescription_status.dart';
 import 'package:tfg_frontend/shared/dtos/medication/prescription_request.dart';
 import 'package:tfg_frontend/shared/dtos/medication/medication_response.dart';
@@ -338,7 +340,9 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
               DropdownButtonFormField<DoseUnit>(
                 value: selectedDoseUnit,
                 decoration: _inputDecoration('Unidad de dosis'),
-                items: DoseUnit.values.map((u) => DropdownMenuItem(value: u, child: Text(u.name))).toList(),
+                items: DoseUnit.values
+                    .map((u) => DropdownMenuItem(value: u, child: Text(u.label)))
+                    .toList(),
                 onChanged: (value) => setState(() => selectedDoseUnit = value),
               ),
               const SizedBox(height: 14),
@@ -456,7 +460,7 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
                     .map((status) {
                       return DropdownMenuItem(
                         value: status,
-                        child: Text(status.name),
+                        child: Text(status.label),
                       );
                     })
                     .toList(),

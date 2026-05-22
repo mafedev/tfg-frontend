@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tfg_frontend/shared/enums/extensions/medication_tracking_status_extension.dart';
 import 'package:tfg_frontend/shared/enums/medication/prescription_tracking_status.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/shared/models/prescription_tracking.dart';
@@ -56,6 +57,10 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
 
   bool _isTaken(String status) {
     return _parseStatus(status) == TrackingStatus.TAKEN;
+  }
+
+  String _translateTrackingStatus(String status) {
+    return _parseStatus(status).label;
   }
 
   Future<void> _toggleTracking(PrescriptionTracking med, PrescriptionTrackingTime time) async {
@@ -308,7 +313,7 @@ class _PrescriptionTrackingScreenState extends State<PrescriptionTrackingScreen>
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
-                                        t.status,
+                                        _translateTrackingStatus(t.status),
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
