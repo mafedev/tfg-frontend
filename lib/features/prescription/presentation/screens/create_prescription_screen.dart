@@ -201,7 +201,11 @@ class _CreatePrescriptionScreenState extends State<CreatePrescriptionScreen> {
 
       Navigator.pop(context);
     } catch (e) {
-      AppSnackBar.showError(context, 'Error creando prescripción');
+      if (e.toString().contains('409')) {
+        AppSnackBar.showError(context,'Ya existe una prescripción con este medicamento');
+      } else {
+        AppSnackBar.showError(context, 'Error creando prescripción');
+      }
     }
   }
 
