@@ -78,7 +78,7 @@ class _PatientHomeScreenState extends State<PatientHomeScreen> {
 
   Future<void> _speakWelcome(String displayName) async {
     final message =
-        'Hola $displayName. Si necesitas ayuda, pulsa el botón rojo de emergencia o pide ayuda a tu cuidador.';
+        'Hola $displayName. Hoy es ${_formatToday()}. Si necesitas ayuda, pulsa el botón rojo de emergencia o pide ayuda a tu cuidador.';
     await _tts.speak(message);
   }
 
