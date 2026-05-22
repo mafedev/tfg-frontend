@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:tfg_frontend/core/theme/app_colors.dart';
 import 'package:tfg_frontend/features/prescription_tracking/presentation/screens/prescription_tracking_screen.dart';
+import 'package:tfg_frontend/shared/enums/extensions/dose_unit_extension.dart';
+import 'package:tfg_frontend/shared/enums/extensions/prescription_status_extension.dart';
+import 'package:tfg_frontend/shared/enums/medication/prescription_status.dart';
 import 'package:tfg_frontend/shared/widgets/app_fab.dart';
 import 'package:tfg_frontend/shared/widgets/app_logo_appbar.dart';
 import 'package:tfg_frontend/features/prescription/presentation/screens/create_prescription_screen.dart';
@@ -60,6 +63,38 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
 
       return name.contains(q) || notes.contains(q) || status.contains(q);
     }).toList();
+  }
+
+  String _translateDose(String dose, String? unit) {
+    final unitLabel = unit != null
+        ? DoseUnit.values
+            .firstWhere(
+              (u) => u.name.toUpperCase() == unit.toUpperCase(),
+              orElse: () => DoseUnit.MG,
+            )
+            .label
+        : '';
+
+    if (dose.isEmpty) {
+      return unitLabel;
+    }
+
+    final normalized = dose.trim();
+    if (unit != null && normalized.toUpperCase().contains(unit.toUpperCase())) {
+      return normalized.replaceAll(RegExp(unit, caseSensitive: false), unitLabel);
+    }
+
+    return unitLabel.isEmpty ? normalized : '$normalized $unitLabel';
+  }
+
+  String _translateStatus(String status) {
+    try {
+      return PrescriptionStatus.values
+          .firstWhere((s) => s.name == status.toUpperCase())
+          .label;
+    } catch (_) {
+      return status;
+    }
   }
 
   @override
@@ -278,7 +313,10 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
 
                             _infoLine(
                               'Dosis',
-                              '${med['dose']} ${med['doseUnit'] ?? 'mg'}',
+                              _translateDose(
+                                med['dose']?.toString() ?? '',
+                                med['doseUnit']?.toString(),
+                              ),
                             ),
                             _infoLine(
                               'Frecuencia',
@@ -337,7 +375,7 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    med['status'] ?? 'ACTIVE',
+                                    _translateStatus(med['status']?.toString() ?? 'ACTIVE'),
                                     style: const TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
