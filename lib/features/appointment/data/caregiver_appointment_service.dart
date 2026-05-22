@@ -6,6 +6,7 @@ import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/utils/http_response_handler.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_request.dart';
 import 'package:tfg_frontend/shared/dtos/appointment/appointment_response.dart';
+import 'package:tfg_frontend/shared/models/appointment.dart';
 
 class AppointmentService {
   static String get _baseUrl => ApiConfig.appointmentEndpoint;
@@ -151,5 +152,27 @@ class AppointmentService {
       expectedStatusCodes: [200, 204],
       errorMessage: 'Error actualizando estado de la cita',
     );
+  }
+
+  Future<List<Appointment>> getMyAppointments() async {
+    final token = await _secureStorageService.getToken();
+
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final response = await http.get(
+      Uri.parse('$_baseUrl/my'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error obteniendo citas',
+    );
+
+    final List<dynamic> data = jsonDecode(response.body);
+    return data.map((json) => Appointment.fromJson(json)).toList();
   }
 }

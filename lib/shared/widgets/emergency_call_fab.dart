@@ -56,12 +56,16 @@ class EmergencyCallFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton(
-      heroTag: "emergencyCall",
-      backgroundColor: Colors.red,
-      onPressed: () => _callCaregiver(context),
-      child: const Icon(Icons.phone, color: Colors.white),
+    return SizedBox(
+      width: 85,
+      height: 85,
+      child: FloatingActionButton(
+        heroTag: "emergencyCall",
+        backgroundColor: Colors.red,
+        shape: const CircleBorder(),
+        onPressed: () => _callCaregiver(context),
+        child: const Icon(Icons.phone, color: Colors.white, size: 38),
+      ),
     );
   }
 }
-
