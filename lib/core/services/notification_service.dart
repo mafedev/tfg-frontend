@@ -32,6 +32,7 @@ class NotificationService {
       enableVibration: true, // vibra
       enableLights: true, // enciende la luz de notificación
       playSound: true, // reproduce un sonido al recibir la notificación
+      sound: RawResourceAndroidNotificationSound('alarm_sound'),
     );
 
     // se crea el canal de noficicaciones
@@ -91,6 +92,8 @@ class NotificationService {
             importance: Importance.max,  // importancia máxima para que las notificaciones se muestren de forma destacada
             priority: Priority.high, // prioridad alta
             playSound: true, // reproduce el sonido de notificación
+            sound: RawResourceAndroidNotificationSound('alarm_sound'),
+            icon: '@drawable/notification_logo_blanco',
             enableVibration: true, // vibra
             enableLights: true,
           ),

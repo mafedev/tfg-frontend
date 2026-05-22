@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import android.util.Log
 
@@ -37,19 +38,19 @@ class AlarmReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // se obtiene el sonido por defecto del dispositivo
-        val notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        // sonido personalizado
+        val notificationSound = Uri.parse("android.resource://${context.packageName}/raw/alarm_sound")
 
         // construye la notificación con todos los efectos
         val notification = NotificationCompat.Builder(context, "med_channel")
             .setContentTitle(title)
             .setContentText(body)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.drawable.notification_logo_blanco)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_MAX)  // prioridad alta para que se vea rápido
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(clickPendingIntent)  // que ocurre cuando se toca
-            .setSound(notificationSound)  // Sonido
+            .setSound(notificationSound)  // Sonido personalizado
             .setVibrate(longArrayOf(0, 500, 250, 500))  //vibra 500ms, para, vibra 500ms
             .setLights(0xFF0000FF.toInt(), 500, 500)  // luz led
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
