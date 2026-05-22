@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tfg_frontend/core/config/api_config.dart';
 import 'package:tfg_frontend/core/services/secure_storage_service.dart';
 import 'package:tfg_frontend/core/utils/http_response_handler.dart';
+import 'package:tfg_frontend/shared/dtos/relation/caregiver_contact.dart';
 import '../../../shared/models/patient.dart';
 
 class RelationService {
@@ -87,6 +87,32 @@ class RelationService {
     return data.map((e) => Patient.fromJson(e)).toList();
   }
 
+  // ------------------- Obtener cuidadores vinculados -------------------
+  Future<List<CaregiverContact>> getMyCaregivers() async {
+    final token = await _storage.getToken();
+    if (token == null) {
+      throw Exception('Token no disponible');
+    }
+
+    final url = '$_baseUrl/my-caregivers';
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    HttpResponseHandler.validate(
+      response: response,
+      expectedStatusCodes: [200],
+      errorMessage: 'Error obteniendo cuidadores vinculados',
+    );
+
+    final List data = HttpResponseHandler.decodeList(response);
+    return data.map((e) => CaregiverContact.fromJson(e)).toList();
+  }
+
   // ------------------- Eliminar relación -------------------
   Future<void> deleteRelation(int patientId) async {
     final token = await _storage.getToken(); // obtiene el token
@@ -112,36 +138,30 @@ class RelationService {
 
   Future<void> saveCaregiverPhones() async {
     try {
-      print('[DEBUG] Iniciando saveCaregiverPhones...');
-      
       final token = await _storage.getToken();
-      print('[DEBUG] Token obtenido: ${token != null ? 'Sí' : 'NO'}');
 
       // Valida que exista el token
       if (token == null) {
-        throw Exception('Token no disponible para obtener números de cuidadores');
+        throw Exception(
+          'Token no disponible para obtener números de cuidadores',
+        );
       }
 
       final url = '$_baseUrl/my-caregivers';
-      print('[DEBUG] URL: $url');
-      print('[DEBUG] Base URL: $_baseUrl');
-
-      print('[DEBUG] Realizando petición GET...');
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      ).timeout(
-        const Duration(seconds: 10),
-        onTimeout: () {
-          throw Exception('Timeout: la petición tardó más de 10 segundos');
-        },
-      );
-
-      print('[DEBUG] Respuesta recibida. Status code: ${response.statusCode}');
-      print('[DEBUG] Response body: ${response.body}');
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Authorization': 'Bearer $token',
+              'Content-Type': 'application/json',
+            },
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () {
+              throw Exception('Timeout: la petición tardó más de 10 segundos');
+            },
+          );
 
       // Valida la respuesta HTTP
       if (response.statusCode != 200) {
@@ -149,8 +169,6 @@ class RelationService {
       }
 
       final data = jsonDecode(response.body);
-      print('[DEBUG] Datos decodificados: $data');
-
       if (data is! List) {
         throw Exception('Formato de respuesta inválido: se esperaba List, se recibió ${data.runtimeType}');
       }
@@ -165,12 +183,7 @@ class RelationService {
 
       // Guarda en SecureStorageService (más robusto que SharedPreferences)
       await _storage.saveCaregiverPhones(phones);
-      
-      print('[DEBUG] Números guardados en SecureStorageService correctamente');
     } catch (e) {
-      // Log del error para debugging
-      print('[ERROR] Error guardando números de cuidadores: $e');
-      print('[ERROR] Stack trace: ${StackTrace.current}');
       rethrow; // Permite que el error sea manejado en el login
     }
   }
