@@ -269,7 +269,8 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
                                     return ConfirmDeleteDialog(
                                       title: "Eliminar prescripción",
                                       message: "Esta prescripción dejará de ser visible, pero los registros de seguimiento asociados no se eliminarán por seguridad.",
-                                      onConfirm: () async {
+                                     onConfirm: () async {
+                                        Navigator.pop(context);
                                         await CaregiverPrescriptionService().deletePrescription(med['id']);
                                         _loadMedication();
                                       },
@@ -405,7 +406,7 @@ class _ViewPrescriptionScreenState extends State<ViewPrescriptionScreen> {
               builder: (_) =>
                   CreatePrescriptionScreen(patientId: widget.patientId),
             ),
-          );
+          ).then((_) => _loadMedication());
         },
       ),
     );

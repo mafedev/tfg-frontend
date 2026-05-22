@@ -125,11 +125,16 @@ class _ViewRoutineScreenState extends State<ViewRoutineScreen> {
 
   // Borrar rutina
   Future<void> deleteRoutine() async {
-    await _routineService.deleteRoutine(widget.patientId);
-
-    setState(() {
-      routine = null;
-    });
+    try {
+      await _routineService.deleteRoutine(widget.patientId);
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackBar.showError(context, 'Error eliminando rutina');
+      }
+    }
   }
 
   void confirmDeleteRoutine() {
