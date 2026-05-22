@@ -52,7 +52,11 @@ class _ViewAppointmentsScreenState extends State<ViewAppointmentsScreen> {
   Future<void> _deleteAppointment(int id) async {
     try {
       await service.deleteAppointment(id);
-      _loadAppointments();
+      await _loadAppointments();
+      // Si no hay más citas, regresa a la pantalla anterior
+      if (mounted && appointments.isEmpty) {
+        Navigator.pop(context);
+      }
     } catch (e) {
       AppSnackBar.showError(context, 'Error eliminando cita');
     }

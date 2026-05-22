@@ -46,15 +46,22 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   void initState() {
     super.initState();
     _loadPatient();
-    _checkRoutine(); // verifica si tiene rutina creada
-    _checkMedication(); // verifica si tiene medicación asignada
-    _checkAppointments();
+    _refreshPatientState();
   }
 
   // ---------- Cargar paciente ----------
   Future<void> _loadPatient() async {
     final result = await _controller.loadPatient(widget.patientId);
     setState(() => patient = result);
+  }
+
+  // ---------- Recargar estado completo ----------
+  Future<void> _refreshPatientState() async {
+    await Future.wait([
+      _checkRoutine(),
+      _checkMedication(),
+      _checkAppointments(),
+    ]);
   }
 
   // ---------- Cargar rutina ----------
@@ -238,7 +245,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                                       ),
                               ),
                             );
-                            _checkRoutine();
+                            if (mounted) _refreshPatientState();
                           },
                         ),
 
@@ -253,7 +260,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                           color: AppColors.medicationAction,
                           loading: loadingMedication,
                           onTap: () async {
-                            await Navigator.push(
+                           await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => hasMedication
@@ -265,7 +272,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                                       ),
                               ),
                             );
-                            _checkMedication();
+                            if (mounted) _refreshPatientState();
                           },
                         ),
 
@@ -310,7 +317,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                                       ),
                               ),
                             );
-                            _checkAppointments();
+                            if (mounted) _refreshPatientState();
                           },
                         ),
                       ],
